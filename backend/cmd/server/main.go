@@ -32,7 +32,7 @@ func main() {
 		authService,
 	)
 
-	r := router.New(authHandler)
+	r := router.New(authHandler, jwtService)
 
 	log.Println("Server running on port", cfg.Port)
 
