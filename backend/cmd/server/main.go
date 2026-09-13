@@ -3,10 +3,12 @@ package main
 import (
 	"log"
 
-	"github.com/gin-gonic/gin"
-
 	"backend/internal/config"
 	"backend/internal/database"
+	"backend/internal/handler"
+	"backend/internal/repository"
+	"backend/internal/router"
+	"backend/internal/service"
 )
 
 func main() {
@@ -15,15 +17,24 @@ func main() {
 	db := database.NewPostgresPool(cfg)
 	defer db.Close()
 
-	router := gin.Default()
+	userRepository := repository.NewUserRepository(db)
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	jwtService := service.NewJWTService(
+		cfg.JWTSECRET,
+	)
+
+	authService := service.NewAuthService(
+		userRepository,
+		jwtService,
+	)
+
+	authHandler := handler.NewAuthHandler(
+		authService,
+	)
+
+	r := router.New(authHandler)
 
 	log.Println("Server running on port", cfg.Port)
 
-	router.Run(":" + cfg.Port)
+	r.Run(":" + cfg.Port)
 }

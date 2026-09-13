@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -15,13 +14,13 @@ type Config struct {
 	DBName     string
 	DBSSLMode  string
 	Port       string
+	JWTSECRET  string
 }
 
 func Load() Config {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Fatal("Error loading .env:", err)
-	}
+	_ = godotenv.Load("../.env")
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load()
 
 	return Config{
 		DBHost:     os.Getenv("DB_HOST"),
@@ -31,5 +30,6 @@ func Load() Config {
 		DBName:     os.Getenv("DB_NAME"),
 		DBSSLMode:  os.Getenv("DB_SSLMODE"),
 		Port:       os.Getenv("PORT"),
+		JWTSECRET:  os.Getenv("JWT_SECRET"),
 	}
 }
