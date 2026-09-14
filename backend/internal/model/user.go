@@ -3,11 +3,12 @@ package model
 import "time"
 
 type User struct {
-	ID              int       `json:"id" db:"id"`
-	Username        string    `json:"username" db:"username"`
-	PhotoProfile    *string   `json:"photo_profile" db:"photo_profile"`
-	Email           string    `json:"email" db:"email"`
-	PasswordHash    string    `json:"-" db:"password_hash"`
-	CreatedAt       time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
+	ID           int       `json:"id" db:"id"`
+	Username     string    `json:"username" db:"username"`
+	PhotoProfile *string   `json:"photo_profile" db:"photo_profile"`
+	Email        string    `json:"email" db:"email"`
+	PasswordHash *string   `json:"-" db:"password_hash"`
+	GoogleID     *string   `json:"-" db:"google_id"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }

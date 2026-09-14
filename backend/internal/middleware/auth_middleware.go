@@ -1,16 +1,23 @@
 package middleware
 
 import (
+	"errors"
+	"log"
 	"net/http"
 	"strings"
 
+	"backend/internal/apperrors"
+	"backend/internal/repository"
 	"backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware(jwtService *service.JWTService) gin.HandlerFunc {
+func AuthMiddleware(
+	jwtService *service.JWTService,
+	blacklistRepo *repository.TokenBlacklistRepository,
+) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -35,6 +42,28 @@ func AuthMiddleware(jwtService *service.JWTService) gin.HandlerFunc {
 		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Invalid or expired token",
+			})
+			c.Abort()
+			return
+		}
+
+		blacklisted, err := blacklistRepo.IsBlacklisted(
+			c.Request.Context(),
+			service.HashToken(tokenString),
+		)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrDatabase) {
+				log.Println("blacklist check database error:", err)
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to verify token, please try again later",
+			})
+			c.Abort()
+			return
+		}
+		if blacklisted {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Token has been revoked",
 			})
 			c.Abort()
 			return
