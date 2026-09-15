@@ -1,13 +1,50 @@
 export type TaskPriority = "High" | "Medium" | "Normal";
 
+export const PRIORITY_ORDER: Record<TaskPriority, number> = {
+  High: 1,
+  Medium: 2,
+  Normal: 3,
+};
+
+export function toFrontendPriority(raw: string): TaskPriority {
+  switch (raw) {
+    case "high":
+      return "High";
+    case "medium":
+      return "Medium";
+    case "low":
+    case "normal":
+      return "Normal";
+    default:
+      return "Medium";
+  }
+}
+
+export function toBackendPriority(p: TaskPriority): "high" | "medium" | "low" {
+  switch (p) {
+    case "High":
+      return "high";
+    case "Medium":
+      return "medium";
+    case "Normal":
+    default:
+      return "low";
+  }
+}
+
 export type DashboardTask = {
   id: number;
   title: string;
   priority: TaskPriority;
   due: string;
   dueToday: boolean;
+  dueDate: string | null;
   project: string | null;
+  projectId: number | null;
   done: boolean;
+  isCompleted: boolean;
+  updatedAt: string;
+  createdAt: string;
 };
 
 export type ProjectStage = "polish" | "progress";
@@ -20,6 +57,8 @@ export type DashboardProject = {
   stageTone: ProjectStage;
   tasksDone: number;
   tasksTotal: number;
+  status: "not_started" | "in_progress" | "completed" | "archived";
+  updatedAt: string;
 };
 
 export type DashboardApplication = {
@@ -31,6 +70,7 @@ export type DashboardApplication = {
   applied: string;
   note: string;
   noteTone: "sky" | "slate" | "emerald";
+  updatedAt: string;
 };
 
 export type SkillTrack = {
@@ -38,6 +78,10 @@ export type SkillTrack = {
   title: string;
   detail: string;
   progress: number;
+  status: "not_started" | "in_progress" | "completed" | "archived";
+  completedTasks: number;
+  totalTasks: number;
+  updatedAt: string;
 };
 
 export const PRIMARY_GOAL = {
@@ -57,8 +101,13 @@ export const INITIAL_TASKS: DashboardTask[] = [
     priority: "High",
     due: "Due Today",
     dueToday: true,
+    dueDate: new Date().toISOString(),
     project: "Goal: Fullstack Dev",
+    projectId: 1,
     done: false,
+    isCompleted: false,
+    updatedAt: "2026-03-10T10:00:00Z",
+    createdAt: "2026-03-01T09:00:00Z",
   },
   {
     id: 2,
@@ -66,8 +115,13 @@ export const INITIAL_TASKS: DashboardTask[] = [
     priority: "High",
     due: "Tomorrow, 5:00 PM",
     dueToday: false,
+    dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     project: "Goal: Fullstack Dev",
+    projectId: 1,
     done: false,
+    isCompleted: false,
+    updatedAt: "2026-03-09T15:30:00Z",
+    createdAt: "2026-03-02T10:00:00Z",
   },
   {
     id: 3,
@@ -75,8 +129,13 @@ export const INITIAL_TASKS: DashboardTask[] = [
     priority: "Medium",
     due: "In 3 days",
     dueToday: false,
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     project: "Goal: Fullstack Dev",
+    projectId: 2,
     done: false,
+    isCompleted: false,
+    updatedAt: "2026-03-11T08:00:00Z",
+    createdAt: "2026-03-03T11:00:00Z",
   },
   {
     id: 4,
@@ -84,8 +143,13 @@ export const INITIAL_TASKS: DashboardTask[] = [
     priority: "Medium",
     due: "In 5 days",
     dueToday: false,
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
     project: null,
+    projectId: null,
     done: false,
+    isCompleted: false,
+    updatedAt: "2026-03-08T12:00:00Z",
+    createdAt: "2026-03-04T08:00:00Z",
   },
   {
     id: 5,
@@ -93,8 +157,13 @@ export const INITIAL_TASKS: DashboardTask[] = [
     priority: "Normal",
     due: "Next week",
     dueToday: false,
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     project: null,
-    done: false,
+    projectId: null,
+    done: true,
+    isCompleted: true,
+    updatedAt: "2026-03-12T14:00:00Z",
+    createdAt: "2026-03-05T13:00:00Z",
   },
 ];
 
@@ -108,6 +177,8 @@ export const DASHBOARD_PROJECTS: DashboardProject[] = [
     stageTone: "polish",
     tasksDone: 12,
     tasksTotal: 14,
+    status: "completed",
+    updatedAt: "2026-03-12T10:00:00Z",
   },
   {
     id: 2,
@@ -118,6 +189,8 @@ export const DASHBOARD_PROJECTS: DashboardProject[] = [
     stageTone: "progress",
     tasksDone: 6,
     tasksTotal: 10,
+    status: "in_progress",
+    updatedAt: "2026-03-10T09:00:00Z",
   },
 ];
 
@@ -131,6 +204,7 @@ export const DASHBOARD_APPLICATIONS: DashboardApplication[] = [
     applied: "Applied Oct 18",
     note: "Round 2, Fri 2:00 PM",
     noteTone: "sky",
+    updatedAt: "2026-03-12T14:00:00Z",
   },
   {
     id: 2,
@@ -141,6 +215,7 @@ export const DASHBOARD_APPLICATIONS: DashboardApplication[] = [
     applied: "Applied Oct 12",
     note: "Feedback expected soon",
     noteTone: "slate",
+    updatedAt: "2026-03-10T09:00:00Z",
   },
   {
     id: 3,
@@ -151,6 +226,7 @@ export const DASHBOARD_APPLICATIONS: DashboardApplication[] = [
     applied: "Applied Oct 05",
     note: "Onsite scheduled next week",
     noteTone: "emerald",
+    updatedAt: "2026-03-13T16:00:00Z",
   },
   {
     id: 4,
@@ -161,6 +237,7 @@ export const DASHBOARD_APPLICATIONS: DashboardApplication[] = [
     applied: "Applied Oct 20",
     note: "Under Review",
     noteTone: "slate",
+    updatedAt: "2026-03-09T11:00:00Z",
   },
 ];
 
@@ -170,12 +247,20 @@ export const SKILL_TRACKS: SkillTrack[] = [
     title: "Master TypeScript and Distributed Systems",
     detail: "12 lessons completed this month",
     progress: 64,
+    status: "in_progress",
+    completedTasks: 8,
+    totalTasks: 12,
+    updatedAt: "2026-03-11T09:00:00Z",
   },
   {
     id: 2,
     title: "System Design Interview Prep",
     detail: "8 mock sessions completed",
     progress: 45,
+    status: "not_started",
+    completedTasks: 3,
+    totalTasks: 8,
+    updatedAt: "2026-03-10T10:00:00Z",
   },
 ];
 
@@ -928,6 +1013,8 @@ export type SupportingGoal = {
   dateLabel: string;
   dateMonth: number;
   dateDay: number;
+  status: "not_started" | "in_progress" | "completed" | "archived";
+  updatedAt: string;
   checklist: GoalCheckItem[];
   signal?: { left: string; right: string; note: string };
 };
@@ -948,6 +1035,8 @@ export const SUPPORTING_GOALS: SupportingGoal[] = [
     dateLabel: "Aug 05",
     dateMonth: 8,
     dateDay: 5,
+    status: "completed",
+    updatedAt: "2026-08-05T10:00:00Z",
     checklist: [
       { id: 1, label: "Benchmark 15k req/s cluster on simulated load", done: true, locked: true },
       { id: 2, label: "Build fault-tolerant worker queue with BullMQ", done: true, locked: true },
@@ -969,6 +1058,8 @@ export const SUPPORTING_GOALS: SupportingGoal[] = [
     dateLabel: "Aug 20",
     dateMonth: 8,
     dateDay: 20,
+    status: "in_progress",
+    updatedAt: "2026-08-20T12:00:00Z",
     checklist: [
       { id: 1, label: "Article 1: 'Inside V8 Memory Leak Detection'", done: true, locked: true },
       { id: 2, label: "Article 2: 'Zero-downtime Postgres schema swaps'", done: false, locked: false },
@@ -990,6 +1081,8 @@ export const SUPPORTING_GOALS: SupportingGoal[] = [
     dateLabel: "Sep 30",
     dateMonth: 9,
     dateDay: 30,
+    status: "in_progress",
+    updatedAt: "2026-09-30T09:00:00Z",
     checklist: [
       { id: 1, label: "Target company whitelist (25 curated teams)", done: true, locked: true },
       { id: 2, label: "Secure 2 competing written offers", done: false, locked: false },

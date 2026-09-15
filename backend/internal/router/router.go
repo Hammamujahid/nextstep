@@ -13,6 +13,7 @@ func New(
 	authHandler *handler.AuthHandler,
 	workspaceHandler *handler.WorkspaceHandler,
 	userHandler *handler.UserHandler,
+	dashboardHandler *handler.DashboardHandler,
 	jwtService *service.JWTService,
 	blacklistRepo *repository.TokenBlacklistRepository,
 	allowedOrigins []string,
@@ -39,6 +40,15 @@ func New(
 		protected.PUT("/workspaces/:id", workspaceHandler.Update)
 		protected.GET("/workspaces/:id/members", workspaceHandler.ListMembers)
 		protected.POST("/workspaces/:id/invite", workspaceHandler.Invite)
+		protected.GET("/workspaces/:id/primary-goal", dashboardHandler.GetPrimaryGoal)
+		protected.GET("/workspaces/:id/metrics", dashboardHandler.GetMetrics)
+		protected.GET("/workspaces/:id/tasks", dashboardHandler.GetTasks)
+		protected.POST("/workspaces/:id/tasks", dashboardHandler.CreateTask)
+		protected.PATCH("/workspaces/:id/tasks/:taskId", dashboardHandler.UpdateTask)
+		protected.PATCH("/workspaces/:id/tasks/:taskId/toggle", dashboardHandler.ToggleTask)
+		protected.GET("/workspaces/:id/projects", dashboardHandler.GetProjects)
+		protected.GET("/workspaces/:id/goals", dashboardHandler.GetGoals)
+		protected.GET("/workspaces/:id/applications", dashboardHandler.GetApplications)
 		protected.GET("/me", userHandler.Me)
 	}
 

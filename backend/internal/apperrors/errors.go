@@ -15,4 +15,6 @@ var (
 	ErrForbidden              = errors.New("forbidden")
 	ErrNotMember              = errors.New("not a workspace member")
 	ErrAlreadyInvited         = errors.New("email already invited")
+	ErrNotFound               = errors.New("resource not found")
+	ErrInvalidPriority        = errors.New("invalid priority")
 )

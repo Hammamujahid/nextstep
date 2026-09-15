@@ -10,41 +10,50 @@ export type QuickTaskInput = {
   due: string;
   dueToday: boolean;
   project: string | null;
+  projectId: number | null;
 };
 
 type QuickAddModalProps = {
   open: boolean;
   onClose: () => void;
   onSave: (input: QuickTaskInput) => void;
+  projects?: { id: number; name: string }[];
 };
 
 const PRIORITIES: TaskPriority[] = ["High", "Medium", "Normal"];
 const DUE_OPTIONS = ["Today", "Tomorrow", "This Week", "Next Week"];
-const PROJECT_OPTIONS = [
-  "Become a Fullstack Developer (Primary Goal)",
-  "DevFolio v2",
-  "PulseAPI Engine",
-];
 
 export default function QuickAddModal({
   open,
   onClose,
   onSave,
+  projects,
 }: QuickAddModalProps) {
+  const projectOptions = projects && projects.length > 0
+    ? ["No Project", ...projects.map((p) => p.name)]
+    : ["No Project"];
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("Medium");
   const [due, setDue] = useState(DUE_OPTIONS[1]);
-  const [project, setProject] = useState(PROJECT_OPTIONS[0]);
+  const [project, setProject] = useState(projectOptions[0]);
   const [saving, setSaving] = useState(false);
+
+  // sync project default when options change or modal opens
+  useEffect(() => {
+    if (open && !projectOptions.includes(project)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProject(projectOptions[0]);
+    }
+  }, [open, projectOptions, project]);
 
   const close = useCallback(() => {
     setTitle("");
     setPriority("Medium");
     setDue(DUE_OPTIONS[1]);
-    setProject(PROJECT_OPTIONS[0]);
+    setProject(projectOptions[0]);
     setSaving(false);
     onClose();
-  }, [onClose]);
+  }, [onClose, projectOptions]);
 
   useEffect(() => {
     if (!open) return;
@@ -60,12 +69,14 @@ export default function QuickAddModal({
   function handleSave() {
     if (!title.trim()) return;
     setSaving(true);
+    const selected = projects?.find((p) => p.name === project);
     onSave({
       title: title.trim(),
       priority,
       due: due === "Today" ? "Due Today" : due,
       dueToday: due === "Today",
-      project: project.startsWith("Become a") ? "Goal: Fullstack Dev" : project,
+      project: project === "No Project" ? null : project,
+      projectId: selected?.id ?? null,
     });
     close();
   }
@@ -176,8 +187,10 @@ export default function QuickAddModal({
             onChange={(e) => setProject(e.target.value)}
             className={selectCls}
           >
-            {PROJECT_OPTIONS.map((p) => (
-              <option key={p}>{p}</option>
+            {projectOptions.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
             ))}
           </select>
         </div>

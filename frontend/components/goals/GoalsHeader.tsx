@@ -24,7 +24,7 @@ export default function GoalsHeader({
           </span>
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          Career Goals and Milestones
+          Career Goals
         </h1>
       </div>
       <div className="flex items-center gap-2 self-start md:self-auto">

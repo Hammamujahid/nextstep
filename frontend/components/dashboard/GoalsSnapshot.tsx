@@ -1,9 +1,31 @@
 "use client";
 
 import { Target } from "lucide-react";
-import { SKILL_TRACKS } from "../../lib/dashboard";
+import type { SkillTrack } from "../../lib/dashboard";
 
-export default function GoalsSnapshot() {
+const GOAL_STATUS_RANK: Record<SkillTrack["status"], number> = {
+  completed: 4,
+  in_progress: 3,
+  not_started: 2,
+  archived: 1,
+};
+
+function sortGoalsSnapshot(a: SkillTrack, b: SkillTrack): number {
+  const ra = GOAL_STATUS_RANK[a.status];
+  const rb = GOAL_STATUS_RANK[b.status];
+  if (ra !== rb) return rb - ra;
+  if (a.completedTasks !== b.completedTasks) return b.completedTasks - a.completedTasks;
+  return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+}
+
+type GoalsSnapshotProps = {
+  tracks?: SkillTrack[];
+};
+
+export default function GoalsSnapshot({ tracks = [] }: GoalsSnapshotProps) {
+  const source = tracks ?? [];
+  const sortedTracks = [...source].sort(sortGoalsSnapshot);
+
   return (
     <section aria-label="Career goals snapshot">
       <div className="flex items-center gap-2">
@@ -12,8 +34,13 @@ export default function GoalsSnapshot() {
           Goals Snapshot
         </h2>
       </div>
-      <div className="mt-3 space-y-3">
-        {SKILL_TRACKS.map((track) => (
+      {sortedTracks.length === 0 ? (
+        <p className="mt-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
+          No goals yet. Set a goal to see your snapshot here.
+        </p>
+      ) : (
+        <div className="mt-3 space-y-3">
+          {sortedTracks.map((track) => (
           <div
             key={track.id}
             className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md"
@@ -34,8 +61,9 @@ export default function GoalsSnapshot() {
               </span>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

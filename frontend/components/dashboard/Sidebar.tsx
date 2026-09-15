@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   Briefcase,
@@ -17,14 +19,13 @@ import {
 } from "lucide-react";
 import Logo from "../Logo";
 import type { Workspace } from "../../lib/workspaces";
+import {
+  NAV_HREF,
+  viewFromPath,
+  type NavKey,
+} from "../../lib/dashboardRoutes";
 
-export type NavKey =
-  | "dashboard"
-  | "goals"
-  | "tasks"
-  | "projects"
-  | "applications"
-  | "members";
+export type { NavKey };
 
 export const NAV_ITEMS: { key: NavKey; label: string; icon: typeof Target }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -41,8 +42,6 @@ type SidebarProps = {
   onSelectWorkspace: (id: number) => void;
   onCreateWorkspace: () => void;
   onWorkspaceSettings: () => void;
-  activeNav: string;
-  onNavChange: (nav: NavKey) => void;
   onInvite: () => void;
   mobileOpen: boolean;
   onCloseMobile: () => void;
@@ -58,12 +57,12 @@ export default function Sidebar({
   onSelectWorkspace,
   onCreateWorkspace,
   onWorkspaceSettings,
-  activeNav,
-  onNavChange,
   onInvite,
   mobileOpen,
   onCloseMobile,
 }: SidebarProps) {
+  const pathname = usePathname();
+  const activeNav = viewFromPath(pathname);
   const [dropOpen, setDropOpen] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
@@ -84,11 +83,6 @@ export default function Sidebar({
       document.removeEventListener("keydown", onKey);
     };
   }, [dropOpen]);
-
-  function handleNav(nav: NavKey) {
-    onNavChange(nav);
-    onCloseMobile();
-  }
 
   const body = (
     <div className="flex h-full flex-col">
@@ -229,8 +223,9 @@ export default function Sidebar({
             const active = item.key === activeNav;
             return (
               <li key={item.key}>
-                <button
-                  onClick={() => handleNav(item.key)}
+                <Link
+                  href={NAV_HREF[item.key]}
+                  onClick={onCloseMobile}
                   className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition ${
                     active
                       ? "bg-sky-100 text-sky-700"
@@ -245,7 +240,7 @@ export default function Sidebar({
                   {active && (
                     <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sky-500" />
                   )}
-                </button>
+                </Link>
               </li>
             );
           })}

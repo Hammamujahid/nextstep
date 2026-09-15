@@ -2,9 +2,28 @@
 
 import Link from "next/link";
 import { ChevronRight, Layers, Terminal, Workflow } from "lucide-react";
-import { DASHBOARD_PROJECTS } from "../../lib/dashboard";
+import type { DashboardProject, DashboardTask } from "../../lib/dashboard";
 
-export default function ProjectsPanel() {
+type ProjectsPanelProps = {
+  tasks?: DashboardTask[];
+  projects?: DashboardProject[];
+};
+
+const PROJECT_STATUS_RANK: Record<DashboardProject["status"], number> = {
+  completed: 4,
+  in_progress: 3,
+  not_started: 2,
+  archived: 1,
+};
+
+export default function ProjectsPanel({ tasks = [], projects = [] }: ProjectsPanelProps) {
+  const raw = projects ?? [];
+  const list = [...raw].sort((a, b) => {
+    const ra = PROJECT_STATUS_RANK[a.status];
+    const rb = PROJECT_STATUS_RANK[b.status];
+    if (ra !== rb) return rb - ra;
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  });
   return (
     <section aria-label="Active projects">
       <div className="flex items-center justify-between">
@@ -15,18 +34,27 @@ export default function ProjectsPanel() {
           </h2>
         </div>
         <Link
-          href="#"
-          onClick={(e) => e.preventDefault()}
+          href="/dashboard/projects"
           className="group flex items-center text-[13px] font-semibold text-sky-600 hover:text-sky-700"
         >
-          All Projects (4)
+          All Projects ({list.length})
           <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
         </Link>
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {DASHBOARD_PROJECTS.map((p, i) => {
-          const pct = Math.round((p.tasksDone / p.tasksTotal) * 100);
+      {list.length === 0 ? (
+        <p className="mt-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
+          No projects yet. Create your first project to get started.
+        </p>
+      ) : (
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {list.map((p, i) => {
+          const related = tasks.filter((t) => t.projectId === p.id);
+          const tasksDone = related.filter((t) => t.isCompleted ?? t.done).length;
+          const tasksTotal = related.length > 0 ? related.length : p.tasksTotal;
+          const done = related.length > 0 ? tasksDone : p.tasksDone;
+          const total = tasksTotal;
+          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
           return (
             <div
               key={p.id}
@@ -67,7 +95,7 @@ export default function ProjectsPanel() {
               <div className="mt-4">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-500">
-                    {p.tasksDone} / {p.tasksTotal} Tasks
+                    {done} / {total} Tasks
                   </span>
                   <span
                     className={`font-bold ${i === 0 ? "text-sky-600" : "text-emerald-600"}`}
@@ -87,9 +115,10 @@ export default function ProjectsPanel() {
                 </div>
               </div>
             </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CalendarClock, Check, ListChecks, Plus } from "lucide-react";
-import type { DashboardTask, TaskPriority } from "../../lib/dashboard";
+import { PRIORITY_ORDER, type DashboardTask, type TaskPriority } from "../../lib/dashboard";
 
 type TaskFilter = "all" | "high" | "today";
 
@@ -24,15 +24,31 @@ const FILTERS: { key: TaskFilter; label: (n: number) => string }[] = [
   { key: "today", label: (n) => `Due Today (${n})` },
 ];
 
+function sortByPriorityAndDue(a: DashboardTask, b: DashboardTask): number {
+  const ra = PRIORITY_ORDER[a.priority] ?? 99;
+  const rb = PRIORITY_ORDER[b.priority] ?? 99;
+  if (ra !== rb) return ra - rb;
+  // due_date terdekat dulu, NULL di akhir
+  const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+  const db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+  if (da !== db) return da - db;
+  const ua = new Date(a.updatedAt).getTime();
+  const ub = new Date(b.updatedAt).getTime();
+  return ub - ua;
+}
+
 export default function NextSteps({ tasks, onToggle, onAdd }: NextStepsProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
-  const openTasks = tasks.filter((t) => !t.done);
+  const isPending = (t: DashboardTask) => !(t.isCompleted ?? t.done);
+  const openTasks = tasks.filter(isPending);
 
-  const visible = tasks.filter((t) => {
+  const filtered = openTasks.filter((t) => {
     if (filter === "high") return t.priority === "High";
     if (filter === "today") return t.dueToday;
     return true;
   });
+
+  const visible = filtered.sort(sortByPriorityAndDue).slice(0, 4);
 
   const countFor = (f: TaskFilter) =>
     f === "all"
@@ -81,6 +97,7 @@ function TaskList({
   onToggle: (id: number) => void;
   onAdd: () => void;
 }) {
+  const getDone = (t: DashboardTask) => t.isCompleted ?? t.done;
   return (
     <div className="mt-3 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       {tasks.length === 0 && (
@@ -88,64 +105,65 @@ function TaskList({
           Nothing here. Enjoy the clear sky.
         </p>
       )}
-      {tasks.map((task) => (
-        <div
-          key={task.id}
-          data-priority={task.priority}
-          data-due-today={task.dueToday ? "true" : "false"}
-          data-done={task.done ? "true" : "false"}
-          className="task-row flex items-start gap-3 p-4 transition hover:bg-slate-50/70"
-        >
-          <button
-            onClick={() => onToggle(task.id)}
-            aria-pressed={task.done}
-            aria-label={task.done ? "Mark as not done" : "Mark as done"}
-            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
-              task.done
-                ? "border-sky-400 bg-sky-400 text-white"
-                : "border-slate-300 bg-white text-transparent hover:border-sky-400"
-            }`}
+      {tasks.map((task) => {
+        const done = getDone(task);
+        return (
+          <div
+            key={task.id}
+            data-priority={task.priority}
+            data-due-today={task.dueToday ? "true" : "false"}
+            data-done={done ? "true" : "false"}
+            className="task-row flex items-start gap-3 p-4 transition hover:bg-slate-50/70"
           >
-            <Check className="h-3.5 w-3.5" strokeWidth={3} />
-          </button>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span
-                className={`text-sm font-semibold ${
-                  task.done
-                    ? "text-slate-400 line-through"
-                    : "text-slate-900"
-                }`}
-              >
-                {task.title}
-              </span>
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${PRIORITY_STYLES[task.priority]}`}
-              >
-                {task.priority === "Normal" ? "Normal" : `${task.priority} Priority`}
-              </span>
-            </div>
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
-              <span
-                className={`flex items-center gap-1 font-medium ${
-                  task.dueToday && !task.done ? "text-red-600" : ""
-                }`}
-              >
-                <CalendarClock className="h-3.5 w-3.5" />
-                {task.due}
-              </span>
-              {task.project && (
-                <>
-                  <span aria-hidden="true">•</span>
-                  <span className="font-medium text-sky-600">
-                    {task.project}
-                  </span>
-                </>
-              )}
+            <button
+              onClick={() => onToggle(task.id)}
+              aria-pressed={done}
+              aria-label={done ? "Mark as not done" : "Mark as done"}
+              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
+                done
+                  ? "border-sky-400 bg-sky-400 text-white"
+                  : "border-slate-300 bg-white text-transparent hover:border-sky-400"
+              }`}
+            >
+              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span
+                  className={`text-sm font-semibold ${
+                    done ? "text-slate-400 line-through" : "text-slate-900"
+                  }`}
+                >
+                  {task.title}
+                </span>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${PRIORITY_STYLES[task.priority]}`}
+                >
+                  {task.priority === "Normal" ? "Normal" : `${task.priority} Priority`}
+                </span>
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                <span
+                  className={`flex items-center gap-1 font-medium ${
+                    task.dueToday && !done ? "text-red-600" : ""
+                  }`}
+                >
+                  <CalendarClock className="h-3.5 w-3.5" />
+                  {task.due}
+                </span>
+                {task.project && (
+                  <>
+                    <span aria-hidden="true">•</span>
+                    <span className="font-medium text-sky-600">
+                      {task.project}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <div className="bg-slate-50 p-2">
         <button
           onClick={onAdd}

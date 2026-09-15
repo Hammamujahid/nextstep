@@ -42,6 +42,22 @@ func main() {
 	workspaceService := service.NewWorkspaceService(
 		workspaceRepository,
 	)
+	goalRepository := repository.NewGoalRepository(db)
+	projectRepository := repository.NewProjectRepository(db)
+	taskRepository := repository.NewTaskRepository(db)
+	applicationRepository := repository.NewJobApplicationRepository(db)
+	dashboardService := service.NewDashboardService(
+		goalRepository,
+		projectRepository,
+		taskRepository,
+		applicationRepository,
+		workspaceRepository,
+	)
+	// file-by-table services
+	taskService := service.NewTaskService(taskRepository, workspaceRepository, projectRepository)
+	projectService := service.NewProjectService(projectRepository, workspaceRepository)
+	goalService := service.NewGoalService(goalRepository, workspaceRepository)
+	applicationService := service.NewApplicationService(applicationRepository, workspaceRepository)
 
 	authHandler := handler.NewAuthHandler(
 		authService,
@@ -52,11 +68,19 @@ func main() {
 	userHandler := handler.NewUserHandler(
 		userRepository,
 	)
+	dashboardHandler := handler.NewDashboardHandler(
+		dashboardService,
+		goalService,
+		projectService,
+		taskService,
+		applicationService,
+	)
 
 	r := router.New(
 		authHandler,
 		workspaceHandler,
 		userHandler,
+		dashboardHandler,
 		jwtService,
 		blacklistRepository,
 		[]string{cfg.FrontendURL, "http://localhost:3000"},

@@ -82,6 +82,8 @@ export default function GoalsView() {
         dateLabel: target.label,
         dateMonth: target.month,
         dateDay: target.day,
+        status: "not_started",
+        updatedAt: new Date().toISOString(),
         checklist: input.keyResult
           ? [{ id: 1, label: input.keyResult, done: false, locked: false }]
           : [],
@@ -92,12 +94,26 @@ export default function GoalsView() {
   }
 
   const visible = useMemo(() => {
+    const rank: Record<SupportingGoal["status"], number> = {
+      completed: 4,
+      in_progress: 3,
+      not_started: 2,
+      archived: 1,
+    };
     const filtered =
       trackFilter === "all"
         ? [...goals]
         : goals.filter((g) => g.badge === TRACK_BADGE[trackFilter]);
     if (sort === "progress") {
-      filtered.sort((a, b) => b.progress - a.progress);
+      filtered.sort((a, b) => {
+        const ra = rank[a.status];
+        const rb = rank[b.status];
+        if (ra !== rb) return rb - ra;
+        const ca = parseInt(a.tasksLabel.split("/")[0] || "0", 10);
+        const cb = parseInt(b.tasksLabel.split("/")[0] || "0", 10);
+        if (ca !== cb) return cb - ca;
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      });
     } else if (sort === "deadline") {
       filtered.sort(
         (a, b) => a.dateMonth * 100 + a.dateDay - (b.dateMonth * 100 + b.dateDay)
@@ -136,20 +152,12 @@ export default function GoalsView() {
       )}
       <GoalsStats />
       <NorthStarCard />
-      {visible.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <p className="text-sm text-slate-400">
-            No tracks match the current filter.
-          </p>
-        </div>
-      ) : (
-        <SupportingGoals
-          goals={visible}
-          sort={sort}
-          onSortChange={setSort}
-          onToggleChecklist={toggleChecklist}
-        />
-      )}
+      <SupportingGoals
+        goals={visible}
+        sort={sort}
+        onSortChange={setSort}
+        onToggleChecklist={toggleChecklist}
+      />
       {!snoozed && <RecommendationBanner onSnooze={() => setSnoozed(true)} />}
       <NewGoalModal
         open={modalOpen}
