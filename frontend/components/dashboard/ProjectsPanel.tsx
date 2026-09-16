@@ -50,7 +50,7 @@ export default function ProjectsPanel({ tasks = [], projects = [] }: ProjectsPan
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {list.map((p, i) => {
           const related = tasks.filter((t) => t.projectId === p.id);
-          const tasksDone = related.filter((t) => t.isCompleted ?? t.done).length;
+          const tasksDone = related.filter((t) => t.status === "completed").length;
           const tasksTotal = related.length > 0 ? related.length : p.tasksTotal;
           const done = related.length > 0 ? tasksDone : p.tasksDone;
           const total = tasksTotal;

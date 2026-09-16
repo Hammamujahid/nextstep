@@ -53,11 +53,13 @@ func main() {
 		applicationRepository,
 		workspaceRepository,
 	)
+	eventBus := service.NewEventBus()
 	// file-by-table services
-	taskService := service.NewTaskService(taskRepository, workspaceRepository, projectRepository)
+	taskService := service.NewTaskService(taskRepository, workspaceRepository, projectRepository, goalRepository, eventBus)
 	projectService := service.NewProjectService(projectRepository, workspaceRepository)
-	goalService := service.NewGoalService(goalRepository, workspaceRepository)
+	goalService := service.NewGoalService(goalRepository, workspaceRepository, eventBus)
 	applicationService := service.NewApplicationService(applicationRepository, workspaceRepository)
+	sseHandler := handler.NewSSEHandler(eventBus, workspaceRepository)
 
 	authHandler := handler.NewAuthHandler(
 		authService,
@@ -81,6 +83,7 @@ func main() {
 		workspaceHandler,
 		userHandler,
 		dashboardHandler,
+		sseHandler,
 		jwtService,
 		blacklistRepository,
 		[]string{cfg.FrontendURL, "http://localhost:3000"},

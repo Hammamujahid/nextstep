@@ -14,6 +14,7 @@ func New(
 	workspaceHandler *handler.WorkspaceHandler,
 	userHandler *handler.UserHandler,
 	dashboardHandler *handler.DashboardHandler,
+	sseHandler *handler.SSEHandler,
 	jwtService *service.JWTService,
 	blacklistRepo *repository.TokenBlacklistRepository,
 	allowedOrigins []string,
@@ -44,10 +45,13 @@ func New(
 		protected.GET("/workspaces/:id/metrics", dashboardHandler.GetMetrics)
 		protected.GET("/workspaces/:id/tasks", dashboardHandler.GetTasks)
 		protected.POST("/workspaces/:id/tasks", dashboardHandler.CreateTask)
-		protected.PATCH("/workspaces/:id/tasks/:taskId", dashboardHandler.UpdateTask)
 		protected.PATCH("/workspaces/:id/tasks/:taskId/toggle", dashboardHandler.ToggleTask)
 		protected.GET("/workspaces/:id/projects", dashboardHandler.GetProjects)
 		protected.GET("/workspaces/:id/goals", dashboardHandler.GetGoals)
+		protected.POST("/workspaces/:id/goals", dashboardHandler.CreateGoal)
+		protected.GET("/workspaces/:id/goals/:goalId/tasks", dashboardHandler.GetTasksForGoal)
+		protected.GET("/workspaces/:id/goals/:goalId/projects", dashboardHandler.GetProjectsForGoal)
+		protected.GET("/workspaces/:id/events", sseHandler.Handle)
 		protected.GET("/workspaces/:id/applications", dashboardHandler.GetApplications)
 		protected.GET("/me", userHandler.Me)
 	}

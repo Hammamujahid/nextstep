@@ -6,10 +6,10 @@ import { ChevronRight, Target } from "lucide-react";
 import { useDashboard } from "./DashboardProvider";
 import {
   fetchPrimaryGoal,
-  formatStageLabel,
   formatStatus,
   type PrimaryGoal,
 } from "../../lib/dashboardApi";
+import { connectWorkspaceEvents } from "../../lib/sse";
 
 export default function PrimaryGoalCard() {
   const { active } = useDashboard();
@@ -44,6 +44,22 @@ export default function PrimaryGoalCard() {
     return () => {
       cancelled = true;
     };
+  }, [active]);
+
+  // SSE realtime untuk progress bar
+  useEffect(() => {
+    if (!active) return;
+    const disconnect = connectWorkspaceEvents(active.id, (ev) => {
+      if (ev.type === "goal_progress" && ev.data) {
+        const updated = ev.data as PrimaryGoal;
+        setGoal((prev) => (prev && prev.id === (updated as any).id ? { ...prev, ...(updated as any) } : prev));
+      } else if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "goal_created") {
+        fetchPrimaryGoal(active.id)
+          .then((data) => setGoal(data))
+          .catch(() => {});
+      }
+    });
+    return () => disconnect();
   }, [active]);
 
   if (loading) {
@@ -92,7 +108,6 @@ export default function PrimaryGoalCard() {
     goal.total_requirements > 0
       ? `${goal.completed_requirements}/${goal.total_requirements} requirements met`
       : "No linked projects or tasks";
-  const stageLabel = formatStageLabel(goal.progress);
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-500 hover:shadow-[0_16px_40px_-16px_rgba(2,132,199,0.3)] sm:p-6">
@@ -136,9 +151,8 @@ export default function PrimaryGoalCard() {
               style={{ width: `${goal.progress}%` }}
             />
           </div>
-          <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500">
+          <div className="mt-2.5 text-xs text-slate-500">
             <span>{requirementsLabel}</span>
-            <span className="font-medium">{stageLabel}</span>
           </div>
           <div className="mt-2 flex justify-end">
             <Link

@@ -19,25 +19,34 @@ func AuthMiddleware(
 	blacklistRepo *repository.TokenBlacklistRepository,
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// SSE (EventSource) tidak bisa kirim header, jadi dukung ?token= untuk GET /events
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Authorization header is required",
-			})
-			c.Abort()
-			return
+		tokenString := ""
+		if authHeader != "" {
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"message": "Authorization header format must be Bearer {token}",
+				})
+				c.Abort()
+				return
+			}
+			tokenString = parts[1]
+		} else {
+			// fallback untuk SSE
+			q := c.Query("token")
+			if q == "" {
+				q = c.Query("access_token")
+			}
+			if q == "" {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"message": "Authorization header is required",
+				})
+				c.Abort()
+				return
+			}
+			tokenString = q
 		}
-
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Authorization header format must be Bearer {token}",
-			})
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
 		token, err := jwtService.ValidateToken(tokenString)
 		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{

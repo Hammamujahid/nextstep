@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useDashboard } from "./DashboardProvider";
 import { fetchMetrics, type DashboardMetrics } from "../../lib/dashboardApi";
+import { connectWorkspaceEvents } from "../../lib/sse";
 
 export default function MetricsGrid() {
   const { active } = useDashboard();
@@ -38,6 +39,19 @@ export default function MetricsGrid() {
     return () => {
       cancelled = true;
     };
+  }, [active]);
+
+  // SSE realtime untuk metrics & progress
+  useEffect(() => {
+    if (!active) return;
+    const disconnect = connectWorkspaceEvents(active.id, (ev) => {
+      if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "goal_progress" || ev.type === "goal_created") {
+        fetchMetrics(active.id)
+          .then((data) => setMetrics(data))
+          .catch(() => {});
+      }
+    });
+    return () => disconnect();
   }, [active]);
 
   if (loading) {

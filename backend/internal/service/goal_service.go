@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 
+	"backend/internal/apperrors"
 	"backend/internal/model"
 	"backend/internal/repository"
 )
@@ -12,16 +14,22 @@ import (
 type GoalService struct {
 	goalRepository      *repository.GoalRepository
 	workspaceRepository *repository.WorkspaceRepository
+	eventBus            *EventBus
 }
 
 func NewGoalService(
 	goalRepository *repository.GoalRepository,
 	workspaceRepository *repository.WorkspaceRepository,
+	eventBus ...*EventBus,
 ) *GoalService {
-	return &GoalService{
+	gs := &GoalService{
 		goalRepository:      goalRepository,
 		workspaceRepository: workspaceRepository,
 	}
+	if len(eventBus) > 0 {
+		gs.eventBus = eventBus[0]
+	}
+	return gs
 }
 
 func (s *GoalService) GetPrimaryGoal(
@@ -115,13 +123,66 @@ func (s *GoalService) GetGoals(
 	return goals, nil
 }
 
-func (s *GoalService) GetStats(
+func (s *GoalService) GetTasksForGoal(
 	ctx context.Context,
 	workspaceID int,
+	goalID int,
 	userID int,
-) (*model.GoalStats, error) {
+) ([]*model.Task, error) {
 	if _, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID); err != nil {
 		return nil, err
 	}
-	return s.goalRepository.GetStats(ctx, workspaceID)
+	if _, err := s.goalRepository.FindByIDAndWorkspace(ctx, goalID, workspaceID); err != nil {
+		return nil, apperrors.ErrNotFound
+	}
+	return s.goalRepository.ListTasksByGoal(ctx, goalID, workspaceID)
+}
+
+func (s *GoalService) GetProjectsForGoal(
+	ctx context.Context,
+	workspaceID int,
+	goalID int,
+	userID int,
+) ([]*model.Project, error) {
+	if _, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID); err != nil {
+		return nil, err
+	}
+	if _, err := s.goalRepository.FindByIDAndWorkspace(ctx, goalID, workspaceID); err != nil {
+		return nil, apperrors.ErrNotFound
+	}
+	return s.goalRepository.ListProjectsByGoal(ctx, goalID, workspaceID)
+}
+
+func (s *GoalService) CreateGoal(
+	ctx context.Context,
+	workspaceID int,
+	userID int,
+	req model.CreateGoalRequest,
+) (*model.Goal, error) {
+	if _, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID); err != nil {
+		return nil, err
+	}
+	status := req.Status
+	if status == "" {
+		status = "not_started"
+	}
+	goal := &model.Goal{
+		WorkspaceId: workspaceID,
+		Title:       req.Title,
+		Description: req.Description,
+		Status:      status,
+	}
+	created, err := s.goalRepository.Create(ctx, goal)
+	if err != nil {
+		return nil, err
+	}
+	if s.eventBus != nil {
+		if b, err := json.Marshal(map[string]interface{}{"type": "goal_created", "data": created}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+		if b, err := json.Marshal(map[string]interface{}{"type": "goals_refresh", "workspace_id": workspaceID}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+	}
+	return created, nil
 }

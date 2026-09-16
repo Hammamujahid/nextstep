@@ -36,16 +36,15 @@ type ProjectStats struct {
 }
 
 type TaskStats struct {
-	Total       int `json:"total"`
-	Completed   int `json:"completed"`
-	Pending     int `json:"pending"`
-	HighPriority int `json:"high_priority"`
+	Total          int `json:"total"`
+	NotStarted     int `json:"not_started"`
+	InProgress     int `json:"in_progress"`
+	Completed      int `json:"completed"`
+	Archived       int `json:"archived"`
+	Pending        int `json:"pending"`
+	HighPriority   int `json:"high_priority"`
 	MediumPriority int `json:"medium_priority"`
-	LowPriority int `json:"low_priority"`
-	// deprecated, kept for backward compatibility (always 0 / mapped to pending)
-	NotStarted int `json:"not_started"`
-	InProgress int `json:"in_progress"`
-	Archived   int `json:"archived"`
+	LowPriority    int `json:"low_priority"`
 }
 
 type ApplicationStats struct {

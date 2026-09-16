@@ -25,6 +25,10 @@ const FILTERS: { key: TaskFilter; label: (n: number) => string }[] = [
 ];
 
 function sortByPriorityAndDue(a: DashboardTask, b: DashboardTask): number {
+  // pending dulu, completed di bawah tapi tetap tampil dengan coret
+  const aDone = a.status === "completed" ? 1 : 0;
+  const bDone = b.status === "completed" ? 1 : 0;
+  if (aDone !== bDone) return aDone - bDone;
   const ra = PRIORITY_ORDER[a.priority] ?? 99;
   const rb = PRIORITY_ORDER[b.priority] ?? 99;
   if (ra !== rb) return ra - rb;
@@ -39,10 +43,11 @@ function sortByPriorityAndDue(a: DashboardTask, b: DashboardTask): number {
 
 export default function NextSteps({ tasks, onToggle, onAdd }: NextStepsProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
-  const isPending = (t: DashboardTask) => !(t.isCompleted ?? t.done);
+  const isPending = (t: DashboardTask) => t.status !== "completed";
   const openTasks = tasks.filter(isPending);
 
-  const filtered = openTasks.filter((t) => {
+  // completed tetap masuk jika lolos filter — tampil coret + checkbox tercentang tapi tetap bisa di-toggle balik
+  const filtered = tasks.filter((t) => {
     if (filter === "high") return t.priority === "High";
     if (filter === "today") return t.dueToday;
     return true;
@@ -97,7 +102,7 @@ function TaskList({
   onToggle: (id: number) => void;
   onAdd: () => void;
 }) {
-  const getDone = (t: DashboardTask) => t.isCompleted ?? t.done;
+  const getDone = (t: DashboardTask) => t.status === "completed";
   return (
     <div className="mt-3 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       {tasks.length === 0 && (

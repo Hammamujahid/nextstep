@@ -135,7 +135,7 @@ export type ApiTask = {
   title: string;
   description: string | null;
   priority: "high" | "medium" | "low";
-  is_completed: boolean;
+  status: "not_started" | "in_progress" | "completed";
   due_date: string | null;
   created_at: string;
   updated_at: string;
@@ -170,15 +170,33 @@ export function fetchProjects(workspaceId: number) {
 export function fetchGoals(workspaceId: number) {
   return authGet<PrimaryGoal[]>(`/workspaces/${workspaceId}/goals`);
 }
+export function fetchGoalTasks(workspaceId: number, goalId: number) {
+  return authGet<ApiTask[]>(`/workspaces/${workspaceId}/goals/${goalId}/tasks`);
+}
+export function fetchGoalProjects(workspaceId: number, goalId: number) {
+  return authGet<ApiProject[]>(`/workspaces/${workspaceId}/goals/${goalId}/projects`);
+}
 export function fetchApplications(workspaceId: number) {
   return authGet<ApiApplication[]>(`/workspaces/${workspaceId}/applications`);
+}
+
+export type CreateGoalPayload = {
+  title: string;
+  description?: string | null;
+  status?: string;
+};
+
+export function createGoal(workspaceId: number, payload: CreateGoalPayload) {
+  return authMutate<PrimaryGoal>(`/workspaces/${workspaceId}/goals`, "POST", payload);
 }
 
 export type CreateTaskPayload = {
   title: string;
   priority: "high" | "medium" | "low";
+  status?: "not_started" | "in_progress" | "completed";
   due_date?: string | null;
   project_id?: number | null;
+  goal_id?: number | null;
   description?: string | null;
 };
 
@@ -188,10 +206,6 @@ export function createTask(workspaceId: number, payload: CreateTaskPayload) {
 
 export function toggleTaskApi(workspaceId: number, taskId: number) {
   return authMutate<ApiTask>(`/workspaces/${workspaceId}/tasks/${taskId}/toggle`, "PATCH");
-}
-
-export function updateTask(workspaceId: number, taskId: number, payload: Partial<CreateTaskPayload> & { is_completed?: boolean }) {
-  return authMutate<ApiTask>(`/workspaces/${workspaceId}/tasks/${taskId}`, "PATCH", payload);
 }
 
 export function formatStageLabel(progress: number): string {

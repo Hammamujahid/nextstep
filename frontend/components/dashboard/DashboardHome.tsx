@@ -28,9 +28,11 @@ import {
   toggleTaskApi,
   type CreateTaskPayload,
 } from "../../lib/dashboardApi";
+import { connectWorkspaceEvents } from "../../lib/sse";
 
 function mapApiTask(t: import("../../lib/dashboardApi").ApiTask, projectName: string | null): DashboardTask {
-  const isCompleted = t.is_completed;
+  const status = t.status as DashboardTask["status"];
+  const isCompleted = status === "completed";
   const dueDate = t.due_date ? new Date(t.due_date) : null;
   const dueToday = dueDate
     ? new Date().toDateString() === dueDate.toDateString()
@@ -43,6 +45,7 @@ function mapApiTask(t: import("../../lib/dashboardApi").ApiTask, projectName: st
     id: t.id,
     title: t.title,
     priority: toFrontendPriority(t.priority),
+    status,
     due: dueLabel,
     dueToday,
     dueDate: t.due_date,
@@ -150,17 +153,67 @@ export default function DashboardHome() {
     };
   }, [active]);
 
+  // SSE realtime untuk progress bar (goal) dan NextSteps
+  useEffect(() => {
+    if (!active) return;
+    console.log("[DashboardHome] SSE subscribe", active.id);
+    const disconnect = connectWorkspaceEvents(active.id, (ev) => {
+      console.log("[DashboardHome SSE event]", ev);
+      if (ev.type === "goals_refresh" || ev.type === "goal_progress" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "goal_created") {
+        // update skillTracks (GoalsSnapshot) via fetchGoals
+        fetchGoals(active.id)
+          .then((data) => {
+            if (data) {
+              const mappedTracks: SkillTrack[] = data.map((g) => ({
+                id: g.id,
+                title: g.title,
+                detail: g.description ?? "",
+                progress: g.progress,
+                status: g.status as SkillTrack["status"],
+                completedTasks: g.completed_tasks,
+                totalTasks: g.total_tasks,
+                updatedAt: g.updated_at,
+              }));
+              setSkillTracks(mappedTracks);
+            }
+          })
+          .catch(() => {});
+        // update tasks (NextSteps) via fetch
+        fetchTasks(active.id)
+          .then((apiTasks) => {
+            if (!apiTasks) return;
+            // fetch projects untuk mapping nama
+            fetchProjects(active.id)
+              .then((apiProjects) => {
+                const projMap = new Map((apiProjects ?? []).map((p) => [p.id, p.project_name]));
+                const mapped: DashboardTask[] = apiTasks.map((t) =>
+                  mapApiTask(t, t.project_id ? (projMap.get(t.project_id) ?? null) : null)
+                );
+                setTasks(mapped);
+              })
+              .catch(() => {
+                const mapped: DashboardTask[] = apiTasks.map((t) => mapApiTask(t, null));
+                setTasks(mapped);
+              });
+          })
+          .catch(() => {});
+      }
+    });
+    return () => disconnect();
+  }, [active]);
+
   async function toggleTask(id: number) {
     if (!active) return;
     const prevTasks = tasks;
     const target = tasks.find((t) => t.id === id);
     if (!target) return;
-    const nextDone = !target.isCompleted;
+    const nextStatus: DashboardTask["status"] = target.status === "completed" ? "not_started" : "completed";
+    const nextDone = nextStatus === "completed";
     const now = new Date().toISOString();
     // optimistic update
     setTasks((prev) =>
       prev.map((t) =>
-        t.id !== id ? t : { ...t, done: nextDone, isCompleted: nextDone, updatedAt: now }
+        t.id !== id ? t : { ...t, status: nextStatus, done: nextDone, isCompleted: nextDone, updatedAt: now }
       )
     );
     try {
@@ -207,11 +260,23 @@ export default function DashboardHome() {
         projectName = found.name;
       }
     }
+    // resolve goalId: prefer direct goalId from modal
+    let goalId: number | null = input.goalId ?? null;
+    let goalName: string | null = input.goal ?? null;
+    if (goalId === null && input.goal && skillTracks && skillTracks.length > 0) {
+      const foundGoal = skillTracks.find((g) => g.title === input.goal);
+      if (foundGoal) {
+        goalId = foundGoal.id;
+        goalName = foundGoal.title;
+      }
+    }
     const payload: CreateTaskPayload = {
       title: input.title,
       priority: backendPriority,
+      status: "not_started",
       due_date: dueDateISO,
       project_id: projectId,
+      goal_id: goalId,
     };
     try {
       const created = await createTask(active.id, payload);
@@ -225,6 +290,7 @@ export default function DashboardHome() {
         id: Date.now(),
         title: input.title,
         priority: input.priority,
+        status: "not_started",
         due: input.due,
         dueToday: input.dueToday,
         dueDate: dueDateISO,
@@ -277,6 +343,7 @@ export default function DashboardHome() {
         onClose={() => setQuickAddOpen(false)}
         onSave={addTask}
         projects={projects ?? []}
+        goals={(skillTracks ?? []).map((g) => ({ id: g.id, name: g.title }))}
       />
     </div>
   );

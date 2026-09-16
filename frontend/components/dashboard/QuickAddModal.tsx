@@ -9,6 +9,8 @@ export type QuickTaskInput = {
   priority: TaskPriority;
   due: string;
   dueToday: boolean;
+  goal: string | null;
+  goalId: number | null;
   project: string | null;
   projectId: number | null;
 };
@@ -18,6 +20,7 @@ type QuickAddModalProps = {
   onClose: () => void;
   onSave: (input: QuickTaskInput) => void;
   projects?: { id: number; name: string }[];
+  goals?: { id: number; name: string }[];
 };
 
 const PRIORITIES: TaskPriority[] = ["High", "Medium", "Normal"];
@@ -28,32 +31,44 @@ export default function QuickAddModal({
   onClose,
   onSave,
   projects,
+  goals,
 }: QuickAddModalProps) {
   const projectOptions = projects && projects.length > 0
     ? ["No Project", ...projects.map((p) => p.name)]
     : ["No Project"];
+  const goalOptions = goals && goals.length > 0
+    ? ["No Goal", ...goals.map((g) => g.name)]
+    : ["No Goal"];
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("Medium");
   const [due, setDue] = useState(DUE_OPTIONS[1]);
   const [project, setProject] = useState(projectOptions[0]);
+  const [goal, setGoal] = useState(goalOptions[0]);
   const [saving, setSaving] = useState(false);
 
-  // sync project default when options change or modal opens
+  // sync defaults when options change or modal opens
   useEffect(() => {
-    if (open && !projectOptions.includes(project)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setProject(projectOptions[0]);
+    if (open) {
+      if (!projectOptions.includes(project)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setProject(projectOptions[0]);
+      }
+      if (!goalOptions.includes(goal)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setGoal(goalOptions[0]);
+      }
     }
-  }, [open, projectOptions, project]);
+  }, [open, projectOptions, goalOptions, project, goal]);
 
   const close = useCallback(() => {
     setTitle("");
     setPriority("Medium");
     setDue(DUE_OPTIONS[1]);
     setProject(projectOptions[0]);
+    setGoal(goalOptions[0]);
     setSaving(false);
     onClose();
-  }, [onClose, projectOptions]);
+  }, [onClose, projectOptions, goalOptions]);
 
   useEffect(() => {
     if (!open) return;
@@ -69,14 +84,17 @@ export default function QuickAddModal({
   function handleSave() {
     if (!title.trim()) return;
     setSaving(true);
-    const selected = projects?.find((p) => p.name === project);
+    const selectedProject = projects?.find((p) => p.name === project);
+    const selectedGoal = goals?.find((g) => g.name === goal);
     onSave({
       title: title.trim(),
       priority,
       due: due === "Today" ? "Due Today" : due,
       dueToday: due === "Today",
+      goal: goal === "No Goal" ? null : goal,
+      goalId: selectedGoal?.id ?? null,
       project: project === "No Project" ? null : project,
-      projectId: selected?.id ?? null,
+      projectId: selectedProject?.id ?? null,
     });
     close();
   }
@@ -174,25 +192,47 @@ export default function QuickAddModal({
           </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="quick-task-project"
-            className="mb-1.5 block text-[13px] font-semibold text-slate-700"
-          >
-            Associated Goal / Project
-          </label>
-          <select
-            id="quick-task-project"
-            value={project}
-            onChange={(e) => setProject(e.target.value)}
-            className={selectCls}
-          >
-            {projectOptions.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label
+              htmlFor="quick-task-goal"
+              className="mb-1.5 block text-[13px] font-semibold text-slate-700"
+            >
+              Goal
+            </label>
+            <select
+              id="quick-task-goal"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              className={selectCls}
+            >
+              {goalOptions.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="quick-task-project"
+              className="mb-1.5 block text-[13px] font-semibold text-slate-700"
+            >
+              Project
+            </label>
+            <select
+              id="quick-task-project"
+              value={project}
+              onChange={(e) => setProject(e.target.value)}
+              className={selectCls}
+            >
+              {projectOptions.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-1">
