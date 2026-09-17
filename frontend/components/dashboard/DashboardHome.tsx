@@ -38,8 +38,9 @@ function mapApiTask(t: import("../../lib/dashboardApi").ApiTask, projectName: st
     ? new Date().toDateString() === dueDate.toDateString()
     : false;
   let dueLabel = "No due date";
-  if (t.due_date) {
-    dueLabel = dueToday ? "Due Today" : new Date(t.due_date).toLocaleDateString();
+  if (t.due_date && dueDate) {
+    const time = dueDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    dueLabel = dueToday ? `Due Today, ${time}` : `${dueDate.toLocaleDateString()}, ${time}`;
   }
   return {
     id: t.id,
@@ -68,17 +69,17 @@ export default function DashboardHome() {
   const [applications, setApplications] = useState<DashboardApplication[] | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
 
+  const activeId = active?.id;
+
   useEffect(() => {
-    if (!active) return;
+    if (!activeId) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTasksLoading(true);
     // fetch tasks + projects + goals + applications in parallel - real data, no dummy fallback
     Promise.all([
-      fetchTasks(active.id).catch(() => null),
-      fetchProjects(active.id).catch(() => null),
-      fetchGoals(active.id).catch(() => null),
-      fetchApplications(active.id).catch(() => null),
+      fetchTasks(activeId).catch(() => null),
+      fetchProjects(activeId).catch(() => null),
+      fetchGoals(activeId).catch(() => null),
+      fetchApplications(activeId).catch(() => null),
     ]).then(([apiTasks, apiProjects, apiGoals, apiApps]) => {
       if (cancelled) return;
       // tasks: always replace with real data (even empty), no dummy
@@ -151,17 +152,17 @@ export default function DashboardHome() {
     return () => {
       cancelled = true;
     };
-  }, [active]);
+  }, [activeId]);
 
   // SSE realtime untuk progress bar (goal) dan NextSteps
   useEffect(() => {
-    if (!active) return;
-    console.log("[DashboardHome] SSE subscribe", active.id);
-    const disconnect = connectWorkspaceEvents(active.id, (ev) => {
+    if (!activeId) return;
+    console.log("[DashboardHome] SSE subscribe", activeId);
+    const disconnect = connectWorkspaceEvents(activeId, (ev) => {
       console.log("[DashboardHome SSE event]", ev);
-      if (ev.type === "goals_refresh" || ev.type === "goal_progress" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "goal_created") {
+      if (ev.type === "goals_refresh" || ev.type === "goal_progress" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "task_updated" || ev.type === "goal_created") {
         // update skillTracks (GoalsSnapshot) via fetchGoals
-        fetchGoals(active.id)
+        fetchGoals(activeId)
           .then((data) => {
             if (data) {
               const mappedTracks: SkillTrack[] = data.map((g) => ({
@@ -179,11 +180,11 @@ export default function DashboardHome() {
           })
           .catch(() => {});
         // update tasks (NextSteps) via fetch
-        fetchTasks(active.id)
+        fetchTasks(activeId)
           .then((apiTasks) => {
             if (!apiTasks) return;
             // fetch projects untuk mapping nama
-            fetchProjects(active.id)
+            fetchProjects(activeId)
               .then((apiProjects) => {
                 const projMap = new Map((apiProjects ?? []).map((p) => [p.id, p.project_name]));
                 const mapped: DashboardTask[] = apiTasks.map((t) =>
@@ -200,7 +201,7 @@ export default function DashboardHome() {
       }
     });
     return () => disconnect();
-  }, [active]);
+  }, [activeId]);
 
   async function toggleTask(id: number) {
     if (!active) return;
@@ -275,6 +276,7 @@ export default function DashboardHome() {
       priority: backendPriority,
       status: "not_started",
       due_date: dueDateISO,
+      estimated_minutes: input.estimateMinutes ?? 30,
       project_id: projectId,
       goal_id: goalId,
     };

@@ -17,16 +17,12 @@ export default function MetricsGrid() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const activeId = active?.id;
+
   useEffect(() => {
-    if (!active) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false);
-      return;
-    }
+    if (!activeId) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    fetchMetrics(active.id)
+    fetchMetrics(activeId)
       .then((data) => {
         if (!cancelled) setMetrics(data);
       })
@@ -39,20 +35,20 @@ export default function MetricsGrid() {
     return () => {
       cancelled = true;
     };
-  }, [active]);
+  }, [activeId]);
 
   // SSE realtime untuk metrics & progress
   useEffect(() => {
-    if (!active) return;
-    const disconnect = connectWorkspaceEvents(active.id, (ev) => {
-      if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "goal_progress" || ev.type === "goal_created") {
-        fetchMetrics(active.id)
+    if (!activeId) return;
+    const disconnect = connectWorkspaceEvents(activeId, (ev) => {
+      if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "task_updated" || ev.type === "goal_progress" || ev.type === "goal_created") {
+        fetchMetrics(activeId)
           .then((data) => setMetrics(data))
           .catch(() => {});
       }
     });
     return () => disconnect();
-  }, [active]);
+  }, [activeId]);
 
   if (loading) {
     return (

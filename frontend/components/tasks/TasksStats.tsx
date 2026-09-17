@@ -3,15 +3,26 @@
 import {
   CalendarClock,
   CircleCheck,
-  Timer,
+  Clock,
   TrendingUp,
   TriangleAlert,
 } from "lucide-react";
 import type { BoardTask } from "../../lib/dashboard";
 
-function formatHours(totalMinutes: number): string {
-  const hours = totalMinutes / 60;
-  return `${hours % 1 === 0 ? hours.toFixed(0) : hours.toFixed(1)}`;
+function isDueThisWeek(t: BoardTask): boolean {
+  if (t.lane === "completed") return false;
+  if (t.dueDateISO) {
+    const due = new Date(t.dueDateISO);
+    if (Number.isNaN(due.getTime())) return false;
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    end.setHours(23, 59, 59, 999);
+    return due >= start && due <= end;
+  }
+  // fallback untuk task tanpa ISO mentah: hanya yang jelas-jelas berlabel due
+  return t.dueLabel !== "No due date" && (t.dueKey === "today" || t.dueKey === "week");
 }
 
 export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
@@ -19,7 +30,8 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
   const done = tasks.filter((t) => t.lane === "completed");
   const high = open.filter((t) => t.priority === "high");
   const todayCount = open.filter((t) => t.dueKey === "today").length;
-  const focusMinutes = open.reduce((sum, t) => sum + t.estimateMinutes, 0);
+  const dueThisWeek = tasks.filter(isDueThisWeek).length;
+  const notStarted = tasks.filter((t) => t.lane === "upcoming" || t.lane === "overdue").length;
   const velocity =
     tasks.length === 0
       ? 0
@@ -28,7 +40,7 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
   const cards = [
     {
       label: "Due This Week",
-      value: String(open.length),
+      value: String(dueThisWeek),
       foot: (
         <>
           <TrendingUp className="h-3.5 w-3.5" /> {todayCount} scheduled today
@@ -52,7 +64,7 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
     },
     {
       label: "High Priority",
-      value: String(high.length).padStart(2, "0"),
+      value: String(high.length),
       foot: (
         <>
           <TriangleAlert className="h-3.5 w-3.5" /> Action required soon
@@ -63,16 +75,15 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
       iconCls: "bg-red-100 text-red-600",
     },
     {
-      label: "Focus Time Bank",
-      value: `${formatHours(focusMinutes)}`,
-      suffix: "hrs",
+      label: "Not Started",
+      value: String(notStarted),
       foot: (
         <>
-          <Timer className="h-3.5 w-3.5" /> Est. effort remaining
+          <Clock className="h-3.5 w-3.5" /> Queued to start
         </>
       ),
       footCls: "text-slate-500",
-      icon: Timer,
+      icon: Clock,
       iconCls: "bg-slate-100 text-slate-500",
     },
   ];
@@ -93,11 +104,6 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
             </p>
             <p className="mt-1 text-3xl font-bold leading-none tracking-tight text-slate-900">
               {c.value}
-              {c.suffix && (
-                <span className="ml-1 text-sm font-medium text-slate-400">
-                  {c.suffix}
-                </span>
-              )}
             </p>
             <p
               className={`mt-1.5 flex items-center gap-1 text-[13px] font-medium ${c.footCls}`}

@@ -307,6 +307,40 @@ func (h *DashboardHandler) CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"data": task})
 }
 
+func (h *DashboardHandler) UpdateTask(c *gin.Context) {
+	workspaceID, err := workspaceIDParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid workspace id"})
+		return
+	}
+	taskID, err := strconv.Atoi(c.Param("taskId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid task id"})
+		return
+	}
+	var req model.UpdateTaskRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Validation failed", "details": validationMessages(err)})
+		return
+	}
+	userID := c.GetInt("userID")
+	task, err := h.taskService.UpdateTask(c.Request.Context(), workspaceID, taskID, userID, req)
+	if err != nil {
+		if errors.Is(err, apperrors.ErrNotMember) {
+			c.JSON(http.StatusForbidden, gin.H{"message": "You are not a member of this workspace"})
+			return
+		}
+		if errors.Is(err, apperrors.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+			return
+		}
+		log.Println("update task error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update task"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": task})
+}
+
 func (h *DashboardHandler) ToggleTask(c *gin.Context) {
 	workspaceID, err := workspaceIDParam(c)
 	if err != nil {

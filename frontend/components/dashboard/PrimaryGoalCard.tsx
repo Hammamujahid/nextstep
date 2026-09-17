@@ -17,22 +17,19 @@ export default function PrimaryGoalCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const activeId = active?.id;
+
   useEffect(() => {
-    if (!active) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false);
-      return;
-    }
+    if (!activeId) return;
 
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setError(null);
 
-    fetchPrimaryGoal(active.id)
+    fetchPrimaryGoal(activeId)
       .then((data) => {
-        if (!cancelled) setGoal(data);
+        if (!cancelled) {
+          setGoal(data);
+          setError(null);
+        }
       })
       .catch((err: Error) => {
         if (!cancelled) setError(err.message);
@@ -44,23 +41,23 @@ export default function PrimaryGoalCard() {
     return () => {
       cancelled = true;
     };
-  }, [active]);
+  }, [activeId]);
 
   // SSE realtime untuk progress bar
   useEffect(() => {
-    if (!active) return;
-    const disconnect = connectWorkspaceEvents(active.id, (ev) => {
+    if (!activeId) return;
+    const disconnect = connectWorkspaceEvents(activeId, (ev) => {
       if (ev.type === "goal_progress" && ev.data) {
         const updated = ev.data as PrimaryGoal;
         setGoal((prev) => (prev && prev.id === (updated as any).id ? { ...prev, ...(updated as any) } : prev));
-      } else if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "goal_created") {
-        fetchPrimaryGoal(active.id)
+      } else if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_updated" || ev.type === "goal_created") {
+        fetchPrimaryGoal(activeId)
           .then((data) => setGoal(data))
           .catch(() => {});
       }
     });
     return () => disconnect();
-  }, [active]);
+  }, [activeId]);
 
   if (loading) {
     return (

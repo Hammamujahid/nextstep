@@ -1,14 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ListPlus, Loader2, X } from "lucide-react";
-import type { TaskPriority } from "../../lib/dashboard";
+import { parseEstimateToMinutes, type TaskPriority } from "../../lib/dashboard";
 
 export type QuickTaskInput = {
   title: string;
   priority: TaskPriority;
   due: string;
   dueToday: boolean;
+  estimateMinutes: number | null;
   goal: string | null;
   goalId: number | null;
   project: string | null;
@@ -23,7 +24,11 @@ type QuickAddModalProps = {
   goals?: { id: number; name: string }[];
 };
 
-const PRIORITIES: TaskPriority[] = ["High", "Medium", "Normal"];
+const PRIORITIES: { value: TaskPriority; label: string }[] = [
+  { value: "High", label: "High Priority" },
+  { value: "Medium", label: "Medium Priority" },
+  { value: "Normal", label: "Low Priority" },
+];
 const DUE_OPTIONS = ["Today", "Tomorrow", "This Week", "Next Week"];
 
 export default function QuickAddModal({
@@ -33,42 +38,35 @@ export default function QuickAddModal({
   projects,
   goals,
 }: QuickAddModalProps) {
-  const projectOptions = projects && projects.length > 0
-    ? ["No Project", ...projects.map((p) => p.name)]
-    : ["No Project"];
-  const goalOptions = goals && goals.length > 0
-    ? ["No Goal", ...goals.map((g) => g.name)]
-    : ["No Goal"];
+  const projectOptions = useMemo(
+    () => (projects && projects.length > 0 ? ["No Project", ...projects.map((p) => p.name)] : ["No Project"]),
+    [projects]
+  );
+  const goalOptions = useMemo(
+    () => (goals && goals.length > 0 ? ["No Goal", ...goals.map((g) => g.name)] : ["No Goal"]),
+    [goals]
+  );
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("Medium");
   const [due, setDue] = useState(DUE_OPTIONS[1]);
-  const [project, setProject] = useState(projectOptions[0]);
-  const [goal, setGoal] = useState(goalOptions[0]);
+  const [project, setProject] = useState("No Project");
+  const [goal, setGoal] = useState("No Goal");
+  const [estimate, setEstimate] = useState("30m");
   const [saving, setSaving] = useState(false);
 
-  // sync defaults when options change or modal opens
-  useEffect(() => {
-    if (open) {
-      if (!projectOptions.includes(project)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setProject(projectOptions[0]);
-      }
-      if (!goalOptions.includes(goal)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setGoal(goalOptions[0]);
-      }
-    }
-  }, [open, projectOptions, goalOptions, project, goal]);
+  const effectiveProject = projectOptions.includes(project) ? project : projectOptions[0];
+  const effectiveGoal = goalOptions.includes(goal) ? goal : goalOptions[0];
 
   const close = useCallback(() => {
     setTitle("");
     setPriority("Medium");
     setDue(DUE_OPTIONS[1]);
-    setProject(projectOptions[0]);
-    setGoal(goalOptions[0]);
+    setProject("No Project");
+    setGoal("No Goal");
+    setEstimate("30m");
     setSaving(false);
     onClose();
-  }, [onClose, projectOptions, goalOptions]);
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -84,16 +82,17 @@ export default function QuickAddModal({
   function handleSave() {
     if (!title.trim()) return;
     setSaving(true);
-    const selectedProject = projects?.find((p) => p.name === project);
-    const selectedGoal = goals?.find((g) => g.name === goal);
+    const selectedProject = projects?.find((p) => p.name === effectiveProject);
+    const selectedGoal = goals?.find((g) => g.name === effectiveGoal);
     onSave({
       title: title.trim(),
       priority,
       due: due === "Today" ? "Due Today" : due,
       dueToday: due === "Today",
-      goal: goal === "No Goal" ? null : goal,
+      estimateMinutes: parseEstimateToMinutes(estimate) ?? 30,
+      goal: effectiveGoal === "No Goal" ? null : effectiveGoal,
       goalId: selectedGoal?.id ?? null,
-      project: project === "No Project" ? null : project,
+      project: effectiveProject === "No Project" ? null : effectiveProject,
       projectId: selectedProject?.id ?? null,
     });
     close();
@@ -166,8 +165,8 @@ export default function QuickAddModal({
               className={selectCls}
             >
               {PRIORITIES.map((p) => (
-                <option key={p} value={p}>
-                  {p} Priority
+                <option key={p.value} value={p.value}>
+                  {p.label}
                 </option>
               ))}
             </select>
@@ -192,6 +191,23 @@ export default function QuickAddModal({
           </div>
         </div>
 
+        <div>
+          <label
+            htmlFor="quick-task-estimate"
+            className="mb-1.5 block text-[13px] font-semibold text-slate-700"
+          >
+            Estimated Time
+          </label>
+          <input
+            id="quick-task-estimate"
+            type="text"
+            value={estimate}
+            onChange={(e) => setEstimate(e.target.value)}
+            placeholder="e.g., 45m or 1.5h"
+            className={selectCls}
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label
@@ -202,7 +218,7 @@ export default function QuickAddModal({
             </label>
             <select
               id="quick-task-goal"
-              value={goal}
+              value={effectiveGoal}
               onChange={(e) => setGoal(e.target.value)}
               className={selectCls}
             >
@@ -222,7 +238,7 @@ export default function QuickAddModal({
             </label>
             <select
               id="quick-task-project"
-              value={project}
+              value={effectiveProject}
               onChange={(e) => setProject(e.target.value)}
               className={selectCls}
             >

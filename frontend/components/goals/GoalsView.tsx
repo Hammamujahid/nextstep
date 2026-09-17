@@ -179,7 +179,7 @@ function GoalCard({ goal, workspaceId, refreshKey }: { goal: PrimaryGoal; worksp
                         {t.due_date && (
                           <>
                             <span>•</span>
-                            <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{new Date(t.due_date).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{new Date(t.due_date).toLocaleDateString()}, {new Date(t.due_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
                           </>
                         )}
                       </p>
@@ -245,15 +245,17 @@ export default function GoalsView() {
   const [modalOpen, setModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const activeId = active?.id;
+
   useEffect(() => {
-    if (!active) return;
+    if (!activeId) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setError(null);
-    fetchGoals(active.id)
+    fetchGoals(activeId)
       .then((data) => {
-        if (!cancelled) setGoals(data ?? []);
+        if (!cancelled) {
+          setGoals(data ?? []);
+          setError(null);
+        }
       })
       .catch((e: Error) => {
         if (!cancelled) setError(e.message);
@@ -264,19 +266,19 @@ export default function GoalsView() {
     return () => {
       cancelled = true;
     };
-  }, [active]);
+  }, [activeId]);
 
   // SSE satu arah: server push progress setelah client toggle checkbox
   useEffect(() => {
-    if (!active) return;
-    const disconnect = connectWorkspaceEvents(active.id, (ev) => {
+    if (!activeId) return;
+    const disconnect = connectWorkspaceEvents(activeId, (ev) => {
       console.log("[GoalsView SSE]", ev);
       if (ev.type === "goal_progress" && ev.data) {
         const updated = ev.data as PrimaryGoal;
         setGoals((prev) => prev.map((g) => (g.id === (updated as any).id ? { ...g, ...(updated as any) } : g)));
         setRefreshKey((k) => k + 1);
-      } else if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "goal_created") {
-        fetchGoals(active.id)
+      } else if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "goal_created" || ev.type === "task_updated") {
+        fetchGoals(activeId)
           .then((data) => {
             if (data) setGoals(data);
           })
@@ -285,14 +287,14 @@ export default function GoalsView() {
       }
     });
     return () => disconnect();
-  }, [active]);
+  }, [activeId]);
 
   async function addGoal(input: NewGoalInput) {
     if (!active) return;
     try {
       const created = await createGoalApi(active.id, {
         title: input.title,
-        description: input.category,
+        description: input.description || null,
         status: "not_started",
       });
       // Map backend Goal -> PrimaryGoal shape (progress 0, no req yet)
@@ -320,7 +322,7 @@ export default function GoalsView() {
         id: nextGoalId,
         workspace_id: active?.id ?? 0,
         title: input.title,
-        description: input.category,
+        description: input.description || null,
         status: "not_started",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

@@ -131,7 +131,7 @@ func (r *GoalRepository) ListTasksByGoal(
 	workspaceID int,
 ) ([]*model.Task, error) {
 	query := `
-		SELECT t.id, t.workspace_id, t.project_id, t.title, t.description, t.priority, t.status, t.due_date, t.created_at, t.updated_at
+		SELECT t.id, t.workspace_id, t.project_id, t.title, t.description, t.priority, t.status, t.due_date, t.estimated_minutes, t.created_at, t.updated_at
 		FROM tasks t
 		JOIN goal_tasks gt ON gt.task_id = t.id
 		JOIN goals g ON g.id = gt.goal_id
@@ -149,7 +149,7 @@ func (r *GoalRepository) ListTasksByGoal(
 	tasks := make([]*model.Task, 0)
 	for rows.Next() {
 		var t model.Task
-		if err := rows.Scan(&t.ID, &t.WorkspaceId, &t.ProjectId, &t.Title, &t.Description, &t.Priority, &t.Status, &t.DueDate, &t.CreatedAt, &t.UpdatedAt); err != nil {
+		if err := rows.Scan(&t.ID, &t.WorkspaceId, &t.ProjectId, &t.Title, &t.Description, &t.Priority, &t.Status, &t.DueDate, &t.EstimatedMinutes, &t.CreatedAt, &t.UpdatedAt); err != nil {
 			return nil, apperrors.ErrDatabase
 		}
 		tasks = append(tasks, &t)

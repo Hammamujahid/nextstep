@@ -22,7 +22,7 @@ func (r *TaskRepository) ListByWorkspace(
 	workspaceID int,
 ) ([]*model.Task, error) {
 	query := `
-		SELECT id, workspace_id, project_id, title, description, priority, status, due_date, created_at, updated_at
+		SELECT id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
 		FROM tasks
 		WHERE workspace_id = $1
 		ORDER BY
@@ -48,6 +48,7 @@ func (r *TaskRepository) ListByWorkspace(
 			&t.Priority,
 			&t.Status,
 			&t.DueDate,
+			&t.EstimatedMinutes,
 			&t.CreatedAt,
 			&t.UpdatedAt,
 		); err != nil {
@@ -67,8 +68,8 @@ func (r *TaskRepository) FindByID(
 ) (*model.Task, error) {
 	var t model.Task
 	err := r.db.QueryRow(ctx,
-		`SELECT id, workspace_id, project_id, title, description, priority, status, due_date, created_at, updated_at FROM tasks WHERE id = $1`, id,
-	).Scan(&t.ID, &t.WorkspaceId, &t.ProjectId, &t.Title, &t.Description, &t.Priority, &t.Status, &t.DueDate, &t.CreatedAt, &t.UpdatedAt)
+		`SELECT id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at FROM tasks WHERE id = $1`, id,
+	).Scan(&t.ID, &t.WorkspaceId, &t.ProjectId, &t.Title, &t.Description, &t.Priority, &t.Status, &t.DueDate, &t.EstimatedMinutes, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
 	}
@@ -82,8 +83,8 @@ func (r *TaskRepository) FindByIDAndWorkspace(
 ) (*model.Task, error) {
 	var t model.Task
 	err := r.db.QueryRow(ctx,
-		`SELECT id, workspace_id, project_id, title, description, priority, status, due_date, created_at, updated_at FROM tasks WHERE id = $1 AND workspace_id = $2`, id, workspaceID,
-	).Scan(&t.ID, &t.WorkspaceId, &t.ProjectId, &t.Title, &t.Description, &t.Priority, &t.Status, &t.DueDate, &t.CreatedAt, &t.UpdatedAt)
+		`SELECT id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at FROM tasks WHERE id = $1 AND workspace_id = $2`, id, workspaceID,
+	).Scan(&t.ID, &t.WorkspaceId, &t.ProjectId, &t.Title, &t.Description, &t.Priority, &t.Status, &t.DueDate, &t.EstimatedMinutes, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
 	}
@@ -100,10 +101,13 @@ func (r *TaskRepository) Create(
 	if task.Priority == "" {
 		task.Priority = "medium"
 	}
+	if task.EstimatedMinutes <= 0 {
+		task.EstimatedMinutes = 30
+	}
 	query := `
-		INSERT INTO tasks (workspace_id, project_id, title, description, priority, status, due_date)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, created_at, updated_at
+		INSERT INTO tasks (workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
 	`
 	var created model.Task
 	err := r.db.QueryRow(ctx, query,
@@ -114,11 +118,51 @@ func (r *TaskRepository) Create(
 		task.Priority,
 		task.Status,
 		task.DueDate,
-	).Scan(&created.ID, &created.WorkspaceId, &created.ProjectId, &created.Title, &created.Description, &created.Priority, &created.Status, &created.DueDate, &created.CreatedAt, &created.UpdatedAt)
+		task.EstimatedMinutes,
+	).Scan(&created.ID, &created.WorkspaceId, &created.ProjectId, &created.Title, &created.Description, &created.Priority, &created.Status, &created.DueDate, &created.EstimatedMinutes, &created.CreatedAt, &created.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
 	}
 	return &created, nil
+}
+
+func (r *TaskRepository) Update(
+	ctx context.Context,
+	workspaceID int,
+	taskID int,
+	req model.UpdateTaskRequest,
+) (*model.Task, error) {
+	clearDue := req.ClearDueDate != nil && *req.ClearDueDate
+	query := `
+		UPDATE tasks SET
+			title = COALESCE($1, title),
+			description = COALESCE($2, description),
+			priority = COALESCE($3, priority),
+			status = COALESCE($4, status),
+			due_date = CASE WHEN $7 THEN NULL ELSE COALESCE($5, due_date) END,
+			project_id = COALESCE($6, project_id),
+			estimated_minutes = COALESCE($10, estimated_minutes),
+			updated_at = NOW()
+		WHERE id = $8 AND workspace_id = $9
+		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
+	`
+	var updated model.Task
+	err := r.db.QueryRow(ctx, query,
+		req.Title,
+		req.Description,
+		req.Priority,
+		req.Status,
+		req.DueDate,
+		req.ProjectId,
+		clearDue,
+		taskID,
+		workspaceID,
+		req.EstimatedMinutes,
+	).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.EstimatedMinutes, &updated.CreatedAt, &updated.UpdatedAt)
+	if err != nil {
+		return nil, apperrors.ErrDatabase
+	}
+	return &updated, nil
 }
 
 func (r *TaskRepository) ToggleComplete(
@@ -131,10 +175,10 @@ func (r *TaskRepository) ToggleComplete(
 			status = CASE WHEN status = 'completed' THEN 'not_started' ELSE 'completed' END,
 			updated_at = NOW()
 		WHERE id = $1 AND workspace_id = $2
-		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, created_at, updated_at
+		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
 	`
 	var updated model.Task
-	err := r.db.QueryRow(ctx, query, taskID, workspaceID).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.CreatedAt, &updated.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, taskID, workspaceID).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.EstimatedMinutes, &updated.CreatedAt, &updated.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
 	}

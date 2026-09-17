@@ -2,13 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Flag, X } from "lucide-react";
-import { GOAL_CATEGORIES } from "../../lib/dashboard";
 
 export type NewGoalInput = {
   title: string;
-  category: string;
-  targetDate: string;
-  keyResult: string;
+  description: string;
 };
 
 type NewGoalModalProps = {
@@ -23,15 +20,11 @@ export default function NewGoalModal({
   onSave,
 }: NewGoalModalProps) {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState(GOAL_CATEGORIES[0]);
-  const [targetDate, setTargetDate] = useState("2025-10-31");
-  const [keyResult, setKeyResult] = useState("");
+  const [description, setDescription] = useState("");
 
   const close = useCallback(() => {
     setTitle("");
-    setCategory(GOAL_CATEGORIES[0]);
-    setTargetDate("2025-10-31");
-    setKeyResult("");
+    setDescription("");
     onClose();
   }, [onClose]);
 
@@ -50,9 +43,7 @@ export default function NewGoalModal({
     if (!title.trim()) return;
     onSave({
       title: title.trim(),
-      category,
-      targetDate,
-      keyResult: keyResult.trim(),
+      description: description.trim(),
     });
     close();
   }
@@ -112,46 +103,16 @@ export default function NewGoalModal({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="goal-category" className={labelCls}>
-              Category
-            </label>
-            <select
-              id="goal-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={inputCls}
-            >
-              {GOAL_CATEGORIES.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="goal-date" className={labelCls}>
-              Target Completion
-            </label>
-            <input
-              id="goal-date"
-              type="date"
-              value={targetDate}
-              onChange={(e) => setTargetDate(e.target.value)}
-              className={inputCls}
-            />
-          </div>
-        </div>
-
         <div>
-          <label htmlFor="goal-key-result" className={labelCls}>
-            Initial Key Result
+          <label htmlFor="goal-description" className={labelCls}>
+            Description
           </label>
           <input
-            id="goal-key-result"
+            id="goal-description"
             type="text"
-            value={keyResult}
-            onChange={(e) => setKeyResult(e.target.value)}
-            placeholder="e.g., Deploy production-grade cluster on AWS EKS"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="e.g., Become expert in cloud infrastructure and deployment"
             className={inputCls}
           />
         </div>

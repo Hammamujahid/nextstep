@@ -137,6 +137,7 @@ export type ApiTask = {
   priority: "high" | "medium" | "low";
   status: "not_started" | "in_progress" | "completed";
   due_date: string | null;
+  estimated_minutes: number;
   created_at: string;
   updated_at: string;
 };
@@ -195,6 +196,8 @@ export type CreateTaskPayload = {
   priority: "high" | "medium" | "low";
   status?: "not_started" | "in_progress" | "completed";
   due_date?: string | null;
+  clear_due_date?: boolean;
+  estimated_minutes?: number | null;
   project_id?: number | null;
   goal_id?: number | null;
   description?: string | null;
@@ -206,6 +209,14 @@ export function createTask(workspaceId: number, payload: CreateTaskPayload) {
 
 export function toggleTaskApi(workspaceId: number, taskId: number) {
   return authMutate<ApiTask>(`/workspaces/${workspaceId}/tasks/${taskId}/toggle`, "PATCH");
+}
+
+export function updateTaskApi(
+  workspaceId: number,
+  taskId: number,
+  payload: Partial<CreateTaskPayload>
+) {
+  return authMutate<ApiTask>(`/workspaces/${workspaceId}/tasks/${taskId}`, "PATCH", payload);
 }
 
 export function formatStageLabel(progress: number): string {

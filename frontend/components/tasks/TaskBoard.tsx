@@ -7,9 +7,13 @@ import TaskCard from "./TaskCard";
 type TaskBoardProps = {
   tasks: BoardTask[];
   onToggle: (id: number) => void;
+  onStatusChange: (id: number, status: BoardTask["status"]) => void;
+  onPriorityChange: (id: number, priority: BoardTask["priority"]) => void;
+  onDueChange: (id: number, dueDateISO: string | null) => void;
+  onEstimateChange: (id: number, minutes: number) => void;
 };
 
-export default function TaskBoard({ tasks, onToggle }: TaskBoardProps) {
+export default function TaskBoard({ tasks, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange }: TaskBoardProps) {
   const byLane = (lane: BoardLane) => tasks.filter((t) => t.lane === lane);
 
   return (
@@ -45,7 +49,7 @@ export default function TaskBoard({ tasks, onToggle }: TaskBoardProps) {
                 </p>
               )}
               {items.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={onToggle} />
+                <TaskCard key={task.id} task={task} onToggle={onToggle} onStatusChange={onStatusChange} onPriorityChange={onPriorityChange} onDueChange={onDueChange} onEstimateChange={onEstimateChange} />
               ))}
             </div>
           </div>

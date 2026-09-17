@@ -125,14 +125,19 @@ func (s *TaskService) CreateTask(
 	if status == "" {
 		status = "not_started"
 	}
+	estimated := 30
+	if req.EstimatedMinutes != nil && *req.EstimatedMinutes > 0 {
+		estimated = *req.EstimatedMinutes
+	}
 	task := &model.Task{
-		WorkspaceId: workspaceID,
-		ProjectId:   req.ProjectId,
-		Title:       req.Title,
-		Description: req.Description,
-		Priority:    req.Priority,
-		Status:      status,
-		DueDate:     req.DueDate,
+		WorkspaceId:      workspaceID,
+		ProjectId:        req.ProjectId,
+		Title:            req.Title,
+		Description:      req.Description,
+		Priority:         req.Priority,
+		Status:           status,
+		DueDate:          req.DueDate,
+		EstimatedMinutes: estimated,
 	}
 	created, err := s.taskRepository.Create(ctx, task)
 	if err != nil {
@@ -199,6 +204,9 @@ func (s *TaskService) ToggleTask(
 		if b, err := json.Marshal(map[string]interface{}{"type": "task_toggled", "data": updated}); err == nil {
 			s.eventBus.Publish(workspaceID, b)
 		}
+		if b, err := json.Marshal(map[string]interface{}{"type": "task_updated", "data": updated}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
 		if b, err := json.Marshal(map[string]interface{}{"type": "goals_refresh", "workspace_id": workspaceID}); err == nil {
 			s.eventBus.Publish(workspaceID, b)
 		}
@@ -212,6 +220,75 @@ func (s *TaskService) ToggleTask(
 								s.eventBus.Publish(workspaceID, b)
 							}
 							break
+						}
+					}
+				}
+			}
+		}
+	}
+	return updated, nil
+}
+
+func (s *TaskService) UpdateTask(
+	ctx context.Context,
+	workspaceID int,
+	taskID int,
+	userID int,
+	req model.UpdateTaskRequest,
+) (*model.Task, error) {
+	if _, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID); err != nil {
+		return nil, err
+	}
+	if _, err := s.taskRepository.FindByIDAndWorkspace(ctx, taskID, workspaceID); err != nil {
+		return nil, apperrors.ErrNotFound
+	}
+	if req.ProjectId != nil {
+		proj, err := s.projectRepository.FindByID(ctx, *req.ProjectId)
+		if err != nil || proj.WorkspaceId != workspaceID {
+			return nil, apperrors.ErrNotFound
+		}
+	}
+	if req.GoalId != nil {
+		goal, err := s.goalRepository.FindByIDAndWorkspace(ctx, *req.GoalId, workspaceID)
+		if err != nil || goal == nil {
+			return nil, apperrors.ErrNotFound
+		}
+	}
+	updated, err := s.taskRepository.Update(ctx, workspaceID, taskID, req)
+	if err != nil {
+		return nil, err
+	}
+	if req.GoalId != nil {
+		if err := s.goalRepository.AddTaskToGoal(ctx, *req.GoalId, updated.ID); err == nil {
+			s.goalRepository.RecalculateAndUpdateStatus(ctx, *req.GoalId, workspaceID)
+		}
+	}
+	// jika status berubah, recalc semua goal terkait
+	if req.Status != nil {
+		if goalIDs, err := s.goalRepository.FindGoalIDsByTaskID(ctx, updated.ID); err == nil {
+			for _, gid := range goalIDs {
+				s.goalRepository.RecalculateAndUpdateStatus(ctx, gid, workspaceID)
+			}
+		}
+	}
+	if s.eventBus != nil {
+		if b, err := json.Marshal(map[string]interface{}{"type": "task_updated", "data": updated}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+		if b, err := json.Marshal(map[string]interface{}{"type": "goals_refresh", "workspace_id": workspaceID}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+		if req.Status != nil {
+			if goalIDs, err := s.goalRepository.FindGoalIDsByTaskID(ctx, updated.ID); err == nil {
+				for _, gid := range goalIDs {
+					if goals, err := s.goalRepository.GetGoalsWithProgress(ctx, workspaceID); err == nil {
+						for _, g := range goals {
+							if g.ID == gid {
+								if b, err := json.Marshal(map[string]interface{}{"type": "goal_progress", "data": g}); err == nil {
+									s.eventBus.Publish(workspaceID, b)
+								}
+								break
+							}
 						}
 					}
 				}

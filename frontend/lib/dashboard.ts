@@ -32,6 +32,30 @@ export function toBackendPriority(p: TaskPriority): "high" | "medium" | "low" {
   }
 }
 
+export function formatEstimateMinutes(minutes: number): string {
+  if (!minutes || minutes <= 0) return "30m";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = minutes / 60;
+  return `${hours % 1 === 0 ? hours.toFixed(0) : hours.toFixed(1)}h`;
+}
+
+export function parseEstimateToMinutes(raw: string): number | null {
+  const text = raw.trim().toLowerCase();
+  if (!text) return null;
+  const hours = text.match(/^(\d+(?:\.\d+)?)\s*h/);
+  if (hours) {
+    const v = Math.round(parseFloat(hours[1]) * 60);
+    return v > 0 ? v : null;
+  }
+  const minutes = text.match(/^(\d+)\s*m/);
+  if (minutes) {
+    const v = parseInt(minutes[1], 10);
+    return v > 0 ? v : null;
+  }
+  const plain = parseInt(text, 10);
+  return !Number.isNaN(plain) && plain > 0 ? plain : null;
+}
+
 export type DashboardTask = {
   id: number;
   title: string;
@@ -373,6 +397,8 @@ export type BoardTask = {
   description: string | null;
   tag: BoardTag;
   priority: BoardPriority;
+  status: "not_started" | "in_progress" | "completed";
+  dueDateISO?: string | null;
   lane: BoardLane;
   prevLane: BoardLane | null;
   dueLabel: string;
@@ -402,6 +428,7 @@ export const TASKS_BOARD: BoardTask[] = [
       "Practice token bucket and sliding window logs with mentor Elena. Prepare edge cases diagram on Excalidraw.",
     tag: "Tech Prep",
     priority: "high",
+    status: "not_started",
     lane: "overdue",
     prevLane: null,
     dueLabel: "Yesterday (Overdue)",
@@ -419,6 +446,7 @@ export const TASKS_BOARD: BoardTask[] = [
       "Align developer platform experience with API idempotency architecture notes. Reference John's referral key.",
     tag: "Applications",
     priority: "high",
+    status: "not_started",
     lane: "overdue",
     prevLane: null,
     dueLabel: "Today, 5:00 PM",
@@ -435,6 +463,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "DevFolio v2",
     priority: "medium",
+    status: "not_started",
     lane: "overdue",
     prevLane: null,
     dueLabel: "Today, End of Day",
@@ -451,6 +480,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "DevFolio v2",
     priority: "high",
+    status: "in_progress",
     lane: "in-progress",
     prevLane: null,
     dueLabel: "Tomorrow, 2:00 PM",
@@ -467,6 +497,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "Tech Prep",
     priority: "medium",
+    status: "in_progress",
     lane: "in-progress",
     prevLane: null,
     dueLabel: "Thursday",
@@ -483,6 +514,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "Applications",
     priority: "medium",
+    status: "not_started",
     lane: "upcoming",
     prevLane: null,
     dueLabel: "Friday, 10:00 AM",
@@ -499,6 +531,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "DevFolio v2",
     priority: "low",
+    status: "not_started",
     lane: "upcoming",
     prevLane: null,
     dueLabel: "Saturday",
@@ -515,6 +548,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "Tech Prep",
     priority: "high",
+    status: "not_started",
     lane: "upcoming",
     prevLane: null,
     dueLabel: "Sunday",
@@ -531,6 +565,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "Tech Prep",
     priority: "medium",
+    status: "completed",
     lane: "completed",
     prevLane: "upcoming",
     dueLabel: "Completed today",
@@ -547,6 +582,7 @@ export const TASKS_BOARD: BoardTask[] = [
     description: null,
     tag: "Applications",
     priority: "low",
+    status: "completed",
     lane: "completed",
     prevLane: "upcoming",
     dueLabel: "Completed yesterday",

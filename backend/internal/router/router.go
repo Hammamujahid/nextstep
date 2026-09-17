@@ -45,6 +45,7 @@ func New(
 		protected.GET("/workspaces/:id/metrics", dashboardHandler.GetMetrics)
 		protected.GET("/workspaces/:id/tasks", dashboardHandler.GetTasks)
 		protected.POST("/workspaces/:id/tasks", dashboardHandler.CreateTask)
+		protected.PATCH("/workspaces/:id/tasks/:taskId", dashboardHandler.UpdateTask)
 		protected.PATCH("/workspaces/:id/tasks/:taskId/toggle", dashboardHandler.ToggleTask)
 		protected.GET("/workspaces/:id/projects", dashboardHandler.GetProjects)
 		protected.GET("/workspaces/:id/goals", dashboardHandler.GetGoals)
