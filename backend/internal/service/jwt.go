@@ -21,9 +21,13 @@ func NewJWTService(secretKey string) *JWTService {
 }
 
 func (s *JWTService) GenerateToken(userID int) (string, error) {
+	return s.GenerateTokenWithTTL(userID, 24*time.Hour)
+}
+
+func (s *JWTService) GenerateTokenWithTTL(userID int, ttl time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		"sub": userID,
-		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"exp": time.Now().Add(ttl).Unix(),
 	}
 
 	token := jwt.NewWithClaims(

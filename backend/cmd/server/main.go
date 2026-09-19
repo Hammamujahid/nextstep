@@ -19,7 +19,9 @@ func main() {
 
 	userRepository := repository.NewUserRepository(db)
 	blacklistRepository := repository.NewTokenBlacklistRepository(db)
+	refreshRepository := repository.NewRefreshTokenRepository(db)
 	workspaceRepository := repository.NewWorkspaceRepository(db)
+	permissionRepository := repository.NewPermissionRepository(db)
 
 	jwtService := service.NewJWTService(
 		cfg.JWTSECRET,
@@ -34,6 +36,7 @@ func main() {
 	authService := service.NewAuthService(
 		userRepository,
 		blacklistRepository,
+		refreshRepository,
 		jwtService,
 		googleOAuth,
 		cfg.FrontendURL,
@@ -41,6 +44,8 @@ func main() {
 
 	workspaceService := service.NewWorkspaceService(
 		workspaceRepository,
+		userRepository,
+		permissionRepository,
 	)
 	goalRepository := repository.NewGoalRepository(db)
 	projectRepository := repository.NewProjectRepository(db)
@@ -55,10 +60,10 @@ func main() {
 	)
 	eventBus := service.NewEventBus()
 	// file-by-table services
-	taskService := service.NewTaskService(taskRepository, workspaceRepository, projectRepository, goalRepository, eventBus)
-	projectService := service.NewProjectService(projectRepository, workspaceRepository)
+	taskService := service.NewTaskService(taskRepository, workspaceRepository, projectRepository, goalRepository, permissionRepository, eventBus)
+	projectService := service.NewProjectService(projectRepository, workspaceRepository, goalRepository, eventBus)
 	goalService := service.NewGoalService(goalRepository, workspaceRepository, eventBus)
-	applicationService := service.NewApplicationService(applicationRepository, workspaceRepository)
+	applicationService := service.NewApplicationService(applicationRepository, workspaceRepository, eventBus)
 	sseHandler := handler.NewSSEHandler(eventBus, workspaceRepository)
 
 	authHandler := handler.NewAuthHandler(
@@ -76,6 +81,7 @@ func main() {
 		projectService,
 		taskService,
 		applicationService,
+		permissionRepository,
 	)
 
 	r := router.New(
@@ -86,6 +92,7 @@ func main() {
 		sseHandler,
 		jwtService,
 		blacklistRepository,
+		permissionRepository,
 		[]string{cfg.FrontendURL, "http://localhost:3000"},
 	)
 

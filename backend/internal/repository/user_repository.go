@@ -26,6 +26,7 @@ func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 func scanUser(row pgx.Row) (*model.User, error) {
 	user := &model.User{}
 	var passwordHash sql.NullString
+	var activeWorkspaceID sql.NullInt64
 
 	err := row.Scan(
 		&user.ID,
@@ -34,6 +35,7 @@ func scanUser(row pgx.Row) (*model.User, error) {
 		&user.Email,
 		&passwordHash,
 		&user.GoogleID,
+		&activeWorkspaceID,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -43,6 +45,10 @@ func scanUser(row pgx.Row) (*model.User, error) {
 
 	if passwordHash.Valid {
 		user.PasswordHash = &passwordHash.String
+	}
+	if activeWorkspaceID.Valid {
+		v := int(activeWorkspaceID.Int64)
+		user.ActiveWorkspaceId = &v
 	}
 
 	return user, nil
@@ -106,6 +112,7 @@ func (r *UserRepository) FindByEmail(
 			email,
 			password_hash,
 			google_id,
+			active_workspace_id,
 			created_at,
 			updated_at
 		FROM users
@@ -135,6 +142,7 @@ func (r *UserRepository) FindByID(
 			email,
 			password_hash,
 			google_id,
+			active_workspace_id,
 			created_at,
 			updated_at
 		FROM users
@@ -164,6 +172,7 @@ func (r *UserRepository) FindByGoogleID(
 			email,
 			password_hash,
 			google_id,
+			active_workspace_id,
 			created_at,
 			updated_at
 		FROM users
@@ -179,6 +188,80 @@ func (r *UserRepository) FindByGoogleID(
 	}
 
 	return user, nil
+}
+
+// UpdateProfile mengubah username dan/atau email. Field nil = tidak diubah.
+func (r *UserRepository) UpdateProfile(
+	ctx context.Context,
+	userID int,
+	username *string,
+	email *string,
+) (*model.User, error) {
+	var updated model.User
+	var passwordHash sql.NullString
+	var googleID *string
+	var activeWorkspaceID sql.NullInt64
+	err := r.db.QueryRow(
+		ctx,
+		`UPDATE users
+		 SET username = COALESCE($2, username),
+		     email = COALESCE($3, email),
+		     updated_at = NOW()
+		 WHERE id = $1
+		 RETURNING id, username, photo_profile, email, password_hash, google_id, active_workspace_id, created_at, updated_at`,
+		userID,
+		username,
+		email,
+	).Scan(
+		&updated.ID,
+		&updated.Username,
+		&updated.PhotoProfile,
+		&updated.Email,
+		&passwordHash,
+		&googleID,
+		&activeWorkspaceID,
+		&updated.CreatedAt,
+		&updated.UpdatedAt,
+	)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			switch pgErr.ConstraintName {
+			case "users_email_key":
+				return nil, apperrors.ErrEmailAlreadyExists
+			case "users_username_key":
+				return nil, apperrors.ErrUsernameAlreadyExists
+			}
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperrors.ErrUserNotFound
+		}
+		return nil, apperrors.ErrDatabase
+	}
+	updated.GoogleID = googleID
+	if activeWorkspaceID.Valid {
+		v := int(activeWorkspaceID.Int64)
+		updated.ActiveWorkspaceId = &v
+	}
+	return &updated, nil
+}
+
+// SetActiveWorkspace menyimpan workspace yang sedang dibuka user.
+func (r *UserRepository) SetActiveWorkspace(
+	ctx context.Context,
+	userID int,
+	workspaceID int,
+) error {
+	_, err := r.db.Exec(
+		ctx,
+		`UPDATE users SET active_workspace_id = $2, updated_at = NOW() WHERE id = $1`,
+		userID,
+		workspaceID,
+	)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	return nil
 }
 
 // LinkGoogleID menautkan akun Google ke user yang sudah ada

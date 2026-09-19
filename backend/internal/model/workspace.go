@@ -20,8 +20,16 @@ type WorkspaceWithRole struct {
 	MemberRole string `json:"member_role" db:"member_role"`
 }
 
+type InvitePermissions struct {
+	Project        string `json:"project" binding:"omitempty,oneof=none viewer editor"`
+	Task           string `json:"task" binding:"omitempty,oneof=none viewer editor"`
+	Goal           string `json:"goal" binding:"omitempty,oneof=none viewer editor"`
+	JobApplication string `json:"job_application" binding:"omitempty,oneof=none viewer editor"`
+}
+
 type InviteMemberRequest struct {
-	Email string `json:"email" binding:"required,email,max=255"`
+	Email       string             `json:"email" binding:"required,email,max=255"`
+	Permissions *InvitePermissions `json:"permissions"`
 }
 
 type WorkspaceMemberWithUser struct {

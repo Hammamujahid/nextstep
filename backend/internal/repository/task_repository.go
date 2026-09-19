@@ -59,6 +59,32 @@ func (r *TaskRepository) ListByWorkspace(
 	if err := rows.Err(); err != nil {
 		return nil, apperrors.ErrDatabase
 	}
+	// lampirkan goal_ids tiap task (untuk preselect goal di edit modal)
+	if len(tasks) > 0 {
+		ids := make([]int, 0, len(tasks))
+		byID := make(map[int]*model.Task, len(tasks))
+		for _, t := range tasks {
+			ids = append(ids, t.ID)
+			byID[t.ID] = t
+		}
+		grows, err := r.db.Query(ctx, `SELECT task_id, goal_id FROM goal_tasks WHERE task_id = ANY($1)`, ids)
+		if err != nil {
+			return nil, apperrors.ErrDatabase
+		}
+		defer grows.Close()
+		for grows.Next() {
+			var taskID, goalID int
+			if err := grows.Scan(&taskID, &goalID); err != nil {
+				return nil, apperrors.ErrDatabase
+			}
+			if t, ok := byID[taskID]; ok {
+				t.GoalIDs = append(t.GoalIDs, goalID)
+			}
+		}
+		if err := grows.Err(); err != nil {
+			return nil, apperrors.ErrDatabase
+		}
+	}
 	return tasks, nil
 }
 
@@ -133,6 +159,7 @@ func (r *TaskRepository) Update(
 	req model.UpdateTaskRequest,
 ) (*model.Task, error) {
 	clearDue := req.ClearDueDate != nil && *req.ClearDueDate
+	clearProject := req.ClearProjectId != nil && *req.ClearProjectId
 	query := `
 		UPDATE tasks SET
 			title = COALESCE($1, title),
@@ -140,7 +167,7 @@ func (r *TaskRepository) Update(
 			priority = COALESCE($3, priority),
 			status = COALESCE($4, status),
 			due_date = CASE WHEN $7 THEN NULL ELSE COALESCE($5, due_date) END,
-			project_id = COALESCE($6, project_id),
+			project_id = CASE WHEN $11 THEN NULL ELSE COALESCE($6, project_id) END,
 			estimated_minutes = COALESCE($10, estimated_minutes),
 			updated_at = NOW()
 		WHERE id = $8 AND workspace_id = $9
@@ -158,11 +185,27 @@ func (r *TaskRepository) Update(
 		taskID,
 		workspaceID,
 		req.EstimatedMinutes,
+		clearProject,
 	).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.EstimatedMinutes, &updated.CreatedAt, &updated.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
 	}
 	return &updated, nil
+}
+
+func (r *TaskRepository) Delete(
+	ctx context.Context,
+	workspaceID int,
+	taskID int,
+) error {
+	res, err := r.db.Exec(ctx, `DELETE FROM tasks WHERE id = $1 AND workspace_id = $2`, taskID, workspaceID)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	if res.RowsAffected() == 0 {
+		return apperrors.ErrNotFound
+	}
+	return nil
 }
 
 func (r *TaskRepository) ToggleComplete(

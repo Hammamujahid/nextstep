@@ -186,3 +186,54 @@ func (s *GoalService) CreateGoal(
 	}
 	return created, nil
 }
+
+func (s *GoalService) UpdateGoal(
+	ctx context.Context,
+	workspaceID int,
+	goalID int,
+	userID int,
+	req model.UpdateGoalRequest,
+) (*model.Goal, error) {
+	if _, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID); err != nil {
+		return nil, err
+	}
+	if _, err := s.goalRepository.FindByIDAndWorkspace(ctx, goalID, workspaceID); err != nil {
+		return nil, apperrors.ErrNotFound
+	}
+	updated, err := s.goalRepository.Update(ctx, workspaceID, goalID, req)
+	if err != nil {
+		return nil, err
+	}
+	if s.eventBus != nil {
+		if b, err := json.Marshal(map[string]interface{}{"type": "goal_updated", "data": updated}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+		if b, err := json.Marshal(map[string]interface{}{"type": "goals_refresh", "workspace_id": workspaceID}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+	}
+	return updated, nil
+}
+
+func (s *GoalService) DeleteGoal(
+	ctx context.Context,
+	workspaceID int,
+	goalID int,
+	userID int,
+) error {
+	if _, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID); err != nil {
+		return err
+	}
+	if err := s.goalRepository.Delete(ctx, workspaceID, goalID); err != nil {
+		return err
+	}
+	if s.eventBus != nil {
+		if b, err := json.Marshal(map[string]interface{}{"type": "goal_deleted", "data": map[string]int{"id": goalID}}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+		if b, err := json.Marshal(map[string]interface{}{"type": "goals_refresh", "workspace_id": workspaceID}); err == nil {
+			s.eventBus.Publish(workspaceID, b)
+		}
+	}
+	return nil
+}

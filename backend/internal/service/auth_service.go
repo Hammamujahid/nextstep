@@ -5,17 +5,27 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"backend/internal/apperrors"
 	"backend/internal/model"
 	"backend/internal/repository"
 
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	// AccessTokenTTL umur access token: cukup pendek, diperpanjang diam-diam via refresh.
+	AccessTokenTTL = 24 * time.Hour
+	// RefreshTokenTTL umur sesi persistent login: 30 hari sejak login terakhir.
+	RefreshTokenTTL = 30 * 24 * time.Hour
 )
 
 type AuthService struct {
 	userRepository      *repository.UserRepository
 	blacklistRepository *repository.TokenBlacklistRepository
+	refreshRepository   *repository.RefreshTokenRepository
 	jwtService          *JWTService
 	google              *GoogleOAuth
 	frontendURL         string
@@ -24,6 +34,7 @@ type AuthService struct {
 func NewAuthService(
 	userRepository *repository.UserRepository,
 	blacklistRepository *repository.TokenBlacklistRepository,
+	refreshRepository *repository.RefreshTokenRepository,
 	jwtService *JWTService,
 	google *GoogleOAuth,
 	frontendURL string,
@@ -31,6 +42,7 @@ func NewAuthService(
 	return &AuthService{
 		userRepository:      userRepository,
 		blacklistRepository: blacklistRepository,
+		refreshRepository:   refreshRepository,
 		jwtService:          jwtService,
 		google:              google,
 		frontendURL:         frontendURL,
@@ -92,14 +104,80 @@ func (s *AuthService) Login(
 		return nil, err
 	}
 
+	refresh, err := s.issueRefreshToken(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.buildLoginResponse(token, refresh), nil
+}
+
+func (s *AuthService) buildLoginResponse(token, refresh string) *model.LoginResponse {
 	return &model.LoginResponse{
-		AccessToken: token,
+		AccessToken:  token,
+		RefreshToken: refresh,
+		ExpiresIn:    int(AccessTokenTTL.Seconds()),
+	}
+}
+
+// issueRefreshToken membuat opaque refresh token baru dan menyimpannya (hash only).
+func (s *AuthService) issueRefreshToken(
+	ctx context.Context,
+	userID int,
+) (string, error) {
+	raw, err := GenerateSecureToken()
+	if err != nil {
+		return "", err
+	}
+	if err := s.refreshRepository.Create(
+		ctx,
+		userID,
+		HashToken(raw),
+		time.Now().Add(RefreshTokenTTL),
+	); err != nil {
+		return "", err
+	}
+	return raw, nil
+}
+
+// Refresh menukar refresh token yang valid dengan pasangan token baru (rotasi:
+// refresh token lama langsung dicabut sehingga tidak bisa dipakai ulang).
+func (s *AuthService) Refresh(
+	ctx context.Context,
+	refreshToken string,
+) (*model.LoginResponse, error) {
+	stored, err := s.refreshRepository.FindByHash(ctx, HashToken(refreshToken))
+	if err != nil {
+		return nil, err
+	}
+	if stored.RevokedAt != nil || time.Now().After(stored.ExpiresAt) {
+		return nil, apperrors.ErrInvalidToken
+	}
+
+	if err := s.refreshRepository.RevokeByHash(ctx, HashToken(refreshToken)); err != nil {
+		return nil, err
+	}
+
+	token, err := s.jwtService.GenerateToken(stored.UserID)
+	if err != nil {
+		return nil, err
+	}
+	refresh, err := s.issueRefreshToken(ctx, stored.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.LoginResponse{
+		AccessToken:  token,
+		RefreshToken: refresh,
+		ExpiresIn:    int(AccessTokenTTL.Seconds()),
 	}, nil
 }
 
 func (s *AuthService) Logout(
 	ctx context.Context,
 	tokenString string,
+	refreshToken string,
 ) error {
 	token, err := s.jwtService.ValidateToken(tokenString)
 	if err != nil || !token.Valid {
@@ -113,7 +191,38 @@ func (s *AuthService) Logout(
 
 	tokenHash := HashToken(tokenString)
 
-	return s.blacklistRepository.Create(ctx, tokenHash, expiresAt)
+	if err := s.blacklistRepository.Create(ctx, tokenHash, expiresAt); err != nil {
+		return err
+	}
+
+	// cabut refresh token bila dikirim; kalau tidak, cabut semua milik user
+	// agar tidak ada sesi persistent yang tertinggal
+	if refreshToken != "" {
+		if err := s.refreshRepository.RevokeByHash(ctx, HashToken(refreshToken)); err != nil {
+			return err
+		}
+	} else if userID, err := userIDFromToken(token); err == nil {
+		if err := s.refreshRepository.RevokeAllForUser(ctx, userID); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func userIDFromToken(token *jwt.Token) (int, error) {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, apperrors.ErrInvalidToken
+	}
+	switch v := claims["sub"].(type) {
+	case float64:
+		return int(v), nil
+	case int:
+		return v, nil
+	default:
+		return 0, apperrors.ErrInvalidToken
+	}
 }
 
 func (s *AuthService) FrontendURL() string {
@@ -124,38 +233,38 @@ func (s *AuthService) GoogleAuthURL(state string) string {
 	return s.google.AuthCodeURL(state)
 }
 
-// HandleGoogleCallback menukar code Google menjadi JWT NextStep.
+// HandleGoogleCallback menukar code Google menjadi pasangan token NextStep.
 // Alur: code -> access token -> userinfo -> cari user by google_id,
 // kalau tidak ada cari by email (link akun), kalau tidak ada buat baru.
 func (s *AuthService) HandleGoogleCallback(
 	ctx context.Context,
 	code string,
-) (string, error) {
+) (*model.LoginResponse, error) {
 	accessToken, err := s.google.ExchangeCode(ctx, code)
 	if err != nil {
-		return "", apperrors.ErrOAuthFailed
+		return nil, apperrors.ErrOAuthFailed
 	}
 
 	info, err := s.google.FetchUserinfo(ctx, accessToken)
 	if err != nil {
-		return "", apperrors.ErrOAuthFailed
+		return nil, apperrors.ErrOAuthFailed
 	}
 
 	if !info.VerifiedEmail {
-		return "", apperrors.ErrGoogleEmailNotVerified
+		return nil, apperrors.ErrGoogleEmailNotVerified
 	}
 
 	user, err := s.userRepository.FindByGoogleID(ctx, info.ID)
 	if err != nil && !errors.Is(err, apperrors.ErrUserNotFound) {
-		return "", err
+		return nil, err
 	}
 	if user != nil {
-		return s.jwtService.GenerateToken(user.ID)
+		return s.issueLoginResponse(ctx, user.ID)
 	}
 
 	user, err = s.userRepository.FindByEmail(ctx, info.Email)
 	if err != nil && !errors.Is(err, apperrors.ErrUserNotFound) {
-		return "", err
+		return nil, err
 	}
 	if user != nil {
 		var photo *string
@@ -163,16 +272,32 @@ func (s *AuthService) HandleGoogleCallback(
 			photo = &info.Picture
 		}
 		if err := s.userRepository.LinkGoogleID(ctx, user.ID, info.ID, photo); err != nil {
-			return "", err
+			return nil, err
 		}
-		return s.jwtService.GenerateToken(user.ID)
+		return s.issueLoginResponse(ctx, user.ID)
 	}
 
 	created, err := s.createGoogleUser(ctx, info)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return s.jwtService.GenerateToken(created.ID)
+	return s.issueLoginResponse(ctx, created.ID)
+}
+
+// issueLoginResponse menerbitkan pasangan access + refresh token untuk user.
+func (s *AuthService) issueLoginResponse(
+	ctx context.Context,
+	userID int,
+) (*model.LoginResponse, error) {
+	token, err := s.jwtService.GenerateToken(userID)
+	if err != nil {
+		return nil, err
+	}
+	refresh, err := s.issueRefreshToken(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.buildLoginResponse(token, refresh), nil
 }
 
 func (s *AuthService) createGoogleUser(

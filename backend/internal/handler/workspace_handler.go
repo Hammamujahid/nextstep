@@ -199,6 +199,7 @@ func (h *WorkspaceHandler) Invite(c *gin.Context) {
 		workspaceID,
 		userID,
 		req.Email,
+		req.Permissions,
 	)
 	if err != nil {
 		switch {
@@ -227,4 +228,197 @@ func (h *WorkspaceHandler) Invite(c *gin.Context) {
 		"message": "Invitation sent successfully",
 		"data":    invitation,
 	})
+}
+
+func (h *WorkspaceHandler) SelectWorkspace(c *gin.Context) {
+	workspaceID, err := workspaceIDParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid workspace id",
+		})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	if err := h.workspaceService.SelectWorkspace(
+		c.Request.Context(),
+		workspaceID,
+		userID,
+	); err != nil {
+		if errors.Is(err, apperrors.ErrNotMember) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You are not a member of this workspace",
+			})
+			return
+		}
+		log.Println("select workspace error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to switch workspace, please try again later",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Workspace switched",
+		"data":    gin.H{"workspace_id": workspaceID},
+	})
+}
+
+func (h *WorkspaceHandler) CancelInvitation(c *gin.Context) {
+	workspaceID, err := workspaceIDParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid workspace id"})
+		return
+	}
+	invitationID, err := strconv.Atoi(c.Param("invitationId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid invitation id"})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	if err := h.workspaceService.CancelInvitation(
+		c.Request.Context(),
+		workspaceID,
+		userID,
+		invitationID,
+	); err != nil {
+		switch {
+		case errors.Is(err, apperrors.ErrNotMember):
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You are not a member of this workspace",
+			})
+		case errors.Is(err, apperrors.ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Only workspace admins can cancel invitations",
+			})
+		case errors.Is(err, apperrors.ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"message": "Invitation not found"})
+		default:
+			log.Println("cancel invitation error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to cancel invitation"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Invitation cancelled"})
+}
+
+func (h *WorkspaceHandler) MyPermissions(c *gin.Context) {
+	workspaceID, err := workspaceIDParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid workspace id"})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	role, perms, err := h.workspaceService.GetMyPermissions(
+		c.Request.Context(),
+		workspaceID,
+		userID,
+	)
+	if err != nil {
+		if errors.Is(err, apperrors.ErrNotMember) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You are not a member of this workspace",
+			})
+			return
+		}
+		log.Println("get my permissions error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to load permissions",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"member_role": role,
+			"permissions": perms,
+		},
+	})
+}
+
+func (h *WorkspaceHandler) MyInvitations(c *gin.Context) {
+	userID := c.GetInt("userID")
+	invitations, err := h.workspaceService.ListMyInvitations(
+		c.Request.Context(),
+		userID,
+	)
+	if err != nil {
+		log.Println("list my invitations error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to load invitations",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": invitations,
+	})
+}
+
+func (h *WorkspaceHandler) AcceptInvitation(c *gin.Context) {
+	invitationID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid invitation id"})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	workspaceID, err := h.workspaceService.AcceptInvitation(
+		c.Request.Context(),
+		userID,
+		invitationID,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, apperrors.ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"message": "Invitation not found"})
+		case errors.Is(err, apperrors.ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"message": "This invitation is not for you"})
+		default:
+			log.Println("accept invitation error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to accept invitation"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Invitation accepted",
+		"data":    gin.H{"workspace_id": workspaceID},
+	})
+}
+
+func (h *WorkspaceHandler) DeclineInvitation(c *gin.Context) {
+	invitationID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid invitation id"})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	if err := h.workspaceService.DeclineInvitation(
+		c.Request.Context(),
+		userID,
+		invitationID,
+	); err != nil {
+		switch {
+		case errors.Is(err, apperrors.ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"message": "Invitation not found"})
+		case errors.Is(err, apperrors.ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"message": "This invitation is not for you"})
+		default:
+			log.Println("decline invitation error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to decline invitation"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Invitation declined"})
 }

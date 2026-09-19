@@ -108,6 +108,40 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func (h *AuthHandler) Refresh(c *gin.Context) {
+	var req model.RefreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Validation failed",
+			"details": validationMessages(err),
+		})
+		return
+	}
+
+	response, err := h.authService.Refresh(c.Request.Context(), req.RefreshToken)
+	if err != nil {
+		switch {
+		case errors.Is(err, apperrors.ErrInvalidToken):
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Invalid or expired session, please log in again",
+			})
+		case errors.Is(err, apperrors.ErrDatabase):
+			log.Println("refresh database error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to refresh session, please try again later",
+			})
+		default:
+			log.Println("refresh error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to refresh session, please try again later",
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
 func validationMessages(err error) []string {
 	var ve validator.ValidationErrors
 	if errors.As(err, &ve) {
@@ -181,7 +215,7 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, frontendURL+"/auth/callback?token="+token)
+	c.Redirect(http.StatusFound, frontendURL+"/auth/callback?token="+token.AccessToken+"&refresh_token="+token.RefreshToken)
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -194,7 +228,12 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	if err := h.authService.Logout(c.Request.Context(), parts[1]); err != nil {
+	var body struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	_ = c.ShouldBindJSON(&body)
+
+	if err := h.authService.Logout(c.Request.Context(), parts[1], body.RefreshToken); err != nil {
 		switch {
 		case errors.Is(err, apperrors.ErrInvalidToken):
 			c.JSON(http.StatusUnauthorized, gin.H{

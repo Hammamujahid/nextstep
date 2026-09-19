@@ -17,3 +17,9 @@ type CreateGoalRequest struct {
 	Description *string `json:"description"`
 	Status      string  `json:"status" binding:"omitempty,oneof=not_started in_progress completed archived"`
 }
+
+type UpdateGoalRequest struct {
+	Title       *string `json:"title" binding:"omitempty,min=1,max=255"`
+	Description *string `json:"description"`
+	Status      *string `json:"status" binding:"omitempty,oneof=not_started in_progress completed archived"`
+}

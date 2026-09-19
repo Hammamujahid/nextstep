@@ -228,6 +228,73 @@ func (r *GoalRepository) FindGoalIDsByTaskID(
 	return ids, nil
 }
 
+func (r *GoalRepository) FindGoalIDsByProjectID(
+	ctx context.Context,
+	projectID int,
+) ([]int, error) {
+	rows, err := r.db.Query(ctx, `SELECT goal_id FROM goal_projects WHERE project_id = $1`, projectID)
+	if err != nil {
+		return nil, apperrors.ErrDatabase
+	}
+	defer rows.Close()
+	var ids []int
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, apperrors.ErrDatabase
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, apperrors.ErrDatabase
+	}
+	return ids, nil
+}
+
+func (r *GoalRepository) Update(
+	ctx context.Context,
+	workspaceID int,
+	goalID int,
+	req model.UpdateGoalRequest,
+) (*model.Goal, error) {
+	query := `
+		UPDATE goals SET
+			title = COALESCE($1, title),
+			description = COALESCE($2, description),
+			status = COALESCE($3, status),
+			updated_at = NOW()
+		WHERE id = $4 AND workspace_id = $5
+		RETURNING id, workspace_id, title, description, status, created_at, updated_at
+	`
+	var updated model.Goal
+	err := r.db.QueryRow(ctx, query,
+		req.Title,
+		req.Description,
+		req.Status,
+		goalID,
+		workspaceID,
+	).Scan(&updated.ID, &updated.WorkspaceId, &updated.Title, &updated.Description, &updated.Status, &updated.CreatedAt, &updated.UpdatedAt)
+	if err != nil {
+		return nil, apperrors.ErrDatabase
+	}
+	return &updated, nil
+}
+
+func (r *GoalRepository) Delete(
+	ctx context.Context,
+	workspaceID int,
+	goalID int,
+) error {
+	res, err := r.db.Exec(ctx, `DELETE FROM goals WHERE id = $1 AND workspace_id = $2`, goalID, workspaceID)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	if res.RowsAffected() == 0 {
+		return apperrors.ErrNotFound
+	}
+	return nil
+}
+
 func (r *GoalRepository) Create(
 	ctx context.Context,
 	goal *model.Goal,
@@ -247,6 +314,18 @@ func (r *GoalRepository) AddTaskToGoal(
 	taskID int,
 ) error {
 	_, err := r.db.Exec(ctx, `INSERT INTO goal_tasks (goal_id, task_id) VALUES ($1,$2)`, goalID, taskID)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	return nil
+}
+
+// DeleteTaskGoals melepas semua tautan goal dari sebuah task (dipakai saat pindah/unlink goal di edit modal).
+func (r *GoalRepository) DeleteTaskGoals(
+	ctx context.Context,
+	taskID int,
+) error {
+	_, err := r.db.Exec(ctx, `DELETE FROM goal_tasks WHERE task_id = $1`, taskID)
 	if err != nil {
 		return apperrors.ErrDatabase
 	}

@@ -51,6 +51,7 @@ type ApplicationStats struct {
 	Total       int `json:"total"`
 	Wishlist    int `json:"wishlist"`
 	Applied     int `json:"applied"`
+	UnderReview int `json:"under_review"`
 	Interviewing int `json:"interviewing"`
 	Offered     int `json:"offered"`
 	Rejected    int `json:"rejected"`
