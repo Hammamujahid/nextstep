@@ -83,7 +83,7 @@ export default function RegisterPage() {
             id="username"
             type="text"
             autoComplete="username"
-            placeholder="andi_dev"
+            placeholder="tila_dev"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
@@ -97,7 +97,7 @@ export default function RegisterPage() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="andi@example.com"
+            placeholder="tila@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"

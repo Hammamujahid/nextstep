@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"backend/internal/apperrors"
+	"backend/internal/model"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -54,6 +55,71 @@ func (r *PermissionRepository) GetMemberPermission(
 		return role, "viewer", nil
 	}
 	return role, *perm, nil
+}
+
+// ListAssignableMembers mengembalikan anggota workspace yang boleh di-assign
+// ke sebuah resource: permission-nya selain none (admin selalu editor).
+func (r *PermissionRepository) ListAssignableMembers(
+	ctx context.Context,
+	workspaceID int,
+	resource string,
+) ([]model.AssignableMember, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT
+			m.user_id,
+			u.username,
+			u.email,
+			m.member_role,
+			CASE WHEN m.member_role = 'admin' THEN 'editor' ELSE COALESCE(p.permission, 'viewer') END AS permission
+		FROM workspace_members m
+		INNER JOIN users u ON u.id = m.user_id
+		LEFT JOIN workspace_member_permissions p
+			ON p.workspace_member_id = m.id AND p.resource_type = $2
+		WHERE m.workspace_id = $1
+			AND (m.member_role = 'admin' OR COALESCE(p.permission, 'viewer') != 'none')
+		ORDER BY u.username ASC
+	`, workspaceID, resource)
+	if err != nil {
+		return nil, apperrors.ErrDatabase
+	}
+	defer rows.Close()
+
+	members := []model.AssignableMember{}
+	for rows.Next() {
+		var m model.AssignableMember
+		if err := rows.Scan(&m.UserID, &m.Username, &m.Email, &m.MemberRole, &m.Permission); err != nil {
+			return nil, apperrors.ErrDatabase
+		}
+		members = append(members, m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, apperrors.ErrDatabase
+	}
+	return members, nil
+}
+
+// UpsertMemberPermission menyimpan permission satu resource milik satu anggota.
+// Baris permission admin diabaikan saat baca (admin selalu editor), tapi tetap boleh ditulis.
+func (r *PermissionRepository) UpsertMemberPermission(
+	ctx context.Context,
+	memberID int,
+	resource string,
+	permission string,
+) error {
+	_, err := r.db.Exec(
+		ctx,
+		`INSERT INTO workspace_member_permissions (workspace_member_id, resource_type, permission)
+		 VALUES ($1, $2, $3)
+		 ON CONFLICT (workspace_member_id, resource_type)
+		 DO UPDATE SET permission = EXCLUDED.permission`,
+		memberID,
+		resource,
+		permission,
+	)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	return nil
 }
 
 // GetAllPermissions mengembalikan role plus permission keempat resource sekaligus.

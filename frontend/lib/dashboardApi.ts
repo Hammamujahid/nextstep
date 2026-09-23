@@ -1,4 +1,27 @@
-import { API_BASE, getToken } from "./auth";
+import { apiFetch } from "./apiClient";
+
+export type ApiAssignee = {
+  id: number;
+  username: string;
+  email: string;
+};
+
+export type AssignableMember = {
+  user_id: number;
+  username: string;
+  email: string;
+  member_role: string;
+  permission: string;
+};
+
+export async function fetchAssignableMembers(
+  workspaceId: number,
+  resource: "project" | "task" | "goal" | "job_application"
+): Promise<AssignableMember[]> {
+  return authGet<AssignableMember[]>(
+    `/workspaces/${workspaceId}/assignable?resource=${resource}`
+  );
+}
 
 export type PrimaryGoal = {
   id: number;
@@ -6,6 +29,8 @@ export type PrimaryGoal = {
   title: string;
   description: string | null;
   status: string;
+  assignee_id: number | null;
+  assignee?: ApiAssignee | null;
   created_at: string;
   updated_at: string;
   total_projects: number;
@@ -20,22 +45,15 @@ export type PrimaryGoal = {
 export async function fetchPrimaryGoal(
   workspaceId: number
 ): Promise<PrimaryGoal | null> {
-  const token = getToken();
-  if (!token) throw new Error("Not authenticated");
-
-  const res = await fetch(`${API_BASE}/workspaces/${workspaceId}/primary-goal`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.message || "Failed to load primary goal");
+  try {
+    const json = (await apiFetch(
+      `/workspaces/${workspaceId}/primary-goal`
+    )) as { data: PrimaryGoal | null };
+    return json.data;
+  } catch (e: unknown) {
+    const m = e as { message?: string };
+    throw new Error(m.message || "Failed to load primary goal");
   }
-
-  const json = await res.json();
-  return json.data as PrimaryGoal | null;
 }
 
 export type DashboardMetrics = {
@@ -69,6 +87,7 @@ export type DashboardMetrics = {
     total: number;
     wishlist: number;
     applied: number;
+    under_review: number;
     interviewing: number;
     offered: number;
     rejected: number;
@@ -76,56 +95,43 @@ export type DashboardMetrics = {
 };
 
 export async function fetchMetrics(workspaceId: number): Promise<DashboardMetrics> {
-  const token = getToken();
-  if (!token) throw new Error("Not authenticated");
-
-  const res = await fetch(`${API_BASE}/workspaces/${workspaceId}/metrics`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.message || "Failed to load metrics");
+  try {
+    const json = (await apiFetch(
+      `/workspaces/${workspaceId}/metrics`
+    )) as { data: DashboardMetrics };
+    return json.data;
+  } catch (e: unknown) {
+    const m = e as { message?: string };
+    throw new Error(m.message || "Failed to load metrics");
   }
-
-  const json = await res.json();
-  return json.data as DashboardMetrics;
 }
 
 async function authGet<T>(path: string): Promise<T> {
-  const token = getToken();
-  if (!token) throw new Error("Not authenticated");
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.message || `Failed to load ${path}`);
+  try {
+    const json = (await apiFetch(path)) as { data: T };
+    return json.data;
+  } catch (e: unknown) {
+    const m = e as { message?: string };
+    throw new Error(m.message || `Failed to load ${path}`);
   }
-  const json = await res.json();
-  return json.data as T;
 }
 
 async function authMutate<T>(path: string, method: string, body?: unknown): Promise<T> {
-  const token = getToken();
-  if (!token) throw new Error("Not authenticated");
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    const msg = data.message || (Array.isArray(data.details) ? data.details.join(", ") : "") || `Failed to ${method} ${path}`;
+  try {
+    const json = (await apiFetch(path, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    })) as { data: T };
+    return json.data;
+  } catch (e: unknown) {
+    const m = e as { message?: string; details?: string[] };
+    const msg =
+      m.message ||
+      (Array.isArray(m.details) ? m.details.join(", ") : "") ||
+      `Failed to ${method} ${path}`;
     throw new Error(msg);
   }
-  const json = await res.json().catch(() => ({ data: null }));
-  return json.data as T;
 }
 
 export type ApiTask = {
@@ -138,6 +144,9 @@ export type ApiTask = {
   status: "not_started" | "in_progress" | "completed";
   due_date: string | null;
   estimated_minutes: number;
+  goal_ids?: number[] | null;
+  assignee_id: number | null;
+  assignee?: ApiAssignee | null;
   created_at: string;
   updated_at: string;
 };
@@ -148,16 +157,33 @@ export type ApiProject = {
   project_name: string;
   project_description: string | null;
   status: string;
+  total_tasks: number;
+  completed_tasks: number;
+  progress: number;
+  assignee_id: number | null;
+  assignee?: ApiAssignee | null;
   created_at: string;
   updated_at: string;
 };
+
+export type ApplicationStatus =
+  | "wishlist"
+  | "applied"
+  | "under_review"
+  | "interviewing"
+  | "offered"
+  | "rejected";
 
 export type ApiApplication = {
   id: number;
   workspace_id: number;
   job_title: string;
   company_name: string;
-  status: string;
+  status: ApplicationStatus;
+  due_date: string | null;
+  job_url: string | null;
+  assignee_id: number | null;
+  assignee?: ApiAssignee | null;
   created_at: string;
   updated_at: string;
 };
@@ -181,10 +207,62 @@ export function fetchApplications(workspaceId: number) {
   return authGet<ApiApplication[]>(`/workspaces/${workspaceId}/applications`);
 }
 
+export type CreateApplicationPayload = {
+  job_title: string;
+  company_name: string;
+  status?: ApplicationStatus;
+  due_date?: string | null;
+  job_url?: string | null;
+  assignee_id?: number | null;
+};
+
+export function createApplication(workspaceId: number, payload: CreateApplicationPayload) {
+  return authMutate<ApiApplication>(`/workspaces/${workspaceId}/applications`, "POST", payload);
+}
+
+export function updateApplicationApi(
+  workspaceId: number,
+  applicationId: number,
+  payload: Partial<CreateApplicationPayload> & { clear_due_date?: boolean; clear_assignee_id?: boolean }
+) {
+  return authMutate<ApiApplication>(`/workspaces/${workspaceId}/applications/${applicationId}`, "PATCH", payload);
+}
+
+export function deleteApplicationApi(workspaceId: number, applicationId: number) {
+  return authMutate<null>(`/workspaces/${workspaceId}/applications/${applicationId}`, "DELETE");
+}
+
+export function formatApplicationStatus(status: string): string {
+  switch (status) {
+    case "wishlist":
+      return "Wishlist";
+    case "applied":
+      return "Applied";
+    case "under_review":
+      return "Under Review";
+    case "interviewing":
+      return "Interviewing";
+    case "offered":
+      return "Offered";
+    case "rejected":
+      return "Rejected";
+    default:
+      return status;
+  }
+}
+
+export function formatDueDateTime(iso: string | null): string {
+  if (!iso) return "No due date";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "-";
+  return `${d.toLocaleDateString()}, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
+}
+
 export type CreateGoalPayload = {
   title: string;
   description?: string | null;
   status?: string;
+  assignee_id?: number | null;
 };
 
 export function createGoal(workspaceId: number, payload: CreateGoalPayload) {
@@ -200,6 +278,10 @@ export type CreateTaskPayload = {
   estimated_minutes?: number | null;
   project_id?: number | null;
   goal_id?: number | null;
+  clear_project_id?: boolean;
+  clear_goal_id?: boolean;
+  assignee_id?: number | null;
+  clear_assignee_id?: boolean;
   description?: string | null;
 };
 
@@ -209,6 +291,48 @@ export function createTask(workspaceId: number, payload: CreateTaskPayload) {
 
 export function toggleTaskApi(workspaceId: number, taskId: number) {
   return authMutate<ApiTask>(`/workspaces/${workspaceId}/tasks/${taskId}/toggle`, "PATCH");
+}
+
+export function deleteTaskApi(workspaceId: number, taskId: number) {
+  return authMutate<null>(`/workspaces/${workspaceId}/tasks/${taskId}`, "DELETE");
+}
+
+export type UpdateGoalPayload = {
+  title?: string;
+  description?: string | null;
+  status?: string;
+  assignee_id?: number | null;
+  clear_assignee_id?: boolean;
+};
+
+export function updateGoalApi(workspaceId: number, goalId: number, payload: UpdateGoalPayload) {
+  return authMutate<PrimaryGoal>(`/workspaces/${workspaceId}/goals/${goalId}`, "PATCH", payload);
+}
+
+export function deleteGoalApi(workspaceId: number, goalId: number) {
+  return authMutate<null>(`/workspaces/${workspaceId}/goals/${goalId}`, "DELETE");
+}
+
+export type CreateProjectPayload = {
+  project_name: string;
+  project_description?: string | null;
+  assignee_id?: number | null;
+};
+
+export function createProject(workspaceId: number, payload: CreateProjectPayload) {
+  return authMutate<ApiProject>(`/workspaces/${workspaceId}/projects`, "POST", payload);
+}
+
+export function updateProjectApi(
+  workspaceId: number,
+  projectId: number,
+  payload: Partial<CreateProjectPayload> & { status?: string; assignee_id?: number | null; clear_assignee_id?: boolean }
+) {
+  return authMutate<ApiProject>(`/workspaces/${workspaceId}/projects/${projectId}`, "PATCH", payload);
+}
+
+export function deleteProjectApi(workspaceId: number, projectId: number) {
+  return authMutate<null>(`/workspaces/${workspaceId}/projects/${projectId}`, "DELETE");
 }
 
 export function updateTaskApi(

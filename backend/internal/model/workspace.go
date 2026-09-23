@@ -32,11 +32,25 @@ type InviteMemberRequest struct {
 	Permissions *InvitePermissions `json:"permissions"`
 }
 
+type UpdateMemberPermissionRequest struct {
+	Resource   string `json:"resource" binding:"required,oneof=project task goal job_application"`
+	Permission string `json:"permission" binding:"required,oneof=none viewer editor"`
+}
+
 type WorkspaceMemberWithUser struct {
-	ID         int       `json:"id" db:"id"`
-	UserID     int       `json:"user_id" db:"user_id"`
-	Username   string    `json:"username" db:"username"`
-	Email      string    `json:"email" db:"email"`
-	MemberRole string    `json:"member_role" db:"member_role"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+	ID          int                `json:"id" db:"id"`
+	UserID      int                `json:"user_id" db:"user_id"`
+	Username    string             `json:"username" db:"username"`
+	Email       string             `json:"email" db:"email"`
+	MemberRole  string             `json:"member_role" db:"member_role"`
+	CreatedAt   time.Time          `json:"created_at" db:"created_at"`
+	Permissions *MemberPermissions `json:"permissions"`
+}
+
+// MemberPermissions adalah hak akses per resource milik satu anggota.
+type MemberPermissions struct {
+	Project        string `json:"project"`
+	Task           string `json:"task"`
+	Goal           string `json:"goal"`
+	JobApplication string `json:"job_application"`
 }

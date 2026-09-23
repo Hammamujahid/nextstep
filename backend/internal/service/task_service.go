@@ -65,6 +65,22 @@ func (s *TaskService) requireLinkEditor(ctx context.Context, workspaceID, userID
 	return nil
 }
 
+// validateAssignee memastikan assignee adalah anggota workspace yang punya
+// akses (selain none) pada resource tersebut.
+func (s *TaskService) validateAssignee(ctx context.Context, workspaceID int, assigneeID *int, resource string) error {
+	if assigneeID == nil {
+		return nil
+	}
+	_, perm, err := s.permissionRepository.GetMemberPermission(ctx, workspaceID, *assigneeID, resource)
+	if err != nil {
+		return apperrors.ErrInvalidAssignee
+	}
+	if perm == "none" {
+		return apperrors.ErrInvalidAssignee
+	}
+	return nil
+}
+
 // GetTasks mengambil tasks untuk workspace dengan urutan default:
 // priority tertinggi -> due_date terdekat -> updated terbaru.
 // Ini dipakai oleh tag NextSteps di DashboardHome (limit 4 di frontend).
@@ -166,6 +182,10 @@ func (s *TaskService) CreateTask(
 			return nil, err
 		}
 	}
+	// assignee harus anggota workspace dengan akses task (selain none)
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "task"); err != nil {
+		return nil, err
+	}
 	status := req.Status
 	if status == "" {
 		status = "not_started"
@@ -183,6 +203,7 @@ func (s *TaskService) CreateTask(
 		Status:           status,
 		DueDate:          req.DueDate,
 		EstimatedMinutes: estimated,
+		AssigneeId:       req.AssigneeId,
 	}
 	created, err := s.taskRepository.Create(ctx, task)
 	if err != nil {
@@ -382,6 +403,10 @@ func (s *TaskService) UpdateTask(
 		if err := s.requireLinkEditor(ctx, workspaceID, userID, "goal"); err != nil {
 			return nil, err
 		}
+	}
+	// assignee harus anggota workspace dengan akses task (selain none)
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "task"); err != nil {
+		return nil, err
 	}
 	updated, err := s.taskRepository.Update(ctx, workspaceID, taskID, req)
 	if err != nil {

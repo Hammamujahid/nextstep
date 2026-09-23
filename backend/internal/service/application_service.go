@@ -14,22 +14,41 @@ import (
 type ApplicationService struct {
 	applicationRepository *repository.JobApplicationRepository
 	workspaceRepository   *repository.WorkspaceRepository
+	permissionRepository  *repository.PermissionRepository
 	eventBus              *EventBus
 }
 
 func NewApplicationService(
 	applicationRepository *repository.JobApplicationRepository,
 	workspaceRepository *repository.WorkspaceRepository,
+	permissionRepository *repository.PermissionRepository,
 	eventBus ...*EventBus,
 ) *ApplicationService {
 	s := &ApplicationService{
 		applicationRepository: applicationRepository,
 		workspaceRepository:   workspaceRepository,
+		permissionRepository:  permissionRepository,
 	}
 	if len(eventBus) > 0 {
 		s.eventBus = eventBus[0]
 	}
 	return s
+}
+
+// validateAssignee memastikan assignee adalah anggota workspace yang punya
+// akses (selain none) pada resource tersebut.
+func (s *ApplicationService) validateAssignee(ctx context.Context, workspaceID int, assigneeID *int, resource string) error {
+	if assigneeID == nil {
+		return nil
+	}
+	_, perm, err := s.permissionRepository.GetMemberPermission(ctx, workspaceID, *assigneeID, resource)
+	if err != nil {
+		return apperrors.ErrInvalidAssignee
+	}
+	if perm == "none" {
+		return apperrors.ErrInvalidAssignee
+	}
+	return nil
 }
 
 func (s *ApplicationService) GetApplications(
@@ -85,6 +104,10 @@ func (s *ApplicationService) CreateApplication(
 		Status:      status,
 		DueDate:     req.DueDate,
 		JobURL:      req.JobURL,
+		AssigneeId:  req.AssigneeId,
+	}
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "job_application"); err != nil {
+		return nil, err
 	}
 	created, err := s.applicationRepository.Create(ctx, app)
 	if err != nil {
@@ -110,6 +133,9 @@ func (s *ApplicationService) UpdateApplication(
 	}
 	if _, err := s.applicationRepository.FindByIDAndWorkspace(ctx, applicationID, workspaceID); err != nil {
 		return nil, apperrors.ErrNotFound
+	}
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "job_application"); err != nil {
+		return nil, err
 	}
 	updated, err := s.applicationRepository.Update(ctx, workspaceID, applicationID, req)
 	if err != nil {

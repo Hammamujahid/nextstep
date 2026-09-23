@@ -58,7 +58,7 @@ export default function AuthShell({
             Every goal starts with the next step.
           </h2>
           <p className="anim-fade-up anim-delay-2 mt-3 max-w-md text-sm leading-relaxed text-sky-50">
-            Track goals, projects, tasks, job applications, and documents in
+            Track goals, projects, tasks, and job applications in
             one calm workspace.
           </p>
 
@@ -68,7 +68,7 @@ export default function AuthShell({
             <div className="anim-float-slow rounded-2xl border border-white/25 bg-white/15 p-5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-sky-100">Good morning, Andi 👋</p>
+                  <p className="text-xs text-sky-100">Good morning, Tila 👋</p>
                   <p className="mt-1 font-bold">Become a Fullstack Developer</p>
                 </div>
                 <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-sky-700">
@@ -140,7 +140,7 @@ export default function AuthShell({
 
           <p className="anim-fade-up anim-delay-4 mt-10 flex items-center gap-2 text-xs text-sky-100">
             <Flame className="h-3.5 w-3.5" />
-            Join thousands turning small steps into offers.
+            Turn small steps into offers.
           </p>
         </div>
 

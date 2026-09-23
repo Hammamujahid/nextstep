@@ -193,6 +193,10 @@ func (h *DashboardHandler) CreateProject(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You are not a member of this workspace"})
 			return
 		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
 		log.Println("create project error:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create project"})
 		return
@@ -251,6 +255,10 @@ func (h *DashboardHandler) UpdateProject(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You are not a member of this workspace"})
 			return
 		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
 		if errors.Is(err, apperrors.ErrNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"message": "Project not found"})
 			return
@@ -300,6 +308,10 @@ func (h *DashboardHandler) CreateGoal(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You are not a member of this workspace"})
 			return
 		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
 		log.Println("create goal error:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create goal"})
 		return
@@ -328,6 +340,10 @@ func (h *DashboardHandler) UpdateGoal(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrNotMember) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You are not a member of this workspace"})
+			return
+		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {
@@ -465,6 +481,10 @@ func (h *DashboardHandler) CreateApplication(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You are not a member of this workspace"})
 			return
 		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
 		log.Println("create application error:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create application"})
 		return
@@ -493,6 +513,10 @@ func (h *DashboardHandler) UpdateApplication(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrNotMember) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You are not a member of this workspace"})
+			return
+		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {
@@ -556,6 +580,10 @@ func (h *DashboardHandler) CreateTask(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You don't have access to this resource"})
 			return
 		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
 		if errors.Is(err, apperrors.ErrNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"message": "Project not found in this workspace"})
 			return
@@ -592,6 +620,10 @@ func (h *DashboardHandler) UpdateTask(c *gin.Context) {
 		}
 		if errors.Is(err, apperrors.ErrForbidden) {
 			c.JSON(http.StatusForbidden, gin.H{"message": "You don't have access to this resource"})
+			return
+		}
+		if errors.Is(err, apperrors.ErrInvalidAssignee) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {

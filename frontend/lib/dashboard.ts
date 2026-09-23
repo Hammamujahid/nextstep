@@ -111,27 +111,6 @@ export type SkillTrack = {
 
 
 
-export const NOTIFICATIONS = [
-  {
-    id: 1,
-    title: "Interview invited",
-    detail: "Stripe Tech Screen, Fri 2:00 PM",
-    time: "2h ago",
-  },
-  {
-    id: 2,
-    title: "Take-home under review",
-    detail: "Linear Product Engineer",
-    time: "Yesterday",
-  },
-  {
-    id: 3,
-    title: "Milestone reached",
-    detail: "Portfolio marked complete",
-    time: "2 days ago",
-  },
-];
-
 export function greetingForHour(hour: number): string {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
@@ -409,6 +388,12 @@ export type BoardTask = {
   estimateMinutes: number;
   progress: number | null;
   completedLabel: string | null;
+  projectId?: number | null;
+  goalIds?: number[];
+  projectName?: string | null;
+  goalName?: string | null;
+  assigneeId?: number | null;
+  assigneeName?: string | null;
 };
 
 export const BOARD_LANES: { key: BoardLane; label: string; dot: string }[] = [

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { CalendarDays, Check, Timer, ChevronDown } from "lucide-react";
 import { parseEstimateToMinutes, type BoardTask } from "../../lib/dashboard";
+import RowActionMenu from "../ui/RowActionMenu";
+import TaskLinks from "./TaskLinks";
 
 const PRIORITY_BADGE: Record<BoardTask["priority"], string> = {
   high: "bg-red-100 text-red-700",
@@ -46,6 +48,9 @@ type TaskCardProps = {
   onPriorityChange: (id: number, priority: BoardTask["priority"]) => void;
   onDueChange: (id: number, dueDateISO: string | null) => void;
   onEstimateChange: (id: number, minutes: number) => void;
+  onEdit: (task: BoardTask) => void;
+  onDelete: (id: number) => void;
+  canEdit?: boolean;
 };
 
 function presetToISO(preset: string): string | null {
@@ -72,7 +77,7 @@ function splitISODateTime(iso: string | null | undefined): { date: string; time:
   return { date: `${y}-${m}-${day}`, time: `${hh}:${mm}` };
 }
 
-export default function TaskCard({ task, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange }: TaskCardProps) {
+export default function TaskCard({ task, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange, onEdit, onDelete, canEdit = true }: TaskCardProps) {
   const done = task.status === "completed";
   const [statusOpen, setStatusOpen] = useState(false);
   const [priorityOpen, setPriorityOpen] = useState(false);
@@ -114,54 +119,65 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
   return (
     <article
       className={`group flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md ${
-        done ? "opacity-75" : ""
-      } ${anyMenuOpen ? "relative z-30" : ""}`}
+        anyMenuOpen ? "relative z-30" : ""
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <input
             type="checkbox"
             checked={done}
+            disabled={!canEdit}
             onChange={() => onToggle(task.id)}
             aria-label={done ? `Reopen ${task.title}` : `Complete ${task.title}`}
-            className="h-4 w-4 shrink-0 cursor-pointer rounded accent-sky-500"
+            className="h-4 w-4 shrink-0 cursor-pointer rounded accent-sky-500 disabled:cursor-not-allowed"
           />
         </div>
-        <div className="relative shrink-0">
-          <button
-            onClick={() => setPriorityOpen(!priorityOpen)}
-            aria-haspopup="listbox"
-            aria-expanded={priorityOpen}
-            aria-label={`Change priority, current ${PRIORITY_LABEL[task.priority]}`}
-            className={`flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold transition hover:opacity-80 ${PRIORITY_BADGE[task.priority]}`}
-          >
-            {PRIORITY_LABEL[task.priority]}
-            <ChevronDown className={`h-3 w-3 transition ${priorityOpen ? "rotate-180" : ""}`} />
-          </button>
-          {priorityOpen && (
-            <>
-              <button
-                aria-label="Close priority menu"
-                className="fixed inset-0 z-40 cursor-default"
-                onClick={() => setPriorityOpen(false)}
-              />
-              <div className="absolute right-0 z-50 mt-1 w-32 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
-                {PRIORITY_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      setPriorityOpen(false);
-                      if (opt.value === task.priority) return;
-                      onPriorityChange(task.id, opt.value);
-                    }}
-                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.priority ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
-                  >
-                    <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </>
+        <div className="flex shrink-0 items-center gap-1">
+          <div className="relative">
+            <button
+              onClick={() => setPriorityOpen(!priorityOpen)}
+              disabled={!canEdit}
+              aria-haspopup="listbox"
+              aria-expanded={priorityOpen}
+              aria-label={`Change priority, current ${PRIORITY_LABEL[task.priority]}`}
+              className={`flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold transition hover:opacity-80 disabled:cursor-default disabled:hover:opacity-100 ${PRIORITY_BADGE[task.priority]}`}
+            >
+              {PRIORITY_LABEL[task.priority]}
+              {canEdit && <ChevronDown className={`h-3 w-3 transition ${priorityOpen ? "rotate-180" : ""}`} />}
+            </button>
+            {priorityOpen && (
+              <>
+                <button
+                  aria-label="Close priority menu"
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={() => setPriorityOpen(false)}
+                />
+                <div className="absolute right-0 z-50 mt-1 w-32 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+                  {PRIORITY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setPriorityOpen(false);
+                        if (opt.value === task.priority) return;
+                        onPriorityChange(task.id, opt.value);
+                      }}
+                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.priority ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
+                    >
+                      <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+          {canEdit && (
+            <RowActionMenu
+              label={task.title}
+              onEdit={() => onEdit(task)}
+              onDelete={() => onDelete(task.id)}
+            />
           )}
         </div>
       </div>
@@ -174,6 +190,8 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
         {task.title}
       </h3>
 
+      <TaskLinks projectName={task.projectName} goalName={task.goalName} />
+
       {task.description && !done && (
         <p className="line-clamp-2 text-[13px] leading-relaxed text-slate-500">
           {task.description}
@@ -184,13 +202,14 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
       <div className="relative">
         <button
           onClick={() => setStatusOpen(!statusOpen)}
-          className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-white"
+          disabled={!canEdit}
+          className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-white disabled:cursor-default disabled:hover:bg-slate-50"
         >
           <span className="flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full ${currentStatus.dot}`} />
             {currentStatus.label}
           </span>
-          <ChevronDown className={`h-3 w-3 transition ${statusOpen ? "rotate-180" : ""}`} />
+          {canEdit && <ChevronDown className={`h-3 w-3 transition ${statusOpen ? "rotate-180" : ""}`} />}
         </button>
         {statusOpen && (
           <>
@@ -232,14 +251,15 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
         <div className="relative">
           <button
             onClick={() => (dueOpen ? setDueOpen(false) : openDueMenu())}
+            disabled={!canEdit}
             aria-haspopup="listbox"
             aria-expanded={dueOpen}
             aria-label="Change due date"
-            className={`flex items-center gap-1 rounded-md px-1 py-0.5 font-medium transition hover:bg-slate-100 ${DUE_TEXT[task.dueTone]}`}
+            className={`flex items-center gap-1 rounded-md px-1 py-0.5 font-medium transition hover:bg-slate-100 disabled:cursor-default disabled:hover:bg-transparent ${DUE_TEXT[task.dueTone]}`}
           >
             <CalendarDays className="h-3.5 w-3.5" />
             {done && task.completedLabel ? task.completedLabel : task.dueLabel}
-            <ChevronDown className={`h-3 w-3 transition ${dueOpen ? "rotate-180" : ""}`} />
+            {canEdit && <ChevronDown className={`h-3 w-3 transition ${dueOpen ? "rotate-180" : ""}`} />}
           </button>
           {dueOpen && (
             <>
@@ -299,14 +319,15 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
         <div className="relative">
           <button
             onClick={() => setEstimateOpen(!estimateOpen)}
+            disabled={!canEdit}
             aria-haspopup="listbox"
             aria-expanded={estimateOpen}
             aria-label="Change estimated time"
-            className="flex items-center gap-1 rounded-md px-1 py-0.5 transition hover:bg-slate-100 hover:text-slate-700"
+            className="flex items-center gap-1 rounded-md px-1 py-0.5 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-default disabled:hover:bg-transparent disabled:hover:text-slate-500"
           >
             <Timer className="h-3.5 w-3.5" />
             {task.estimate}
-            <ChevronDown className={`h-3 w-3 transition ${estimateOpen ? "rotate-180" : ""}`} />
+            {canEdit && <ChevronDown className={`h-3 w-3 transition ${estimateOpen ? "rotate-180" : ""}`} />}
           </button>
           {estimateOpen && (
             <>

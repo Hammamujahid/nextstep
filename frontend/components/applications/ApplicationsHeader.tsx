@@ -6,12 +6,14 @@ type ApplicationsHeaderProps = {
   onAdd: () => void;
   onToggleFilters: () => void;
   filtersVisible: boolean;
+  canEdit?: boolean;
 };
 
 export default function ApplicationsHeader({
   onAdd,
   onToggleFilters,
   filtersVisible,
+  canEdit = true,
 }: ApplicationsHeaderProps) {
   return (
     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -46,13 +48,15 @@ export default function ApplicationsHeader({
           <SlidersHorizontal className="h-[18px] w-[18px]" />
           Filter Pipeline
         </button>
-        <button
-          onClick={onAdd}
-          className="btn-shine inline-flex h-10 items-center gap-2 rounded-xl bg-sky-400 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md"
-        >
-          <Plus className="h-[18px] w-[18px]" />
-          Add Application
-        </button>
+        {canEdit && (
+          <button
+            onClick={onAdd}
+            className="btn-shine inline-flex h-10 items-center gap-2 rounded-xl bg-sky-400 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md"
+          >
+            <Plus className="h-[18px] w-[18px]" />
+            Add Application
+          </button>
+        )}
       </div>
     </div>
   );

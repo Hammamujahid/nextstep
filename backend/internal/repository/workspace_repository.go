@@ -226,6 +226,61 @@ func (r *WorkspaceRepository) ListMembers(
 		return nil, apperrors.ErrDatabase
 	}
 
+	// lampirkan permission per member (satu query untuk semua anggota).
+	// admin selalu full editor; tanpa baris permission dianggap viewer.
+	if len(members) > 0 {
+		ids := make([]int, 0, len(members))
+		byID := make(map[int]*model.WorkspaceMemberWithUser, len(members))
+		for i := range members {
+			members[i].Permissions = &model.MemberPermissions{
+				Project:        "viewer",
+				Task:           "viewer",
+				Goal:           "viewer",
+				JobApplication: "viewer",
+			}
+			if members[i].MemberRole == "admin" {
+				members[i].Permissions = &model.MemberPermissions{
+					Project:        "editor",
+					Task:           "editor",
+					Goal:           "editor",
+					JobApplication: "editor",
+				}
+			}
+			ids = append(ids, members[i].ID)
+			byID[members[i].ID] = &members[i]
+		}
+		prows, err := r.db.Query(ctx, `SELECT workspace_member_id, resource_type, permission FROM workspace_member_permissions WHERE workspace_member_id = ANY($1)`, ids)
+		if err != nil {
+			return nil, apperrors.ErrDatabase
+		}
+		defer prows.Close()
+		for prows.Next() {
+			var memberID int
+			var resource, perm string
+			if err := prows.Scan(&memberID, &resource, &perm); err != nil {
+				return nil, apperrors.ErrDatabase
+			}
+			m, ok := byID[memberID]
+			// admin selalu tampil full editor (sama seperti GetMemberPermission)
+			if !ok || m.Permissions == nil || m.MemberRole == "admin" {
+				continue
+			}
+			switch resource {
+			case "project":
+				m.Permissions.Project = perm
+			case "task":
+				m.Permissions.Task = perm
+			case "goal":
+				m.Permissions.Goal = perm
+			case "job_application":
+				m.Permissions.JobApplication = perm
+			}
+		}
+		if err := prows.Err(); err != nil {
+			return nil, apperrors.ErrDatabase
+		}
+	}
+
 	return members, nil
 }
 
@@ -356,6 +411,95 @@ func (r *WorkspaceRepository) IsUserMember(
 		return false, apperrors.ErrDatabase
 	}
 	return exists, nil
+}
+
+// FindMemberByID mencari satu anggota workspace berdasarkan id baris member.
+func (r *WorkspaceRepository) FindMemberByID(
+	ctx context.Context,
+	workspaceID int,
+	memberID int,
+) (*model.WorkspaceMemberWithUser, error) {
+	var m model.WorkspaceMemberWithUser
+	err := r.db.QueryRow(
+		ctx,
+		`SELECT m.id, m.user_id, u.username, u.email, m.member_role, m.created_at
+		 FROM workspace_members m
+		 INNER JOIN users u ON u.id = m.user_id
+		 WHERE m.id = $1 AND m.workspace_id = $2`,
+		memberID,
+		workspaceID,
+	).Scan(&m.ID, &m.UserID, &m.Username, &m.Email, &m.MemberRole, &m.CreatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperrors.ErrNotFound
+		}
+		return nil, apperrors.ErrDatabase
+	}
+	return &m, nil
+}
+
+// CountAdmins menghitung jumlah anggota ber-role admin dalam satu workspace.
+func (r *WorkspaceRepository) CountAdmins(
+	ctx context.Context,
+	workspaceID int,
+) (int, error) {
+	var n int
+	err := r.db.QueryRow(
+		ctx,
+		`SELECT COUNT(*) FROM workspace_members WHERE workspace_id = $1 AND member_role = 'admin'`,
+		workspaceID,
+	).Scan(&n)
+	if err != nil {
+		return 0, apperrors.ErrDatabase
+	}
+	return n, nil
+}
+
+// DeleteMemberTx menghapus anggota beserta permission-nya dalam satu transaksi,
+// sekaligus membersihkan active_workspace_id user tersebut bila menunjuk ke sini.
+func (r *WorkspaceRepository) DeleteMemberTx(
+	ctx context.Context,
+	workspaceID int,
+	memberID int,
+	userID int,
+) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	defer tx.Rollback(ctx)
+
+	if _, err := tx.Exec(
+		ctx,
+		`DELETE FROM workspace_member_permissions WHERE workspace_member_id = $1`,
+		memberID,
+	); err != nil {
+		return apperrors.ErrDatabase
+	}
+	res, err := tx.Exec(
+		ctx,
+		`DELETE FROM workspace_members WHERE id = $1 AND workspace_id = $2`,
+		memberID,
+		workspaceID,
+	)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	if res.RowsAffected() == 0 {
+		return apperrors.ErrNotFound
+	}
+	if _, err := tx.Exec(
+		ctx,
+		`UPDATE users SET active_workspace_id = NULL, updated_at = NOW() WHERE id = $1 AND active_workspace_id = $2`,
+		userID,
+		workspaceID,
+	); err != nil {
+		return apperrors.ErrDatabase
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return apperrors.ErrDatabase
+	}
+	return nil
 }
 
 // DeleteInvitation menghapus undangan pending (cancel oleh admin).

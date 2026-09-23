@@ -1,4 +1,4 @@
-package repository
+﻿package repository
 
 import (
 	"context"
@@ -31,6 +31,9 @@ func (r *GoalRepository) GetGoalsWithProgress(
 			g.title,
 			g.description,
 			g.status,
+			g.assignee_id,
+			a.username,
+			a.email,
 			g.created_at,
 			g.updated_at,
 			COALESCE(p.total, 0) AS total_projects,
@@ -38,6 +41,7 @@ func (r *GoalRepository) GetGoalsWithProgress(
 			COALESCE(t.total, 0) AS total_tasks,
 			COALESCE(t.completed, 0) AS completed_tasks
 		FROM goals g
+		LEFT JOIN users a ON a.id = g.assignee_id
 		LEFT JOIN (
 			SELECT
 				gp.goal_id,
@@ -69,12 +73,17 @@ func (r *GoalRepository) GetGoalsWithProgress(
 	result := make([]*model.PrimaryGoal, 0)
 	for rows.Next() {
 		var g model.PrimaryGoal
+		var assigneeID *int
+		var assigneeName, assigneeEmail *string
 		if err := rows.Scan(
 			&g.ID,
 			&g.WorkspaceId,
 			&g.Title,
 			&g.Description,
 			&g.Status,
+			&assigneeID,
+			&assigneeName,
+			&assigneeEmail,
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.TotalProjects,
@@ -84,6 +93,7 @@ func (r *GoalRepository) GetGoalsWithProgress(
 		); err != nil {
 			return nil, apperrors.ErrDatabase
 		}
+		g.AssigneeId, g.Assignee = ScanAssignee(assigneeID, assigneeName, assigneeEmail)
 		g.TotalRequirements = g.TotalProjects + g.TotalTasks
 		g.CompletedReqs = g.CompletedProjects + g.CompletedTasks
 		if g.TotalRequirements > 0 {
@@ -262,9 +272,10 @@ func (r *GoalRepository) Update(
 			title = COALESCE($1, title),
 			description = COALESCE($2, description),
 			status = COALESCE($3, status),
+			assignee_id = CASE WHEN $6 THEN NULL ELSE COALESCE($7, assignee_id) END,
 			updated_at = NOW()
 		WHERE id = $4 AND workspace_id = $5
-		RETURNING id, workspace_id, title, description, status, created_at, updated_at
+		RETURNING id, workspace_id, title, description, status, assignee_id, created_at, updated_at
 	`
 	var updated model.Goal
 	err := r.db.QueryRow(ctx, query,
@@ -273,9 +284,14 @@ func (r *GoalRepository) Update(
 		req.Status,
 		goalID,
 		workspaceID,
-	).Scan(&updated.ID, &updated.WorkspaceId, &updated.Title, &updated.Description, &updated.Status, &updated.CreatedAt, &updated.UpdatedAt)
+		req.ClearAssigneeId != nil && *req.ClearAssigneeId,
+		req.AssigneeId,
+	).Scan(&updated.ID, &updated.WorkspaceId, &updated.Title, &updated.Description, &updated.Status, &updated.AssigneeId, &updated.CreatedAt, &updated.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if updated.Assignee, err = FetchAssignee(ctx, r.db, updated.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &updated, nil
 }
@@ -299,11 +315,14 @@ func (r *GoalRepository) Create(
 	ctx context.Context,
 	goal *model.Goal,
 ) (*model.Goal, error) {
-	query := `INSERT INTO goals (workspace_id, title, description, status) VALUES ($1,$2,$3,$4) RETURNING id, workspace_id, title, description, status, created_at, updated_at`
+	query := `INSERT INTO goals (workspace_id, title, description, status, assignee_id) VALUES ($1,$2,$3,$4,$5) RETURNING id, workspace_id, title, description, status, assignee_id, created_at, updated_at`
 	var created model.Goal
-	err := r.db.QueryRow(ctx, query, goal.WorkspaceId, goal.Title, goal.Description, goal.Status).Scan(&created.ID, &created.WorkspaceId, &created.Title, &created.Description, &created.Status, &created.CreatedAt, &created.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, goal.WorkspaceId, goal.Title, goal.Description, goal.Status, goal.AssigneeId).Scan(&created.ID, &created.WorkspaceId, &created.Title, &created.Description, &created.Status, &created.AssigneeId, &created.CreatedAt, &created.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if created.Assignee, err = FetchAssignee(ctx, r.db, created.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &created, nil
 }

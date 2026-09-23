@@ -1,7 +1,7 @@
 import { API_BASE, getToken } from "./auth";
 
 export type SSEEvent = {
-  type: "task_created" | "task_toggled" | "task_updated" | "goal_progress" | "goals_refresh" | "goal_created";
+  type: "task_created" | "task_toggled" | "task_updated" | "task_deleted" | "goal_progress" | "goals_refresh" | "goal_created" | "goal_updated" | "goal_deleted" | "project_created" | "project_updated" | "project_deleted" | "application_created" | "application_updated" | "application_deleted";
   data?: unknown;
   workspace_id?: number;
 };

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { CalendarDays, Timer, ChevronDown } from "lucide-react";
 import { BOARD_LANES, parseEstimateToMinutes, type BoardTask } from "../../lib/dashboard";
+import RowActionMenu from "../ui/RowActionMenu";
+import TaskLinks from "./TaskLinks";
 
 type TaskListViewProps = {
   tasks: BoardTask[];
@@ -11,6 +13,9 @@ type TaskListViewProps = {
   onPriorityChange: (id: number, priority: BoardTask["priority"]) => void;
   onDueChange: (id: number, dueDateISO: string | null) => void;
   onEstimateChange: (id: number, minutes: number) => void;
+  onEdit: (task: BoardTask) => void;
+  onDelete: (id: number) => void;
+  canEdit?: boolean;
 };
 
 const LANE_LABEL: Record<BoardTask["lane"], string> = Object.fromEntries(
@@ -60,9 +65,11 @@ function splitISODateTime(iso: string | null | undefined): { date: string; time:
 function StatusDropdown({
   task,
   onStatusChange,
+  canEdit = true,
 }: {
   task: BoardTask;
   onStatusChange: (id: number, status: BoardTask["status"]) => void;
+  canEdit?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const current = STATUS_OPTIONS.find((s) => s.value === task.status) || STATUS_OPTIONS[0];
@@ -70,13 +77,14 @@ function StatusDropdown({
     <div className="relative shrink-0">
       <button
         onClick={() => setOpen(!open)}
+        disabled={!canEdit}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-white"
+        className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-white disabled:cursor-default disabled:hover:bg-slate-50"
       >
         <span className={`h-1.5 w-1.5 rounded-full ${current.dot}`} />
         {current.label}
-        <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
+        {canEdit && <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />}
       </button>
       {open && (
         <>
@@ -110,9 +118,11 @@ function StatusDropdown({
 function PriorityDropdown({
   task,
   onPriorityChange,
+  canEdit = true,
 }: {
   task: BoardTask;
   onPriorityChange: (id: number, priority: BoardTask["priority"]) => void;
+  canEdit?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const badge =
@@ -126,13 +136,14 @@ function PriorityDropdown({
     <div className="relative shrink-0">
       <button
         onClick={() => setOpen(!open)}
+        disabled={!canEdit}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Change priority, current ${label}`}
-        className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold transition hover:opacity-80 ${badge}`}
+        className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold transition hover:opacity-80 disabled:cursor-default disabled:hover:opacity-100 ${badge}`}
       >
         {label}
-        <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
+        {canEdit && <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />}
       </button>
       {open && (
         <>
@@ -166,9 +177,11 @@ function PriorityDropdown({
 function DueDropdown({
   task,
   onDueChange,
+  canEdit = true,
 }: {
   task: BoardTask;
   onDueChange: (id: number, dueDateISO: string | null) => void;
+  canEdit?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [customDate, setCustomDate] = useState("");
@@ -193,14 +206,15 @@ function DueDropdown({
     <div className="relative shrink-0">
       <button
         onClick={() => (open ? setOpen(false) : openMenu())}
+        disabled={!canEdit}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Change due date"
-        className="flex items-center gap-1 rounded-md px-1 py-0.5 text-xs text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+        className="flex items-center gap-1 rounded-md px-1 py-0.5 text-xs text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-default disabled:hover:bg-transparent disabled:hover:text-slate-500"
       >
         <CalendarDays className="h-3 w-3" />
         {task.dueLabel}
-        <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
+        {canEdit && <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />}
       </button>
       {open && (
         <>
@@ -263,9 +277,11 @@ function DueDropdown({
 function EstimateDropdown({
   task,
   onEstimateChange,
+  canEdit = true,
 }: {
   task: BoardTask;
   onEstimateChange: (id: number, minutes: number) => void;
+  canEdit?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("");
@@ -283,14 +299,15 @@ function EstimateDropdown({
     <div className="relative shrink-0">
       <button
         onClick={() => setOpen(!open)}
+        disabled={!canEdit}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Change estimated time"
-        className="flex items-center gap-1 rounded-md px-1 py-0.5 transition hover:bg-slate-100 hover:text-slate-700"
+        className="flex items-center gap-1 rounded-md px-1 py-0.5 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-default disabled:hover:bg-transparent"
       >
         <Timer className="h-3 w-3" />
         {task.estimate}
-        <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
+        {canEdit && <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />}
       </button>
       {open && (
         <>
@@ -329,7 +346,7 @@ function EstimateDropdown({
   );
 }
 
-export default function TaskListView({ tasks, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange }: TaskListViewProps) {
+export default function TaskListView({ tasks, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange, onEdit, onDelete, canEdit = true }: TaskListViewProps) {
   if (tasks.length === 0) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
@@ -352,9 +369,10 @@ export default function TaskListView({ tasks, onToggle, onStatusChange, onPriori
             <input
               type="checkbox"
               checked={done}
+              disabled={!canEdit}
               onChange={() => onToggle(task.id)}
               aria-label={done ? `Reopen ${task.title}` : `Complete ${task.title}`}
-              className="h-4 w-4 shrink-0 cursor-pointer rounded accent-sky-500"
+              className="h-4 w-4 shrink-0 cursor-pointer rounded accent-sky-500 disabled:cursor-not-allowed"
             />
             <div className="min-w-0 flex-1">
               <p
@@ -367,17 +385,25 @@ export default function TaskListView({ tasks, onToggle, onStatusChange, onPriori
               <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
                 <span>{LANE_LABEL[task.lane]}</span>
                 <span aria-hidden="true">•</span>
-                <DueDropdown task={task} onDueChange={onDueChange} />
+                <DueDropdown task={task} onDueChange={onDueChange} canEdit={canEdit} />
                 <span aria-hidden="true">•</span>
-                <EstimateDropdown task={task} onEstimateChange={onEstimateChange} />
+                <EstimateDropdown task={task} onEstimateChange={onEstimateChange} canEdit={canEdit} />
+                {(task.projectName || task.goalName) && (
+                  <>
+                    <span aria-hidden="true">•</span>
+                    <TaskLinks projectName={task.projectName} goalName={task.goalName} />
+                  </>
+                )}
               </div>
             </div>
             <div className="hidden shrink-0 items-center gap-2 sm:flex">
-              <PriorityDropdown task={task} onPriorityChange={onPriorityChange} />
-              <StatusDropdown task={task} onStatusChange={onStatusChange} />
+              <PriorityDropdown task={task} onPriorityChange={onPriorityChange} canEdit={canEdit} />
+              <StatusDropdown task={task} onStatusChange={onStatusChange} canEdit={canEdit} />
+              {canEdit && <RowActionMenu label={task.title} onEdit={() => onEdit(task)} onDelete={() => onDelete(task.id)} />}
             </div>
-            <div className="shrink-0 sm:hidden">
-              <StatusDropdown task={task} onStatusChange={onStatusChange} />
+            <div className="flex shrink-0 items-center gap-1 sm:hidden">
+              <StatusDropdown task={task} onStatusChange={onStatusChange} canEdit={canEdit} />
+              {canEdit && <RowActionMenu label={task.title} onEdit={() => onEdit(task)} onDelete={() => onDelete(task.id)} />}
             </div>
           </div>
         );

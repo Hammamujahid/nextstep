@@ -1,4 +1,4 @@
-package repository
+﻿package repository
 
 import (
 	"context"
@@ -24,10 +24,12 @@ func (r *ProjectRepository) ListByWorkspace(
 	query := `
 		SELECT
 			p.id, p.workspace_id, p.project_name, p.project_description, p.status,
+			p.assignee_id, a.username, a.email,
 			p.created_at, p.updated_at,
 			COALESCE(t.total, 0)::int AS total_tasks,
 			COALESCE(t.completed, 0)::int AS completed_tasks
 		FROM projects p
+		LEFT JOIN users a ON a.id = p.assignee_id
 		LEFT JOIN (
 			SELECT
 				project_id,
@@ -49,12 +51,17 @@ func (r *ProjectRepository) ListByWorkspace(
 	projects := make([]*model.Project, 0)
 	for rows.Next() {
 		var p model.Project
+		var assigneeID *int
+		var assigneeName, assigneeEmail *string
 		if err := rows.Scan(
 			&p.ID,
 			&p.WorkspaceId,
 			&p.ProjectName,
 			&p.ProjectDescription,
 			&p.Status,
+			&assigneeID,
+			&assigneeName,
+			&assigneeEmail,
 			&p.CreatedAt,
 			&p.UpdatedAt,
 			&p.TotalTasks,
@@ -62,6 +69,7 @@ func (r *ProjectRepository) ListByWorkspace(
 		); err != nil {
 			return nil, apperrors.ErrDatabase
 		}
+		p.AssigneeId, p.Assignee = ScanAssignee(assigneeID, assigneeName, assigneeEmail)
 		if p.TotalTasks > 0 {
 			p.Progress = (p.CompletedTasks * 100) / p.TotalTasks
 		}
@@ -188,9 +196,9 @@ func (r *ProjectRepository) Create(
 		project.Status = "not_started"
 	}
 	query := `
-		INSERT INTO projects (workspace_id, project_name, project_description, status)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, workspace_id, project_name, project_description, status, created_at, updated_at
+		INSERT INTO projects (workspace_id, project_name, project_description, status, assignee_id)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id, workspace_id, project_name, project_description, status, assignee_id, created_at, updated_at
 	`
 	var created model.Project
 	err := r.db.QueryRow(ctx, query,
@@ -198,9 +206,13 @@ func (r *ProjectRepository) Create(
 		project.ProjectName,
 		project.ProjectDescription,
 		project.Status,
-	).Scan(&created.ID, &created.WorkspaceId, &created.ProjectName, &created.ProjectDescription, &created.Status, &created.CreatedAt, &created.UpdatedAt)
+		project.AssigneeId,
+	).Scan(&created.ID, &created.WorkspaceId, &created.ProjectName, &created.ProjectDescription, &created.Status, &created.AssigneeId, &created.CreatedAt, &created.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if created.Assignee, err = FetchAssignee(ctx, r.db, created.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &created, nil
 }
@@ -216,9 +228,10 @@ func (r *ProjectRepository) Update(
 			project_name = COALESCE($1, project_name),
 			project_description = COALESCE($2, project_description),
 			status = COALESCE($3, status),
+			assignee_id = CASE WHEN $6 THEN NULL ELSE COALESCE($7, assignee_id) END,
 			updated_at = NOW()
 		WHERE id = $4 AND workspace_id = $5
-		RETURNING id, workspace_id, project_name, project_description, status, created_at, updated_at
+		RETURNING id, workspace_id, project_name, project_description, status, assignee_id, created_at, updated_at
 	`
 	var updated model.Project
 	err := r.db.QueryRow(ctx, query,
@@ -227,9 +240,14 @@ func (r *ProjectRepository) Update(
 		req.Status,
 		projectID,
 		workspaceID,
-	).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectName, &updated.ProjectDescription, &updated.Status, &updated.CreatedAt, &updated.UpdatedAt)
+		req.ClearAssigneeId != nil && *req.ClearAssigneeId,
+		req.AssigneeId,
+	).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectName, &updated.ProjectDescription, &updated.Status, &updated.AssigneeId, &updated.CreatedAt, &updated.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if updated.Assignee, err = FetchAssignee(ctx, r.db, updated.AssigneeId); err != nil {
+		return nil, err
 	}
 	r.attachTaskProgress(ctx, &updated)
 	return &updated, nil

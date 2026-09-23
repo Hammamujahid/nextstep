@@ -7,9 +7,11 @@ type PrimaryGoal struct {
 	WorkspaceId       int       `json:"workspace_id" db:"workspace_id"`
 	Title             string    `json:"title" db:"title"`
 	Description       *string   `json:"description" db:"description"`
-	Status            string    `json:"status" db:"status"`
-	CreatedAt         time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`
+	Status            string     `json:"status" db:"status"`
+	AssigneeId        *int       `json:"assignee_id" db:"assignee_id"`
+	Assignee          *Assignee  `json:"assignee,omitempty" db:"-"`
+	CreatedAt         time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at" db:"updated_at"`
 	TotalProjects     int       `json:"total_projects"`
 	CompletedProjects int       `json:"completed_projects"`
 	TotalTasks        int       `json:"total_tasks"`

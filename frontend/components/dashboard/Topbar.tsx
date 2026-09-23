@@ -1,17 +1,24 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
-  Bell,
   ChevronDown,
   Loader2,
   LogOut,
   Menu,
-  Search,
   Settings,
 } from "lucide-react";
-import { NOTIFICATIONS } from "../../lib/dashboard";
+import { useDashboard } from "./DashboardProvider";
+import SearchBar from "./SearchBar";
+import NotificationsBell from "./NotificationsBell";
+import {
+  fetchApplications,
+  fetchTasks,
+  type ApiApplication,
+  type ApiTask,
+} from "../../lib/dashboardApi";
 
 export type TopbarUser = {
   username: string;
@@ -90,7 +97,36 @@ export default function Topbar({
   onOpenMobile,
 }: TopbarProps) {
   const [accountRef, accountOpen, setAccountOpen] = useDismiss();
-  const [bellRef, bellOpen, setBellOpen] = useDismiss();
+  const { active } = useDashboard();
+  const [tasks, setTasks] = useState<ApiTask[]>([]);
+  const [applications, setApplications] = useState<ApiApplication[]>([]);
+
+  const activeId = active?.id ?? null;
+
+  // data real untuk pill interview + bel notifikasi
+  useEffect(() => {
+    if (activeId == null) {
+      setTasks([]);
+      setApplications([]);
+      return;
+    }
+    let cancelled = false;
+    Promise.all([
+      fetchTasks(activeId).catch(() => [] as ApiTask[]),
+      fetchApplications(activeId).catch(() => [] as ApiApplication[]),
+    ]).then(([t, a]) => {
+      if (cancelled) return;
+      setTasks(t ?? []);
+      setApplications(a ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeId]);
+
+  const interviewCount = applications.filter(
+    (a) => a.status === "interviewing"
+  ).length;
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur sm:px-6">
@@ -115,68 +151,26 @@ export default function Topbar({
         <div className="min-w-0 flex-1" />
       )}
 
-      <div className="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 xl:flex">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-        </span>
-        <span className="text-xs font-semibold text-slate-700">
-          3 interviews coming up this week
-        </span>
-      </div>
-
-      <div className="relative hidden min-w-0 flex-1 items-center md:flex md:max-w-xs">
-        <Search className="pointer-events-none absolute left-3 h-4 w-4 shrink-0 text-slate-400" />
-        <input
-          type="search"
-          placeholder="Search goals, applications, companies..."
-          aria-label="Search"
-          className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-12 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
-        />
-        <kbd className="pointer-events-none absolute right-3 rounded bg-slate-200/70 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">
-          ⌘K
-        </kbd>
-      </div>
-
-      <div ref={bellRef} className="relative shrink-0">
-        <button
-          onClick={() => setBellOpen((v) => !v)}
-          aria-label="Notifications"
-          aria-expanded={bellOpen}
-          className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition ${
-            bellOpen
-              ? "bg-slate-100 text-slate-900"
-              : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-          }`}
+      {interviewCount > 0 && (
+        <Link
+          href="/dashboard/applications"
+          className="hidden shrink-0 items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 transition hover:bg-slate-200 xl:flex"
         >
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-sky-400 ring-2 ring-white" />
-        </button>
-        {bellOpen && (
-          <div className="anim-pop-in absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-            <p className="border-b border-slate-100 px-4 py-3 text-sm font-bold text-slate-900">
-              Notifications
-            </p>
-            <ul className="max-h-72 overflow-y-auto p-1.5">
-              {NOTIFICATIONS.map((n) => (
-                <li
-                  key={n.id}
-                  className="rounded-xl px-3 py-2.5 transition hover:bg-slate-50"
-                >
-                  <p className="text-sm font-semibold text-slate-800">
-                    {n.title}
-                  </p>
-                  <p className="truncate text-xs text-slate-500">{n.detail}</p>
-                  <p className="mt-0.5 text-[11px] text-slate-400">{n.time}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+          <span className="relative flex h-2 w-2">
+            <span className="absolute h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <span className="text-xs font-semibold text-slate-700">
+            {interviewCount} interview{interviewCount > 1 ? "s" : ""} in progress
+          </span>
+        </Link>
+      )}
 
-      <div ref={accountRef} className="relative shrink-0">
-        <button
+      <SearchBar workspaceId={activeId} />
+
+      <NotificationsBell tasks={tasks} applications={applications} />
+
+      <div ref={accountRef} className="relative ml-auto shrink-0">        <button
           onClick={() => setAccountOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={accountOpen}
@@ -188,9 +182,6 @@ export default function Topbar({
             <span className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-slate-900">
               <span className="max-w-24 truncate">
                 {user.username || "Account"}
-              </span>
-              <span className="rounded-full bg-sky-100 px-1.5 py-px text-[10px] font-bold text-sky-700">
-                Pro
               </span>
             </span>
             <span className="block max-w-32 truncate text-[11px] leading-tight text-slate-500">

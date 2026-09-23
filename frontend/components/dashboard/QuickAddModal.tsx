@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ListPlus, Loader2, X } from "lucide-react";
 import { parseEstimateToMinutes, type TaskPriority } from "../../lib/dashboard";
 
@@ -22,6 +23,9 @@ type QuickAddModalProps = {
   onSave: (input: QuickTaskInput) => void;
   projects?: { id: number; name: string }[];
   goals?: { id: number; name: string }[];
+  // false = user tidak punya editor pada resource target -> kunci pilihan ke No Project/No Goal
+  canSelectProject?: boolean;
+  canSelectGoal?: boolean;
 };
 
 const PRIORITIES: { value: TaskPriority; label: string }[] = [
@@ -37,6 +41,8 @@ export default function QuickAddModal({
   onSave,
   projects,
   goals,
+  canSelectProject = true,
+  canSelectGoal = true,
 }: QuickAddModalProps) {
   const projectOptions = useMemo(
     () => (projects && projects.length > 0 ? ["No Project", ...projects.map((p) => p.name)] : ["No Project"]),
@@ -54,8 +60,12 @@ export default function QuickAddModal({
   const [estimate, setEstimate] = useState("30m");
   const [saving, setSaving] = useState(false);
 
-  const effectiveProject = projectOptions.includes(project) ? project : projectOptions[0];
-  const effectiveGoal = goalOptions.includes(goal) ? goal : goalOptions[0];
+  const effectiveProject = !canSelectProject
+    ? "No Project"
+    : projectOptions.includes(project) ? project : projectOptions[0];
+  const effectiveGoal = !canSelectGoal
+    ? "No Goal"
+    : goalOptions.includes(goal) ? goal : goalOptions[0];
 
   const close = useCallback(() => {
     setTitle("");
@@ -101,16 +111,16 @@ export default function QuickAddModal({
   const selectCls =
     "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
 
-  return (
+  return createPortal(
     <div
-      className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/40 p-4"
       onClick={close}
       role="dialog"
       aria-modal="true"
       aria-label="Add next step"
     >
       <div
-        className="anim-pop-in flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="anim-pop-in m-auto flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -220,7 +230,9 @@ export default function QuickAddModal({
               id="quick-task-goal"
               value={effectiveGoal}
               onChange={(e) => setGoal(e.target.value)}
-              className={selectCls}
+              disabled={!canSelectGoal}
+              title={canSelectGoal ? undefined : "Requires editor access on goals"}
+              className={`${selectCls} disabled:cursor-not-allowed disabled:opacity-60`}
             >
               {goalOptions.map((g) => (
                 <option key={g} value={g}>
@@ -228,6 +240,9 @@ export default function QuickAddModal({
                 </option>
               ))}
             </select>
+            {!canSelectGoal && (
+              <p className="mt-1 text-[11px] text-slate-400">Requires editor access on goals.</p>
+            )}
           </div>
           <div>
             <label
@@ -240,7 +255,9 @@ export default function QuickAddModal({
               id="quick-task-project"
               value={effectiveProject}
               onChange={(e) => setProject(e.target.value)}
-              className={selectCls}
+              disabled={!canSelectProject}
+              title={canSelectProject ? undefined : "Requires editor access on projects"}
+              className={`${selectCls} disabled:cursor-not-allowed disabled:opacity-60`}
             >
               {projectOptions.map((p) => (
                 <option key={p} value={p}>
@@ -248,6 +265,9 @@ export default function QuickAddModal({
                 </option>
               ))}
             </select>
+            {!canSelectProject && (
+              <p className="mt-1 text-[11px] text-slate-400">Requires editor access on projects.</p>
+            )}
           </div>
         </div>
 
@@ -268,6 +288,7 @@ export default function QuickAddModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

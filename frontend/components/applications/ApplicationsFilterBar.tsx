@@ -1,30 +1,28 @@
 "use client";
 
 import { ArrowDownUp, List, SquareKanban } from "lucide-react";
+import type { ApiApplication, ApplicationStatus } from "../../lib/dashboardApi";
 
-export type PipelineFilter =
-  | "all"
-  | "remote"
-  | "onsite"
-  | "interview"
-  | "high";
+export type ApplicationStatusFilter = "all" | ApplicationStatus;
 
-export type PipelineView = "board" | "table";
+export type ApplicationsViewMode = "board" | "table";
 
 type ApplicationsFilterBarProps = {
-  filter: PipelineFilter;
-  onFilterChange: (f: PipelineFilter) => void;
-  view: PipelineView;
-  onViewChange: (v: PipelineView) => void;
-  total: number;
+  filter: ApplicationStatusFilter;
+  onFilterChange: (f: ApplicationStatusFilter) => void;
+  view: ApplicationsViewMode;
+  onViewChange: (v: ApplicationsViewMode) => void;
+  apps: ApiApplication[];
 };
 
-const CHIPS: { key: PipelineFilter; label: (n: number) => string }[] = [
-  { key: "all", label: (n) => `All Roles (${n})` },
-  { key: "remote", label: () => "Remote Only" },
-  { key: "onsite", label: () => "Onsite / Hybrid" },
-  { key: "interview", label: () => "Active Interview Stages" },
-  { key: "high", label: () => "High Priority ($180k+)" },
+const STATUS_CHIPS: { key: ApplicationStatusFilter; label: string }[] = [
+  { key: "all", label: "All Roles" },
+  { key: "wishlist", label: "Wishlist" },
+  { key: "applied", label: "Applied" },
+  { key: "under_review", label: "Under Review" },
+  { key: "interviewing", label: "Interviewing" },
+  { key: "offered", label: "Offered" },
+  { key: "rejected", label: "Rejected" },
 ];
 
 export default function ApplicationsFilterBar({
@@ -32,8 +30,11 @@ export default function ApplicationsFilterBar({
   onFilterChange,
   view,
   onViewChange,
-  total,
+  apps,
 }: ApplicationsFilterBarProps) {
+  const countFor = (s: ApplicationStatusFilter) =>
+    s === "all" ? apps.length : apps.filter((a) => a.status === s).length;
+
   const viewBtn = (active: boolean) =>
     `flex items-center gap-1 rounded-md px-2.5 py-1 text-[13px] transition ${
       active
@@ -44,7 +45,7 @@ export default function ApplicationsFilterBar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm">
       <div className="flex items-center gap-1 overflow-x-auto py-0.5">
-        {CHIPS.map((c) => (
+        {STATUS_CHIPS.map((c) => (
           <button
             key={c.key}
             onClick={() => onFilterChange(c.key)}
@@ -55,7 +56,7 @@ export default function ApplicationsFilterBar({
                 : "font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
             }`}
           >
-            {c.label(total)}
+            {c.label} ({countFor(c.key)})
           </button>
         ))}
       </div>

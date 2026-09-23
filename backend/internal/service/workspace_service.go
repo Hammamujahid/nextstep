@@ -81,6 +81,25 @@ func (s *WorkspaceService) requireMember(
 	return err
 }
 
+// ListAssignableMembers mengembalikan anggota yang boleh di-assign ke sebuah
+// resource (permission selain none). Dipakai untuk mengisi dropdown assignee.
+func (s *WorkspaceService) ListAssignableMembers(
+	ctx context.Context,
+	workspaceID int,
+	userID int,
+	resource string,
+) ([]model.AssignableMember, error) {
+	if err := s.requireMember(ctx, workspaceID, userID); err != nil {
+		return nil, err
+	}
+	switch resource {
+	case "project", "task", "goal", "job_application":
+	default:
+		return nil, apperrors.ErrNotFound
+	}
+	return s.permissionRepository.ListAssignableMembers(ctx, workspaceID, resource)
+}
+
 func (s *WorkspaceService) ListMembers(
 	ctx context.Context,
 	workspaceID int,
@@ -181,6 +200,71 @@ func (s *WorkspaceService) CancelInvitation(
 		return apperrors.ErrNotFound
 	}
 	return s.workspaceRepository.DeleteInvitation(ctx, workspaceID, invitationID)
+}
+
+// RemoveMember mengeluarkan anggota dari workspace. Hanya admin workspace,
+// tidak boleh mengeluarkan diri sendiri, dan tidak boleh mengeluarkan admin terakhir.
+func (s *WorkspaceService) RemoveMember(
+	ctx context.Context,
+	workspaceID int,
+	userID int,
+	memberID int,
+) error {
+	role, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID)
+	if err != nil {
+		return err
+	}
+	if role != "admin" {
+		return apperrors.ErrForbidden
+	}
+	target, err := s.workspaceRepository.FindMemberByID(ctx, workspaceID, memberID)
+	if err != nil {
+		return err
+	}
+	if target.UserID == userID {
+		return apperrors.ErrCannotRemoveSelf
+	}
+	if target.MemberRole == "admin" {
+		n, err := s.workspaceRepository.CountAdmins(ctx, workspaceID)
+		if err != nil {
+			return err
+		}
+		if n <= 1 {
+			return apperrors.ErrLastAdmin
+		}
+	}
+	return s.workspaceRepository.DeleteMemberTx(ctx, workspaceID, memberID, target.UserID)
+}
+
+// UpdateMemberPermission mengubah permission satu resource milik satu anggota.
+// Hanya admin workspace; tidak boleh mengubah milik sendiri maupun milik admin lain
+// (admin selalu full editor sehingga baris permission-nya tidak berpengaruh).
+func (s *WorkspaceService) UpdateMemberPermission(
+	ctx context.Context,
+	workspaceID int,
+	userID int,
+	memberID int,
+	resource string,
+	permission string,
+) error {
+	role, err := s.workspaceRepository.GetRole(ctx, workspaceID, userID)
+	if err != nil {
+		return err
+	}
+	if role != "admin" {
+		return apperrors.ErrForbidden
+	}
+	target, err := s.workspaceRepository.FindMemberByID(ctx, workspaceID, memberID)
+	if err != nil {
+		return err
+	}
+	if target.UserID == userID {
+		return apperrors.ErrCannotEditSelf
+	}
+	if target.MemberRole == "admin" {
+		return apperrors.ErrTargetIsAdmin
+	}
+	return s.permissionRepository.UpsertMemberPermission(ctx, memberID, resource, permission)
 }
 
 // SelectWorkspace mencatat workspace yang sedang dibuka user.

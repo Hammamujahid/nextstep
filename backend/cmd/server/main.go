@@ -61,9 +61,9 @@ func main() {
 	eventBus := service.NewEventBus()
 	// file-by-table services
 	taskService := service.NewTaskService(taskRepository, workspaceRepository, projectRepository, goalRepository, permissionRepository, eventBus)
-	projectService := service.NewProjectService(projectRepository, workspaceRepository, goalRepository, eventBus)
-	goalService := service.NewGoalService(goalRepository, workspaceRepository, eventBus)
-	applicationService := service.NewApplicationService(applicationRepository, workspaceRepository, eventBus)
+	projectService := service.NewProjectService(projectRepository, workspaceRepository, goalRepository, permissionRepository, eventBus)
+	goalService := service.NewGoalService(goalRepository, workspaceRepository, permissionRepository, eventBus)
+	applicationService := service.NewApplicationService(applicationRepository, workspaceRepository, permissionRepository, eventBus)
 	sseHandler := handler.NewSSEHandler(eventBus, workspaceRepository)
 
 	authHandler := handler.NewAuthHandler(

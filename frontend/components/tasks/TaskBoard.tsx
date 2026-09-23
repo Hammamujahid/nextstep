@@ -11,9 +11,12 @@ type TaskBoardProps = {
   onPriorityChange: (id: number, priority: BoardTask["priority"]) => void;
   onDueChange: (id: number, dueDateISO: string | null) => void;
   onEstimateChange: (id: number, minutes: number) => void;
+  onEdit: (task: BoardTask) => void;
+  onDelete: (id: number) => void;
+  canEdit?: boolean;
 };
 
-export default function TaskBoard({ tasks, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange }: TaskBoardProps) {
+export default function TaskBoard({ tasks, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange, onEdit, onDelete, canEdit = true }: TaskBoardProps) {
   const byLane = (lane: BoardLane) => tasks.filter((t) => t.lane === lane);
 
   return (
@@ -49,7 +52,7 @@ export default function TaskBoard({ tasks, onToggle, onStatusChange, onPriorityC
                 </p>
               )}
               {items.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={onToggle} onStatusChange={onStatusChange} onPriorityChange={onPriorityChange} onDueChange={onDueChange} onEstimateChange={onEstimateChange} />
+                <TaskCard key={task.id} task={task} onToggle={onToggle} onStatusChange={onStatusChange} onPriorityChange={onPriorityChange} onDueChange={onDueChange} onEstimateChange={onEstimateChange} onEdit={onEdit} onDelete={onDelete} canEdit={canEdit} />
               ))}
             </div>
           </div>

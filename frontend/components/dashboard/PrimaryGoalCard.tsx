@@ -50,7 +50,7 @@ export default function PrimaryGoalCard() {
       if (ev.type === "goal_progress" && ev.data) {
         const updated = ev.data as PrimaryGoal;
         setGoal((prev) => (prev && prev.id === (updated as any).id ? { ...prev, ...(updated as any) } : prev));
-      } else if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_updated" || ev.type === "goal_created") {
+      } else if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "task_updated" || ev.type === "task_deleted" || ev.type === "goal_created" || ev.type === "goal_updated" || ev.type === "goal_deleted") {
         fetchPrimaryGoal(activeId)
           .then((data) => setGoal(data))
           .catch(() => {});

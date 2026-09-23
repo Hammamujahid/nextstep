@@ -1,71 +1,60 @@
 "use client";
 
 import {
-  ArrowUp,
-  BadgeCheck,
+  Briefcase,
   Hourglass,
-  Package,
   Video,
+  BadgeCheck,
 } from "lucide-react";
-import type { PipelineApplication } from "../../lib/dashboard";
+import type { ApiApplication } from "../../lib/dashboardApi";
 
 export default function ApplicationsStats({
   apps,
 }: {
-  apps: PipelineApplication[];
+  apps: ApiApplication[];
 }) {
-  const interviews = apps.filter((a) => a.activeInterview).length;
+  const interviewing = apps.filter((a) => a.status === "interviewing").length;
+  const underReview = apps.filter((a) => a.status === "under_review").length;
+  const offered = apps.filter((a) => a.status === "offered").length;
 
   const cards = [
     {
-      label: "Total Pipeline",
-      value: "26",
-      sub: (
-        <>
-          <ArrowUp className="h-3.5 w-3.5" /> +3 this wk
-        </>
-      ),
-      subCls: "text-emerald-600",
-      extra: "14 actively ongoing",
-      icon: Package,
+      label: "Total Applications",
+      value: String(apps.length),
+      sub: "Across all stages",
+      subCls: "text-slate-500",
+      icon: Briefcase,
       iconCls: "bg-slate-100 text-sky-600",
     },
     {
-      label: "Active Interviews",
-      value: String(interviews),
-      suffix: "rounds sched.",
-      sub: <>Next: Tomorrow 10am</>,
+      label: "Interviewing",
+      value: String(interviewing),
+      sub: "Active interview stages",
       subCls: "text-sky-600 font-medium",
-      extra: null,
       icon: Video,
       iconCls: "bg-sky-100 text-sky-600",
     },
     {
       label: "Under Review",
-      value: "8",
-      suffix: "teams",
-      sub: <>Avg reply: 4.2 days</>,
+      value: String(underReview),
+      sub: "Waiting for reply",
       subCls: "text-slate-500",
-      extra: null,
       icon: Hourglass,
-      iconCls: "bg-slate-100 text-sky-600",
+      iconCls: "bg-amber-100 text-amber-600",
     },
     {
-      label: "Offers Pending",
-      value: "2",
-      sub: <>Negotiation stage</>,
+      label: "Offered",
+      value: String(offered),
+      sub: "Negotiation stage",
       subCls: "text-emerald-600 font-medium",
-      extra: "$195k+",
-      extraCls:
-        "rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-600",
       icon: BadgeCheck,
-      iconCls: "bg-slate-100 text-emerald-600",
+      iconCls: "bg-emerald-100 text-emerald-600",
     },
   ];
 
   return (
     <section
-      aria-label="Pipeline statistics"
+      aria-label="Application statistics"
       className="grid grid-cols-2 gap-4 lg:grid-cols-4"
     >
       {cards.map((c) => (
@@ -77,28 +66,14 @@ export default function ApplicationsStats({
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               {c.label}
             </p>
-            <p className="mt-1 text-2xl font-bold leading-none tracking-tight text-slate-900 sm:text-3xl">
-              {c.value}{" "}
-              {c.suffix && (
-                <span className="text-xs font-medium text-slate-500">
-                  {c.suffix}
-                </span>
-              )}
+            <p className="mt-1 text-3xl font-bold leading-none tracking-tight text-slate-900">
+              {c.value}
             </p>
             <p
               className={`mt-1.5 flex items-center gap-1 text-[13px] ${c.subCls}`}
             >
               {c.sub}
             </p>
-            {c.extra && (
-              <p className="mt-0.5 block text-[13px] text-slate-500">
-                {c.extraCls ? (
-                  <span className={c.extraCls}>{c.extra}</span>
-                ) : (
-                  c.extra
-                )}
-              </p>
-            )}
           </div>
           <span
             className={`hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg sm:flex ${c.iconCls}`}

@@ -7,9 +7,10 @@ import { greetingForHour } from "../../lib/dashboard";
 type HeroHeaderProps = {
   username: string;
   onNewTask: () => void;
+  canEdit?: boolean;
 };
 
-export default function HeroHeader({ username, onNewTask }: HeroHeaderProps) {
+export default function HeroHeader({ username, onNewTask, canEdit = true }: HeroHeaderProps) {
   const { dateLabel, greeting } = useMemo(() => {
     const now = new Date();
     const dateLabel = now.toLocaleDateString("en-US", {
@@ -46,13 +47,15 @@ export default function HeroHeader({ username, onNewTask }: HeroHeaderProps) {
           momentum today.
         </p>
       </div>
-      <button
-        onClick={onNewTask}
-        className="btn-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md"
-      >
-        <ListPlus className="h-4 w-4" />
-        New Task
-      </button>
+      {canEdit && (
+        <button
+          onClick={onNewTask}
+          className="btn-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md"
+        >
+          <ListPlus className="h-4 w-4" />
+          New Task
+        </button>
+      )}
     </div>
   );
 }

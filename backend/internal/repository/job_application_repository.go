@@ -1,4 +1,4 @@
-package repository
+﻿package repository
 
 import (
 	"context"
@@ -30,10 +30,14 @@ func (r *JobApplicationRepository) ListByWorkspace(
 		return nil, apperrors.ErrDatabase
 	}
 	query := `
-		SELECT id, workspace_id, job_title, company_name, status, due_date, job_url, created_at, updated_at
-		FROM job_applications
-		WHERE workspace_id = $1
-		ORDER BY created_at ASC
+		SELECT
+			a.id, a.workspace_id, a.job_title, a.company_name, a.status, a.due_date, a.job_url,
+			a.assignee_id, u.username, u.email,
+			a.created_at, a.updated_at
+		FROM job_applications a
+		LEFT JOIN users u ON u.id = a.assignee_id
+		WHERE a.workspace_id = $1
+		ORDER BY a.created_at ASC
 	`
 	rows, err := r.db.Query(ctx, query, workspaceID)
 	if err != nil {
@@ -44,9 +48,12 @@ func (r *JobApplicationRepository) ListByWorkspace(
 	apps := make([]*model.JobApplication, 0)
 	for rows.Next() {
 		var a model.JobApplication
-		if err := rows.Scan(&a.ID, &a.WorkspaceId, &a.JobTitle, &a.CompanyName, &a.Status, &a.DueDate, &a.JobURL, &a.CreatedAt, &a.UpdatedAt); err != nil {
+		var assigneeID *int
+		var assigneeName, assigneeEmail *string
+		if err := rows.Scan(&a.ID, &a.WorkspaceId, &a.JobTitle, &a.CompanyName, &a.Status, &a.DueDate, &a.JobURL, &assigneeID, &assigneeName, &assigneeEmail, &a.CreatedAt, &a.UpdatedAt); err != nil {
 			return nil, apperrors.ErrDatabase
 		}
+		a.AssigneeId, a.Assignee = ScanAssignee(assigneeID, assigneeName, assigneeEmail)
 		apps = append(apps, &a)
 	}
 	if err := rows.Err(); err != nil {
@@ -77,6 +84,7 @@ func (r *JobApplicationRepository) Update(
 	req model.UpdateApplicationRequest,
 ) (*model.JobApplication, error) {
 	clearDue := req.ClearDueDate != nil && *req.ClearDueDate
+	clearAssignee := req.ClearAssigneeId != nil && *req.ClearAssigneeId
 	query := `
 		UPDATE job_applications SET
 			job_title = COALESCE($1, job_title),
@@ -84,9 +92,10 @@ func (r *JobApplicationRepository) Update(
 			status = COALESCE($3, status),
 			due_date = CASE WHEN $4 THEN NULL ELSE COALESCE($5, due_date) END,
 			job_url = COALESCE($6, job_url),
+			assignee_id = CASE WHEN $9 THEN NULL ELSE COALESCE($10, assignee_id) END,
 			updated_at = NOW()
 		WHERE id = $7 AND workspace_id = $8
-		RETURNING id, workspace_id, job_title, company_name, status, due_date, job_url, created_at, updated_at
+		RETURNING id, workspace_id, job_title, company_name, status, due_date, job_url, assignee_id, created_at, updated_at
 	`
 	var updated model.JobApplication
 	err := r.db.QueryRow(ctx, query,
@@ -98,9 +107,14 @@ func (r *JobApplicationRepository) Update(
 		req.JobURL,
 		applicationID,
 		workspaceID,
-	).Scan(&updated.ID, &updated.WorkspaceId, &updated.JobTitle, &updated.CompanyName, &updated.Status, &updated.DueDate, &updated.JobURL, &updated.CreatedAt, &updated.UpdatedAt)
+		clearAssignee,
+		req.AssigneeId,
+	).Scan(&updated.ID, &updated.WorkspaceId, &updated.JobTitle, &updated.CompanyName, &updated.Status, &updated.DueDate, &updated.JobURL, &updated.AssigneeId, &updated.CreatedAt, &updated.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if updated.Assignee, err = FetchAssignee(ctx, r.db, updated.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &updated, nil
 }
@@ -128,9 +142,9 @@ func (r *JobApplicationRepository) Create(
 		app.Status = "wishlist"
 	}
 	query := `
-		INSERT INTO job_applications (workspace_id, job_title, company_name, status, due_date, job_url)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, workspace_id, job_title, company_name, status, due_date, job_url, created_at, updated_at
+		INSERT INTO job_applications (workspace_id, job_title, company_name, status, due_date, job_url, assignee_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, workspace_id, job_title, company_name, status, due_date, job_url, assignee_id, created_at, updated_at
 	`
 	var created model.JobApplication
 	err := r.db.QueryRow(ctx, query,
@@ -140,9 +154,13 @@ func (r *JobApplicationRepository) Create(
 		app.Status,
 		app.DueDate,
 		app.JobURL,
-	).Scan(&created.ID, &created.WorkspaceId, &created.JobTitle, &created.CompanyName, &created.Status, &created.DueDate, &created.JobURL, &created.CreatedAt, &created.UpdatedAt)
+		app.AssigneeId,
+	).Scan(&created.ID, &created.WorkspaceId, &created.JobTitle, &created.CompanyName, &created.Status, &created.DueDate, &created.JobURL, &created.AssigneeId, &created.CreatedAt, &created.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if created.Assignee, err = FetchAssignee(ctx, r.db, created.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &created, nil
 }

@@ -12,24 +12,43 @@ import (
 // ProjectService menangani table projects.
 
 type ProjectService struct {
-	projectRepository   *repository.ProjectRepository
-	workspaceRepository *repository.WorkspaceRepository
-	goalRepository      *repository.GoalRepository
-	eventBus            *EventBus
+	projectRepository    *repository.ProjectRepository
+	workspaceRepository  *repository.WorkspaceRepository
+	goalRepository       *repository.GoalRepository
+	permissionRepository *repository.PermissionRepository
+	eventBus             *EventBus
 }
 
 func NewProjectService(
 	projectRepository *repository.ProjectRepository,
 	workspaceRepository *repository.WorkspaceRepository,
 	goalRepository *repository.GoalRepository,
+	permissionRepository *repository.PermissionRepository,
 	eventBus *EventBus,
 ) *ProjectService {
 	return &ProjectService{
-		projectRepository:   projectRepository,
-		workspaceRepository: workspaceRepository,
-		goalRepository:      goalRepository,
-		eventBus:            eventBus,
+		projectRepository:    projectRepository,
+		workspaceRepository:  workspaceRepository,
+		goalRepository:       goalRepository,
+		permissionRepository: permissionRepository,
+		eventBus:             eventBus,
 	}
+}
+
+// validateAssignee memastikan assignee adalah anggota workspace yang punya
+// akses (selain none) pada resource tersebut.
+func (s *ProjectService) validateAssignee(ctx context.Context, workspaceID int, assigneeID *int, resource string) error {
+	if assigneeID == nil {
+		return nil
+	}
+	_, perm, err := s.permissionRepository.GetMemberPermission(ctx, workspaceID, *assigneeID, resource)
+	if err != nil {
+		return apperrors.ErrInvalidAssignee
+	}
+	if perm == "none" {
+		return apperrors.ErrInvalidAssignee
+	}
+	return nil
 }
 
 func statusRank(s string) int {
@@ -124,6 +143,10 @@ func (s *ProjectService) CreateProject(
 		ProjectName:        req.ProjectName,
 		ProjectDescription: req.ProjectDescription,
 		Status:             "not_started",
+		AssigneeId:         req.AssigneeId,
+	}
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "project"); err != nil {
+		return nil, err
 	}
 	created, err := s.projectRepository.Create(ctx, project)
 	if err != nil {
@@ -152,6 +175,9 @@ func (s *ProjectService) UpdateProject(
 	}
 	if _, err := s.projectRepository.FindByIDAndWorkspace(ctx, projectID, workspaceID); err != nil {
 		return nil, apperrors.ErrNotFound
+	}
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "project"); err != nil {
+		return nil, err
 	}
 	updated, err := s.projectRepository.Update(ctx, workspaceID, projectID, req)
 	if err != nil {

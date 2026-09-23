@@ -1,4 +1,4 @@
-package repository
+﻿package repository
 
 import (
 	"context"
@@ -22,13 +22,18 @@ func (r *TaskRepository) ListByWorkspace(
 	workspaceID int,
 ) ([]*model.Task, error) {
 	query := `
-		SELECT id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
-		FROM tasks
-		WHERE workspace_id = $1
+		SELECT
+			t.id, t.workspace_id, t.project_id, t.title, t.description, t.priority,
+			t.status, t.due_date, t.estimated_minutes, t.assignee_id,
+			a.username, a.email,
+			t.created_at, t.updated_at
+		FROM tasks t
+		LEFT JOIN users a ON a.id = t.assignee_id
+		WHERE t.workspace_id = $1
 		ORDER BY
-			CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END ASC,
-			due_date ASC NULLS LAST,
-			updated_at DESC
+			CASE t.priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END ASC,
+			t.due_date ASC NULLS LAST,
+			t.updated_at DESC
 	`
 	rows, err := r.db.Query(ctx, query, workspaceID)
 	if err != nil {
@@ -39,6 +44,8 @@ func (r *TaskRepository) ListByWorkspace(
 	tasks := make([]*model.Task, 0)
 	for rows.Next() {
 		var t model.Task
+		var assigneeID *int
+		var assigneeName, assigneeEmail *string
 		if err := rows.Scan(
 			&t.ID,
 			&t.WorkspaceId,
@@ -49,11 +56,15 @@ func (r *TaskRepository) ListByWorkspace(
 			&t.Status,
 			&t.DueDate,
 			&t.EstimatedMinutes,
+			&assigneeID,
+			&assigneeName,
+			&assigneeEmail,
 			&t.CreatedAt,
 			&t.UpdatedAt,
 		); err != nil {
 			return nil, apperrors.ErrDatabase
 		}
+		t.AssigneeId, t.Assignee = ScanAssignee(assigneeID, assigneeName, assigneeEmail)
 		tasks = append(tasks, &t)
 	}
 	if err := rows.Err(); err != nil {
@@ -131,9 +142,9 @@ func (r *TaskRepository) Create(
 		task.EstimatedMinutes = 30
 	}
 	query := `
-		INSERT INTO tasks (workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
+		INSERT INTO tasks (workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, assignee_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, assignee_id, created_at, updated_at
 	`
 	var created model.Task
 	err := r.db.QueryRow(ctx, query,
@@ -145,9 +156,13 @@ func (r *TaskRepository) Create(
 		task.Status,
 		task.DueDate,
 		task.EstimatedMinutes,
-	).Scan(&created.ID, &created.WorkspaceId, &created.ProjectId, &created.Title, &created.Description, &created.Priority, &created.Status, &created.DueDate, &created.EstimatedMinutes, &created.CreatedAt, &created.UpdatedAt)
+		task.AssigneeId,
+	).Scan(&created.ID, &created.WorkspaceId, &created.ProjectId, &created.Title, &created.Description, &created.Priority, &created.Status, &created.DueDate, &created.EstimatedMinutes, &created.AssigneeId, &created.CreatedAt, &created.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if created.Assignee, err = FetchAssignee(ctx, r.db, created.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &created, nil
 }
@@ -160,6 +175,7 @@ func (r *TaskRepository) Update(
 ) (*model.Task, error) {
 	clearDue := req.ClearDueDate != nil && *req.ClearDueDate
 	clearProject := req.ClearProjectId != nil && *req.ClearProjectId
+	clearAssignee := req.ClearAssigneeId != nil && *req.ClearAssigneeId
 	query := `
 		UPDATE tasks SET
 			title = COALESCE($1, title),
@@ -169,9 +185,10 @@ func (r *TaskRepository) Update(
 			due_date = CASE WHEN $7 THEN NULL ELSE COALESCE($5, due_date) END,
 			project_id = CASE WHEN $11 THEN NULL ELSE COALESCE($6, project_id) END,
 			estimated_minutes = COALESCE($10, estimated_minutes),
+			assignee_id = CASE WHEN $12 THEN NULL ELSE COALESCE($13, assignee_id) END,
 			updated_at = NOW()
 		WHERE id = $8 AND workspace_id = $9
-		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
+		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, assignee_id, created_at, updated_at
 	`
 	var updated model.Task
 	err := r.db.QueryRow(ctx, query,
@@ -186,9 +203,14 @@ func (r *TaskRepository) Update(
 		workspaceID,
 		req.EstimatedMinutes,
 		clearProject,
-	).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.EstimatedMinutes, &updated.CreatedAt, &updated.UpdatedAt)
+		clearAssignee,
+		req.AssigneeId,
+	).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.EstimatedMinutes, &updated.AssigneeId, &updated.CreatedAt, &updated.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if updated.Assignee, err = FetchAssignee(ctx, r.db, updated.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &updated, nil
 }
@@ -218,12 +240,15 @@ func (r *TaskRepository) ToggleComplete(
 			status = CASE WHEN status = 'completed' THEN 'not_started' ELSE 'completed' END,
 			updated_at = NOW()
 		WHERE id = $1 AND workspace_id = $2
-		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, created_at, updated_at
+		RETURNING id, workspace_id, project_id, title, description, priority, status, due_date, estimated_minutes, assignee_id, created_at, updated_at
 	`
 	var updated model.Task
-	err := r.db.QueryRow(ctx, query, taskID, workspaceID).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.EstimatedMinutes, &updated.CreatedAt, &updated.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, taskID, workspaceID).Scan(&updated.ID, &updated.WorkspaceId, &updated.ProjectId, &updated.Title, &updated.Description, &updated.Priority, &updated.Status, &updated.DueDate, &updated.EstimatedMinutes, &updated.AssigneeId, &updated.CreatedAt, &updated.UpdatedAt)
 	if err != nil {
 		return nil, apperrors.ErrDatabase
+	}
+	if updated.Assignee, err = FetchAssignee(ctx, r.db, updated.AssigneeId); err != nil {
+		return nil, err
 	}
 	return &updated, nil
 }

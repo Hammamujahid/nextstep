@@ -11,6 +11,9 @@ import DashboardProvider, {
 import WorkspaceGate from "../../components/workspace/WorkspaceGate";
 import CreateWorkspaceModal from "../../components/workspace/CreateWorkspaceModal";
 import InviteModal from "../../components/workspace/InviteModal";
+import MyInvitationsModal from "../../components/workspace/MyInvitationsModal";
+import { canRead } from "../../lib/permissions";
+import type { NavKey } from "../../components/dashboard/Sidebar";
 import WorkspaceSettingsModal from "../../components/workspace/WorkspaceSettingsModal";
 import { NAV_TITLES, viewFromPath } from "../../lib/dashboardRoutes";
 
@@ -37,9 +40,25 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     workspaceSettingsOpen,
     closeWorkspaceSettings,
     openWorkspaceSettings,
+    myInvitations,
+    myInvitesOpen,
+    closeMyInvites,
+    acceptMyInvitation,
+    declineMyInvitation,
+    myRole,
+    perms,
   } = useDashboard();
 
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // sembunyikan nav yang permission-nya none (member)
+  const hiddenNavs: NavKey[] = [];
+  if (!canRead(myRole, perms, "goal")) hiddenNavs.push("goals");
+  if (!canRead(myRole, perms, "task")) hiddenNavs.push("tasks");
+  if (!canRead(myRole, perms, "project")) hiddenNavs.push("projects");
+  if (!canRead(myRole, perms, "job_application")) hiddenNavs.push("applications");
+  // invite hanya untuk admin; null = permission belum termuat, biarkan aktif dulu
+  const canInvite = myRole === null || myRole === "admin";
 
   const view = viewFromPath(pathname);
   const meta = NAV_TITLES[view];
@@ -74,6 +93,9 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         onInvite={openInvite}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
+        hiddenNavs={hiddenNavs}
+        canInvite={canInvite}
+        canManageWorkspace={canInvite}
       />
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
@@ -110,6 +132,13 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         workspaceName={active?.name ?? ""}
         onClose={closeInvite}
         onInvited={refreshActiveMembers}
+      />
+      <MyInvitationsModal
+        open={myInvitesOpen && myInvitations.length > 0}
+        invitations={myInvitations}
+        onAccept={acceptMyInvitation}
+        onDecline={declineMyInvitation}
+        onClose={closeMyInvites}
       />
       <WorkspaceSettingsModal
         key={active ? `${active.id}-${workspaceSettingsOpen}` : "closed"}

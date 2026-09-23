@@ -10,6 +10,7 @@ type NextStepsProps = {
   tasks: DashboardTask[];
   onToggle: (id: number) => void;
   onAdd: () => void;
+  canEdit?: boolean;
 };
 
 const PRIORITY_STYLES: Record<TaskPriority, string> = {
@@ -41,7 +42,7 @@ function sortByPriorityAndDue(a: DashboardTask, b: DashboardTask): number {
   return ub - ua;
 }
 
-export default function NextSteps({ tasks, onToggle, onAdd }: NextStepsProps) {
+export default function NextSteps({ tasks, onToggle, onAdd, canEdit = true }: NextStepsProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
   const isPending = (t: DashboardTask) => t.status !== "completed";
   const openTasks = tasks.filter(isPending);
@@ -88,7 +89,7 @@ export default function NextSteps({ tasks, onToggle, onAdd }: NextStepsProps) {
           ))}
         </div>
       </div>
-      <TaskList tasks={visible} onToggle={onToggle} onAdd={onAdd} />
+      <TaskList tasks={visible} onToggle={onToggle} onAdd={onAdd} canEdit={canEdit} />
     </section>
   );
 }
@@ -97,10 +98,12 @@ function TaskList({
   tasks,
   onToggle,
   onAdd,
+  canEdit = true,
 }: {
   tasks: DashboardTask[];
   onToggle: (id: number) => void;
   onAdd: () => void;
+  canEdit?: boolean;
 }) {
   const getDone = (t: DashboardTask) => t.status === "completed";
   return (
@@ -122,9 +125,10 @@ function TaskList({
           >
             <button
               onClick={() => onToggle(task.id)}
+              disabled={!canEdit}
               aria-pressed={done}
               aria-label={done ? "Mark as not done" : "Mark as done"}
-              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
+              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition disabled:cursor-not-allowed ${
                 done
                   ? "border-sky-400 bg-sky-400 text-white"
                   : "border-slate-300 bg-white text-transparent hover:border-sky-400"
@@ -169,15 +173,17 @@ function TaskList({
           </div>
         );
       })}
-      <div className="bg-slate-50 p-2">
-        <button
-          onClick={onAdd}
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-sky-600 transition hover:bg-sky-100"
-        >
-          <Plus className="h-4 w-4" />
-          Add Next Step
-        </button>
-      </div>
+      {canEdit && (
+        <div className="bg-slate-50 p-2">
+          <button
+            onClick={onAdd}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-sky-600 transition hover:bg-sky-100"
+          >
+            <Plus className="h-4 w-4" />
+            Add Next Step
+          </button>
+        </div>
+      )}
     </div>
   );
 }

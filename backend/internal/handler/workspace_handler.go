@@ -174,6 +174,52 @@ func (h *WorkspaceHandler) ListMembers(c *gin.Context) {
 	})
 }
 
+func (h *WorkspaceHandler) ListAssignableMembers(c *gin.Context) {
+	workspaceID, err := workspaceIDParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid workspace id",
+		})
+		return
+	}
+
+	resource := c.Query("resource")
+	switch resource {
+	case "project", "task", "goal", "job_application":
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid resource (project|task|goal|job_application)",
+		})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	members, err := h.workspaceService.ListAssignableMembers(
+		c.Request.Context(),
+		workspaceID,
+		userID,
+		resource,
+	)
+	if err != nil {
+		if errors.Is(err, apperrors.ErrNotMember) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You are not a member of this workspace",
+			})
+			return
+		}
+		log.Println("list assignable members error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to load members, please try again later",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": members,
+	})
+}
+
 func (h *WorkspaceHandler) Invite(c *gin.Context) {
 	workspaceID, err := workspaceIDParam(c)
 	if err != nil {
@@ -304,6 +350,115 @@ func (h *WorkspaceHandler) CancelInvitation(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Invitation cancelled"})
+}
+
+func (h *WorkspaceHandler) RemoveMember(c *gin.Context) {
+	workspaceID, err := workspaceIDParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid workspace id"})
+		return
+	}
+	memberID, err := strconv.Atoi(c.Param("memberId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid member id"})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	if err := h.workspaceService.RemoveMember(
+		c.Request.Context(),
+		workspaceID,
+		userID,
+		memberID,
+	); err != nil {
+		switch {
+		case errors.Is(err, apperrors.ErrNotMember):
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You are not a member of this workspace",
+			})
+		case errors.Is(err, apperrors.ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Only workspace admins can remove members",
+			})
+		case errors.Is(err, apperrors.ErrCannotRemoveSelf):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "You cannot remove yourself from the workspace",
+			})
+		case errors.Is(err, apperrors.ErrLastAdmin):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "You cannot remove the last admin of the workspace",
+			})
+		case errors.Is(err, apperrors.ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"message": "Member not found"})
+		default:
+			log.Println("remove member error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to remove member"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Member removed"})
+}
+
+func (h *WorkspaceHandler) UpdateMemberPermission(c *gin.Context) {
+	workspaceID, err := workspaceIDParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid workspace id"})
+		return
+	}
+	memberID, err := strconv.Atoi(c.Param("memberId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid member id"})
+		return
+	}
+
+	var req model.UpdateMemberPermissionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Validation failed",
+			"details": validationMessages(err),
+		})
+		return
+	}
+
+	userID := c.GetInt("userID")
+
+	if err := h.workspaceService.UpdateMemberPermission(
+		c.Request.Context(),
+		workspaceID,
+		userID,
+		memberID,
+		req.Resource,
+		req.Permission,
+	); err != nil {
+		switch {
+		case errors.Is(err, apperrors.ErrNotMember):
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You are not a member of this workspace",
+			})
+		case errors.Is(err, apperrors.ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Only workspace admins can change member permissions",
+			})
+		case errors.Is(err, apperrors.ErrCannotEditSelf):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "You cannot change your own permissions",
+			})
+		case errors.Is(err, apperrors.ErrTargetIsAdmin):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Cannot change permissions of an admin",
+			})
+		case errors.Is(err, apperrors.ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"message": "Member not found"})
+		default:
+			log.Println("update member permission error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update permission"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Permission updated"})
 }
 
 func (h *WorkspaceHandler) MyPermissions(c *gin.Context) {

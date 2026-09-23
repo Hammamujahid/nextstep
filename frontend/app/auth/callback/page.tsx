@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { setToken } from "../../../lib/auth";
+import { setRefreshToken, setToken } from "../../../lib/auth";
 
 function CallbackHandler() {
   const router = useRouter();
@@ -11,9 +11,11 @@ function CallbackHandler() {
 
   useEffect(() => {
     const token = params.get("token");
+    const refresh = params.get("refresh_token");
 
     if (token) {
       setToken(token);
+      if (refresh) setRefreshToken(refresh);
       router.replace("/dashboard");
       return;
     }

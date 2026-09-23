@@ -6,12 +6,14 @@ type GoalsHeaderProps = {
   onNewGoal: () => void;
   onToggleFilters: () => void;
   filtersVisible: boolean;
+  canEdit?: boolean;
 };
 
 export default function GoalsHeader({
   onNewGoal,
   onToggleFilters,
   filtersVisible,
+  canEdit = true,
 }: GoalsHeaderProps) {
   return (
     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -40,13 +42,15 @@ export default function GoalsHeader({
           <SlidersHorizontal className="h-[18px] w-[18px] text-slate-400" />
           Filter Tracks
         </button>
-        <button
-          onClick={onNewGoal}
-          className="btn-shine inline-flex items-center gap-2 rounded-xl bg-sky-400 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md active:translate-y-0"
-        >
-          <CirclePlus className="h-[18px] w-[18px]" />
-          New Goal
-        </button>
+        {canEdit && (
+          <button
+            onClick={onNewGoal}
+            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-sky-400 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md active:translate-y-0"
+          >
+            <CirclePlus className="h-[18px] w-[18px]" />
+            New Goal
+          </button>
+        )}
       </div>
     </div>
   );

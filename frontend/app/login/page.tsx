@@ -2,11 +2,11 @@
 
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
 import AuthShell, { AuthFooter } from "../../components/AuthShell";
 import GoogleButton from "../../components/GoogleButton";
-import { loginApi, setToken } from "../../lib/auth";
+import { getToken, loginApi, setRefreshToken, setToken } from "../../lib/auth";
 
 const OAUTH_ERRORS: Record<string, string> = {
   oauth_failed: "Google login failed, please try again.",
@@ -26,6 +26,16 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [details, setDetails] = useState<string[]>([]);
+  const [checking, setChecking] = useState(true);
+
+  // sudah login (belum logout) -> langsung buka dashboard workspace aktif
+  useEffect(() => {
+    if (getToken()) {
+      router.replace("/dashboard");
+      return;
+    }
+    setChecking(false);
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +51,7 @@ function LoginForm() {
     try {
       const res = await loginApi({ email: email.trim(), password });
       setToken(res.access_token);
+      setRefreshToken(res.refresh_token);
       router.push("/dashboard");
     } catch (err: unknown) {
       const m = err as { message?: string; details?: string[] };
@@ -56,7 +67,13 @@ function LoginForm() {
       title="Welcome back 👋"
       subtitle="Log in to continue your career journey."
     >
-      {justRegistered && (
+      {checking ? (
+        <div className="flex items-center justify-center py-10">
+          <Loader2 className="h-6 w-6 animate-spin text-sky-500" />
+        </div>
+      ) : (
+        <>
+          {justRegistered && (
         <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
           <p>Account created! Please log in with your new credentials.</p>
@@ -96,7 +113,7 @@ function LoginForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="andi@example.com"
+            placeholder="tila@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
@@ -140,6 +157,8 @@ function LoginForm() {
       <GoogleButton label="Continue with Google" />
 
       <AuthFooter text="Don't have an account?" linkText="Create one" href="/register" />
+        </>
+      )}
     </AuthShell>
   );
 }

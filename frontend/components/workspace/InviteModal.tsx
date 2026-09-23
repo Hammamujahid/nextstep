@@ -8,7 +8,7 @@ import {
   MailPlus,
   X,
 } from "lucide-react";
-import { inviteMemberApi } from "../../lib/workspaces";
+import { inviteMemberApi, type InvitePermissions, type PermissionValue } from "../../lib/workspaces";
 
 type InviteModalProps = {
   open: boolean;
@@ -16,6 +16,26 @@ type InviteModalProps = {
   workspaceName: string;
   onClose: () => void;
   onInvited: () => void;
+};
+
+const RESOURCES: { key: keyof InvitePermissions; label: string }[] = [
+  { key: "project", label: "Project" },
+  { key: "task", label: "Task" },
+  { key: "goal", label: "Goal" },
+  { key: "job_application", label: "Job Application" },
+];
+
+const PERM_OPTIONS: { value: PermissionValue; label: string; active: string }[] = [
+  { value: "none", label: "None", active: "bg-slate-500 text-white border-slate-500" },
+  { value: "viewer", label: "Viewer", active: "bg-sky-400 text-white border-sky-400" },
+  { value: "editor", label: "Editor", active: "bg-emerald-500 text-white border-emerald-500" },
+];
+
+const DEFAULT_PERMS: InvitePermissions = {
+  project: "viewer",
+  task: "viewer",
+  goal: "viewer",
+  job_application: "viewer",
 };
 
 export default function InviteModal({
@@ -26,12 +46,14 @@ export default function InviteModal({
   onInvited,
 }: InviteModalProps) {
   const [email, setEmail] = useState("");
+  const [perms, setPerms] = useState<InvitePermissions>(DEFAULT_PERMS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const close = useCallback(() => {
     setEmail("");
+    setPerms(DEFAULT_PERMS);
     setLoading(false);
     setError(null);
     setSuccess(null);
@@ -58,9 +80,10 @@ export default function InviteModal({
 
     setLoading(true);
     try {
-      await inviteMemberApi(workspaceId, email.trim());
+      await inviteMemberApi(workspaceId, email.trim(), perms);
       setSuccess(`Invitation sent to ${email.trim()}`);
       setEmail("");
+      setPerms(DEFAULT_PERMS);
       onInvited();
     } catch (err: unknown) {
       const m = err as { message?: string };
@@ -79,7 +102,7 @@ export default function InviteModal({
       aria-label="Invite user"
     >
       <div
-        className="anim-pop-in w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
+        className="anim-pop-in w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
@@ -138,6 +161,59 @@ export default function InviteModal({
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
             />
+          </div>
+
+          <div>
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
+              Access role per resource
+            </span>
+            <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+              {RESOURCES.map((r) => (
+                <div key={r.key} className="flex items-center justify-between gap-3">
+                  <span className="text-[13px] font-semibold text-slate-600">
+                    {r.label}
+                  </span>
+                  <div className="flex gap-1.5">
+                    {PERM_OPTIONS.map((opt) => {
+                      const selected = perms[r.key] === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() =>
+                            setPerms((prev) => ({ ...prev, [r.key]: opt.value }))
+                          }
+                          aria-pressed={selected}
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
+                            selected
+                              ? opt.active
+                              : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-slate-400">
+              Invited user joins as member with the access above.
+            </p>
+            {perms.task !== "none" && (perms.project === "none" || perms.goal === "none") && (
+              <p className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-700">
+                <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span>
+                  Tasks linked to {[
+                    perms.project === "none" ? "projects" : null,
+                    perms.goal === "none" ? "goals" : null,
+                  ].filter(Boolean).join(" or ")} will appear with the{" "}
+                  {perms.project === "none" && perms.goal === "none" ? "names" : "name"} hidden
+                  for this member.
+                </span>
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <button

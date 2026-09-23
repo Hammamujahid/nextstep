@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ListPlus, Loader2, X } from "lucide-react";
 import { parseEstimateToMinutes, type BoardPriority } from "../../lib/dashboard";
 
@@ -15,6 +16,7 @@ export type NewBoardTaskInput = {
   goalId: number | null;
   project: string | null;
   projectId: number | null;
+  assigneeId: number | null;
 };
 
 type NewTaskModalProps = {
@@ -23,6 +25,10 @@ type NewTaskModalProps = {
   onSave: (input: NewBoardTaskInput) => void;
   projects?: { id: number; name: string }[];
   goals?: { id: number; name: string }[];
+  assignees?: { id: number; name: string }[];
+  // false = user tidak punya editor pada resource target -> kunci pilihan ke No Project/No Goal
+  canSelectProject?: boolean;
+  canSelectGoal?: boolean;
 };
 
 const PRIORITIES: { value: BoardPriority; label: string }[] = [
@@ -39,6 +45,9 @@ export default function NewTaskModal({
   onSave,
   projects,
   goals,
+  assignees,
+  canSelectProject = true,
+  canSelectGoal = true,
 }: NewTaskModalProps) {
   const projectOptions = useMemo(
     () => (projects && projects.length > 0 ? ["No Project", ...projects.map((p) => p.name)] : ["No Project"]),
@@ -54,11 +63,16 @@ export default function NewTaskModal({
   const [due, setDue] = useState<(typeof DUE_OPTIONS)[number]>("Tomorrow");
   const [project, setProject] = useState("No Project");
   const [goal, setGoal] = useState("No Goal");
+  const [assigneeValue, setAssigneeValue] = useState("");
   const [estimate, setEstimate] = useState("30m");
   const [saving, setSaving] = useState(false);
 
-  const effectiveProject = projectOptions.includes(project) ? project : projectOptions[0];
-  const effectiveGoal = goalOptions.includes(goal) ? goal : goalOptions[0];
+  const effectiveProject = !canSelectProject
+    ? "No Project"
+    : projectOptions.includes(project) ? project : projectOptions[0];
+  const effectiveGoal = !canSelectGoal
+    ? "No Goal"
+    : goalOptions.includes(goal) ? goal : goalOptions[0];
 
   const close = useCallback(() => {
     setTitle("");
@@ -66,6 +80,7 @@ export default function NewTaskModal({
     setDue("Tomorrow");
     setProject("No Project");
     setGoal("No Goal");
+    setAssigneeValue("");
     setEstimate("30m");
     setSaving(false);
     onClose();
@@ -87,6 +102,11 @@ export default function NewTaskModal({
     setSaving(true);
     const selectedProject = projects?.find((p) => p.name === effectiveProject);
     const selectedGoal = goals?.find((g) => g.name === effectiveGoal);
+    const assigneeOptions = assignees ?? [];
+    const assigneeId =
+      assigneeValue !== "" && assigneeOptions.some((a) => String(a.id) === assigneeValue)
+        ? Number(assigneeValue)
+        : null;
     const dueToday = due === "Today";
     let dueKey: "today" | "week" | "overdue" = "week";
     if (due === "Today") dueKey = "today";
@@ -103,6 +123,7 @@ export default function NewTaskModal({
       goalId: selectedGoal?.id ?? null,
       project: effectiveProject === "No Project" ? null : effectiveProject,
       projectId: selectedProject?.id ?? null,
+      assigneeId,
     });
     close();
   }
@@ -110,16 +131,16 @@ export default function NewTaskModal({
   const labelCls = "mb-1.5 block text-[13px] font-semibold text-slate-700";
   const inputCls = "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
 
-  return (
+  return createPortal(
     <div
-      className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/40 p-4"
       onClick={close}
       role="dialog"
       aria-modal="true"
       aria-label="Create new step"
     >
       <div
-        className="anim-pop-in flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="anim-pop-in m-auto flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -212,26 +233,51 @@ export default function NewTaskModal({
             <label htmlFor="board-task-goal" className={labelCls}>
               Goal
             </label>
-            <select id="board-task-goal" value={effectiveGoal} onChange={(e) => setGoal(e.target.value)} className={inputCls}>
+            <select id="board-task-goal" value={effectiveGoal} onChange={(e) => setGoal(e.target.value)} disabled={!canSelectGoal} title={canSelectGoal ? undefined : "Requires editor access on goals"} className={`${inputCls} disabled:cursor-not-allowed disabled:opacity-60`}>
               {goalOptions.map((g) => (
                 <option key={g} value={g}>
                   {g}
                 </option>
               ))}
             </select>
+            {!canSelectGoal && (
+              <p className="mt-1 text-[11px] text-slate-400">Requires editor access on goals.</p>
+            )}
           </div>
           <div>
             <label htmlFor="board-task-project" className={labelCls}>
               Project
             </label>
-            <select id="board-task-project" value={effectiveProject} onChange={(e) => setProject(e.target.value)} className={inputCls}>
+            <select id="board-task-project" value={effectiveProject} onChange={(e) => setProject(e.target.value)} disabled={!canSelectProject} title={canSelectProject ? undefined : "Requires editor access on projects"} className={`${inputCls} disabled:cursor-not-allowed disabled:opacity-60`}>
               {projectOptions.map((p) => (
                 <option key={p} value={p}>
                   {p}
                 </option>
               ))}
             </select>
+            {!canSelectProject && (
+              <p className="mt-1 text-[11px] text-slate-400">Requires editor access on projects.</p>
+            )}
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="board-task-assignee" className={labelCls}>
+            Assign To
+          </label>
+          <select
+            id="board-task-assignee"
+            value={(assignees ?? []).some((a) => String(a.id) === assigneeValue) ? assigneeValue : ""}
+            onChange={(e) => setAssigneeValue(e.target.value)}
+            className={inputCls}
+          >
+            <option value="">Unassigned</option>
+            {(assignees ?? []).map((a) => (
+              <option key={a.id} value={String(a.id)}>
+                {a.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-1">
@@ -251,6 +297,7 @@ export default function NewTaskModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

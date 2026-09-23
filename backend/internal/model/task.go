@@ -12,6 +12,8 @@ type Task struct {
 	Status           string     `json:"status" db:"status"`     // not_started | in_progress | completed
 	DueDate          *time.Time `json:"due_date" db:"due_date"`
 	EstimatedMinutes int        `json:"estimated_minutes" db:"estimated_minutes"` // estimasi waktu pengerjaan (menit)
+	AssigneeId       *int       `json:"assignee_id" db:"assignee_id"`
+	Assignee         *Assignee  `json:"assignee,omitempty" db:"-"`
 	GoalIDs          []int      `json:"goal_ids,omitempty" db:"-"`
 	CreatedAt        time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at" db:"updated_at"`
@@ -26,6 +28,7 @@ type CreateTaskRequest struct {
 	EstimatedMinutes *int       `json:"estimated_minutes" binding:"omitempty,min=1"`
 	ProjectId        *int       `json:"project_id"`
 	GoalId           *int       `json:"goal_id"`
+	AssigneeId       *int       `json:"assignee_id"`
 }
 
 type UpdateTaskRequest struct {
@@ -40,4 +43,6 @@ type UpdateTaskRequest struct {
 	ClearProjectId   *bool      `json:"clear_project_id"`
 	GoalId           *int       `json:"goal_id"`
 	ClearGoalId      *bool      `json:"clear_goal_id"`
+	AssigneeId       *int       `json:"assignee_id"`
+	ClearAssigneeId  *bool      `json:"clear_assignee_id"`
 }

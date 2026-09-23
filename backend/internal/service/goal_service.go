@@ -12,24 +12,43 @@ import (
 // GoalService menangani table goals.
 
 type GoalService struct {
-	goalRepository      *repository.GoalRepository
-	workspaceRepository *repository.WorkspaceRepository
-	eventBus            *EventBus
+	goalRepository       *repository.GoalRepository
+	workspaceRepository  *repository.WorkspaceRepository
+	permissionRepository *repository.PermissionRepository
+	eventBus             *EventBus
 }
 
 func NewGoalService(
 	goalRepository *repository.GoalRepository,
 	workspaceRepository *repository.WorkspaceRepository,
+	permissionRepository *repository.PermissionRepository,
 	eventBus ...*EventBus,
 ) *GoalService {
 	gs := &GoalService{
-		goalRepository:      goalRepository,
-		workspaceRepository: workspaceRepository,
+		goalRepository:       goalRepository,
+		workspaceRepository:  workspaceRepository,
+		permissionRepository: permissionRepository,
 	}
 	if len(eventBus) > 0 {
 		gs.eventBus = eventBus[0]
 	}
 	return gs
+}
+
+// validateAssignee memastikan assignee adalah anggota workspace yang punya
+// akses (selain none) pada resource tersebut.
+func (s *GoalService) validateAssignee(ctx context.Context, workspaceID int, assigneeID *int, resource string) error {
+	if assigneeID == nil {
+		return nil
+	}
+	_, perm, err := s.permissionRepository.GetMemberPermission(ctx, workspaceID, *assigneeID, resource)
+	if err != nil {
+		return apperrors.ErrInvalidAssignee
+	}
+	if perm == "none" {
+		return apperrors.ErrInvalidAssignee
+	}
+	return nil
 }
 
 func (s *GoalService) GetPrimaryGoal(
@@ -171,6 +190,10 @@ func (s *GoalService) CreateGoal(
 		Title:       req.Title,
 		Description: req.Description,
 		Status:      status,
+		AssigneeId:  req.AssigneeId,
+	}
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "goal"); err != nil {
+		return nil, err
 	}
 	created, err := s.goalRepository.Create(ctx, goal)
 	if err != nil {
@@ -199,6 +222,9 @@ func (s *GoalService) UpdateGoal(
 	}
 	if _, err := s.goalRepository.FindByIDAndWorkspace(ctx, goalID, workspaceID); err != nil {
 		return nil, apperrors.ErrNotFound
+	}
+	if err := s.validateAssignee(ctx, workspaceID, req.AssigneeId, "goal"); err != nil {
+		return nil, err
 	}
 	updated, err := s.goalRepository.Update(ctx, workspaceID, goalID, req)
 	if err != nil {

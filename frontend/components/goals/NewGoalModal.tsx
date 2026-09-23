@@ -1,30 +1,36 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Flag, X } from "lucide-react";
 
 export type NewGoalInput = {
   title: string;
   description: string;
+  assigneeId: number | null;
 };
 
 type NewGoalModalProps = {
   open: boolean;
   onClose: () => void;
   onSave: (input: NewGoalInput) => void;
+  assignees?: { id: number; name: string }[];
 };
 
 export default function NewGoalModal({
   open,
   onClose,
   onSave,
+  assignees,
 }: NewGoalModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [assigneeValue, setAssigneeValue] = useState("");
 
   const close = useCallback(() => {
     setTitle("");
     setDescription("");
+    setAssigneeValue("");
     onClose();
   }, [onClose]);
 
@@ -41,9 +47,14 @@ export default function NewGoalModal({
 
   function handleSave() {
     if (!title.trim()) return;
+    const assigneeOptions = assignees ?? [];
     onSave({
       title: title.trim(),
       description: description.trim(),
+      assigneeId:
+        assigneeValue !== "" && assigneeOptions.some((a) => String(a.id) === assigneeValue)
+          ? Number(assigneeValue)
+          : null,
     });
     close();
   }
@@ -53,16 +64,16 @@ export default function NewGoalModal({
   const inputCls =
     "h-10 w-full rounded-xl bg-slate-100 px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-sky-100";
 
-  return (
+  return createPortal(
     <div
-      className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/40 p-4"
       onClick={close}
       role="dialog"
       aria-modal="true"
       aria-label="Create new goal"
     >
       <div
-        className="anim-pop-in flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="anim-pop-in m-auto flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -117,6 +128,25 @@ export default function NewGoalModal({
           />
         </div>
 
+        <div>
+          <label htmlFor="goal-assignee" className={labelCls}>
+            Assign To
+          </label>
+          <select
+            id="goal-assignee"
+            value={(assignees ?? []).some((a) => String(a.id) === assigneeValue) ? assigneeValue : ""}
+            onChange={(e) => setAssigneeValue(e.target.value)}
+            className={inputCls}
+          >
+            <option value="">Unassigned</option>
+            {(assignees ?? []).map((a) => (
+              <option key={a.id} value={String(a.id)}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="flex items-center justify-end gap-2 pt-1">
           <button
             onClick={close}
@@ -133,6 +163,7 @@ export default function NewGoalModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

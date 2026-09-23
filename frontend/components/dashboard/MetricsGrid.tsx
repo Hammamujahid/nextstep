@@ -41,7 +41,7 @@ export default function MetricsGrid() {
   useEffect(() => {
     if (!activeId) return;
     const disconnect = connectWorkspaceEvents(activeId, (ev) => {
-      if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "task_updated" || ev.type === "goal_progress" || ev.type === "goal_created") {
+      if (ev.type === "goals_refresh" || ev.type === "task_toggled" || ev.type === "task_created" || ev.type === "task_updated" || ev.type === "task_deleted" || ev.type === "goal_progress" || ev.type === "goal_created" || ev.type === "goal_updated" || ev.type === "goal_deleted" || ev.type === "project_created" || ev.type === "project_updated" || ev.type === "project_deleted" || ev.type === "application_created") {
         fetchMetrics(activeId)
           .then((data) => setMetrics(data))
           .catch(() => {});
@@ -74,7 +74,7 @@ export default function MetricsGrid() {
 
   const goals = metrics?.goals ?? { total: 0, not_started: 0, in_progress: 0, completed: 0, archived: 0 };
   const tasks = metrics?.tasks ?? { total: 0, completed: 0, pending: 0, high_priority: 0, medium_priority: 0, low_priority: 0, not_started: 0, in_progress: 0, archived: 0 };
-  const apps = metrics?.applications ?? { total: 0, wishlist: 0, applied: 0, interviewing: 0, offered: 0, rejected: 0 };
+  const apps = metrics?.applications ?? { total: 0, wishlist: 0, applied: 0, under_review: 0, interviewing: 0, offered: 0, rejected: 0 };
   const projects = metrics?.projects ?? { total: 0, not_started: 0, in_progress: 0, completed: 0, archived: 0 };
 
   const taskVelocity = tasks.total > 0 ? Math.round((tasks.completed * 100) / tasks.total) : 0;

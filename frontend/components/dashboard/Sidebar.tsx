@@ -45,22 +45,45 @@ type SidebarProps = {
   onInvite: () => void;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  hiddenNavs?: NavKey[];
+  canInvite?: boolean;
+  canManageWorkspace?: boolean;
+};
+
+type SidebarBodyProps = {
+  workspaces: Workspace[];
+  activeWorkspace: Workspace | null;
+  onSelectWorkspace: (id: number) => void;
+  onCreateWorkspace: () => void;
+  onWorkspaceSettings: () => void;
+  onInvite: () => void;
+  onCloseMobile: () => void;
+  hiddenNavs?: NavKey[];
+  canInvite?: boolean;
+  canManageWorkspace?: boolean;
 };
 
 function workspaceInitial(name: string) {
   return (name.trim().charAt(0) || "?").toUpperCase();
 }
 
-export default function Sidebar({
+// Isi sidebar dipisah jadi komponen sendiri supaya tiap <aside> yang ter-mount
+// (desktop + drawer mobile) punya dropdown state/ref sendiri. Sebelumnya satu
+// variabel `body` dipakai dua aside sehingga dropRef menunjuk ke instance yang
+// salah: klik opsi di desktop dianggap klik-di-luar (dropdown keburu menutup
+// saat pointerdown) dan onClick tidak pernah jalan.
+function SidebarBody({
   workspaces,
   activeWorkspace,
   onSelectWorkspace,
   onCreateWorkspace,
   onWorkspaceSettings,
   onInvite,
-  mobileOpen,
   onCloseMobile,
-}: SidebarProps) {
+  hiddenNavs = [],
+  canInvite = true,
+  canManageWorkspace = true,
+}: SidebarBodyProps) {
   const pathname = usePathname();
   const activeNav = viewFromPath(pathname);
   const [dropOpen, setDropOpen] = useState(false);
@@ -84,7 +107,7 @@ export default function Sidebar({
     };
   }, [dropOpen]);
 
-  const body = (
+  return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center justify-between border-b border-slate-200/80 px-4">
         <Logo />
@@ -124,28 +147,30 @@ export default function Sidebar({
                 {activeWorkspace?.member_role ?? "No workspace"}
               </span>
             </span>
-            <span
-              role="button"
-              tabIndex={0}
-              title="Workspace settings"
-              aria-label="Workspace settings"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDropOpen(false);
-                onWorkspaceSettings();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
+            {canManageWorkspace && (
+              <span
+                role="button"
+                tabIndex={0}
+                title="Workspace settings"
+                aria-label="Workspace settings"
+                onClick={(e) => {
                   e.stopPropagation();
                   setDropOpen(false);
                   onWorkspaceSettings();
-                }
-              }}
-              className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-sky-100 hover:text-sky-600"
-            >
-              <Settings className="h-4 w-4" />
-            </span>
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDropOpen(false);
+                    onWorkspaceSettings();
+                  }
+                }}
+                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-sky-100 hover:text-sky-600"
+              >
+                <Settings className="h-4 w-4" />
+              </span>
+            )}
             <ChevronsUpDown
               className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${dropOpen ? "rotate-180" : ""}`}
             />
@@ -219,7 +244,7 @@ export default function Sidebar({
           Menu
         </p>
         <ul className="mt-1.5 space-y-0.5">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter((item) => !hiddenNavs.includes(item.key)).map((item) => {
             const active = item.key === activeNav;
             return (
               <li key={item.key}>
@@ -248,23 +273,51 @@ export default function Sidebar({
       </nav>
 
       {/* Section 3: Invite */}
-      <div className="border-t border-slate-200/80 p-3">
-        <button
-          onClick={onInvite}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-sky-300 bg-sky-50/60 px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-100"
-        >
-          <UserPlus className="h-4 w-4" />
-          Invite user
-        </button>
-      </div>
+      {canInvite && (
+        <div className="border-t border-slate-200/80 p-3">
+          <button
+            onClick={onInvite}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-sky-300 bg-sky-50/60 px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-100"
+          >
+            <UserPlus className="h-4 w-4" />
+            Invite user
+          </button>
+        </div>
+      )}
     </div>
   );
+}
 
+export default function Sidebar({
+  workspaces,
+  activeWorkspace,
+  onSelectWorkspace,
+  onCreateWorkspace,
+  onWorkspaceSettings,
+  onInvite,
+  mobileOpen,
+  onCloseMobile,
+  hiddenNavs = [],
+  canInvite = true,
+  canManageWorkspace = true,
+}: SidebarProps) {
+  const bodyProps = {
+    workspaces,
+    activeWorkspace,
+    onSelectWorkspace,
+    onCreateWorkspace,
+    onWorkspaceSettings,
+    onInvite,
+    onCloseMobile,
+    hiddenNavs,
+    canInvite,
+    canManageWorkspace,
+  };
   return (
     <>
       {/* Desktop */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden h-screen w-64 shrink-0 border-r border-slate-200/80 bg-white lg:block">
-        {body}
+        <SidebarBody {...bodyProps} />
       </aside>
 
       {/* Mobile overlay */}
@@ -283,7 +336,7 @@ export default function Sidebar({
         }`}
         aria-hidden={!mobileOpen}
       >
-        {body}
+        <SidebarBody {...bodyProps} />
       </aside>
     </>
   );
