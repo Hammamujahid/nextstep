@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import type { TopbarUser } from "./Topbar";
-import { clearTokens, getMeApi, getToken, logoutApi } from "../../lib/auth";
+import { clearTokens, getMeApi, logoutApi } from "../../lib/auth";
 import {
   acceptInvitationApi,
   declineInvitationApi,
@@ -124,11 +124,7 @@ export default function DashboardProvider({
 
   useEffect(() => {
     async function init() {
-      const token = getToken();
-      if (!token) {
-        router.replace("/login");
-        return;
-      }
+      // sesi via cookie HttpOnly; getMeApi 401 bila tidak ada sesi
       try {
         const me = await getMeApi();
         setProfile({

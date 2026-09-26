@@ -1,12 +1,4 @@
-import {
-  API_BASE,
-  clearTokens,
-  getRefreshToken,
-  getToken,
-  refreshApi,
-  setRefreshToken,
-  setToken,
-} from "./auth";
+import { API_BASE, refreshApi } from "./auth";
 
 // inflight refresh bersama agar 401 berbarengan tidak menembak /auth/refresh berkali-kali
 let refreshPromise: Promise<boolean> | null = null;
@@ -21,11 +13,9 @@ async function tryRefresh(): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
       try {
-        const refresh = getRefreshToken();
-        if (!refresh) return false;
-        const pair = await refreshApi(refresh);
-        setToken(pair.access_token);
-        setRefreshToken(pair.refresh_token);
+        // refresh token dibawa cookie HttpOnly (credentials include),
+        // tidak perlu body
+        await refreshApi();
         return true;
       } catch {
         return false;
@@ -58,40 +48,37 @@ async function parseError(res: Response): Promise<ApiErrorShape> {
 }
 
 /**
- * fetch terpusat untuk API terproteksi:
- * - pasang Bearer otomatis
- * - sekali 401 -> coba silent refresh (rotasi) lalu ulangi request sekali
- * - refresh gagal -> bersihkan token dan lempar unauthorized (pemanggil arahkan ke /login)
+ * fetch terpusat untuk API terproteksi (sesi cookie HttpOnly):
+ * - selalu credentials:include agar cookie ns_access/ns_refresh terkirim
+ * - tanpa Authorization header / localStorage (kebal XSS pencuri token)
+ * - sekali 401 -> coba silent refresh (rotasi cookie) lalu ulangi request sekali
+ * - refresh gagal -> arahkan ke /login
  */
 export async function apiFetch(path: string, init?: RequestInit): Promise<unknown> {
-  const doFetch = async (token: string | null) =>
+  const doFetch = () =>
     fetch(`${API_BASE}${path}`, {
       ...init,
+      credentials: "include",
       headers: {
         ...(init?.headers ?? {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
 
-  let token = getToken();
-  if (!token) throw { message: "You are not logged in.", unauthorized: true };
-
-  let res = await doFetch(token);
+  let res = await doFetch();
   if (res.status !== 401) {
     if (!res.ok) throw await parseError(res);
     return res.json();
   }
 
-  // access token mati (kedaluwarsa/blacklist) -> coba perpanjang diam-diam
+  // sesi cookie kedaluwarsa/dicabut -> coba perpanjang diam-diam
   const refreshed = await tryRefresh();
   if (!refreshed) {
-    clearTokens();
+    goLogin();
     throw { message: "Session expired, please log in again.", unauthorized: true };
   }
-  token = getToken();
-  res = await doFetch(token);
+  res = await doFetch();
   if (res.status === 401) {
-    clearTokens();
+    goLogin();
     throw { message: "Session expired, please log in again.", unauthorized: true };
   }
   if (!res.ok) throw await parseError(res);

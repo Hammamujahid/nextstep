@@ -1,4 +1,4 @@
-import { API_BASE, getToken } from "./auth";
+import { API_BASE } from "./auth";
 
 export type SSEEvent = {
   type: "task_created" | "task_toggled" | "task_updated" | "task_deleted" | "goal_progress" | "goals_refresh" | "goal_created" | "goal_updated" | "goal_deleted" | "project_created" | "project_updated" | "project_deleted" | "application_created" | "application_updated" | "application_deleted";
@@ -11,22 +11,16 @@ export function connectWorkspaceEvents(
   onEvent: (ev: SSEEvent) => void,
   onError?: (e: Event) => void
 ): () => void {
-  const token = getToken();
-  if (!token) {
-    console.warn("SSE: no token");
-    return () => {};
-  }
-  // EventSource tidak support header, jadi token via query
-  const url = `${API_BASE}/workspaces/${workspaceId}/events?token=${encodeURIComponent(token)}`;
-  const es = new EventSource(url);
-  console.log("[SSE] connecting", url);
+  // auth lewat cookie HttpOnly (withCredentials); token tidak lagi
+  // dilewatkan via query agar tidak bocor ke log/history
+  const url = `${API_BASE}/workspaces/${workspaceId}/events`;
+  const es = new EventSource(url, { withCredentials: true });
 
   es.onopen = () => {
-    console.log("[SSE] connected workspace", workspaceId);
+    return;
   };
 
   es.onmessage = (e) => {
-    console.log("[SSE] event", e.data);
     try {
       const parsed = JSON.parse(e.data) as SSEEvent;
       onEvent(parsed);
@@ -37,7 +31,6 @@ export function connectWorkspaceEvents(
   };
 
   es.onerror = (e) => {
-    console.error("[SSE] error", e);
     if (onError) onError(e);
     // EventSource auto-reconnect, tidak perlu manual
   };

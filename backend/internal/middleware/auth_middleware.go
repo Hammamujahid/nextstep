@@ -19,6 +19,8 @@ func AuthMiddleware(
 	blacklistRepo *repository.TokenBlacklistRepository,
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// urutan sumber token: header Bearer (klien non-browser/curl),
+		// cookie HttpOnly ns_access (browser), lalu ?token= (kompatibilitas SSE lama).
 		// SSE (EventSource) tidak bisa kirim header, jadi dukung ?token= untuk GET /events
 		authHeader := c.GetHeader("Authorization")
 		tokenString := ""
@@ -32,6 +34,8 @@ func AuthMiddleware(
 				return
 			}
 			tokenString = parts[1]
+		} else if v, err := c.Cookie("ns_access"); err == nil && v != "" {
+			tokenString = v
 		} else {
 			// fallback untuk SSE
 			q := c.Query("token")

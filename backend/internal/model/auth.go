@@ -18,5 +18,7 @@ type LoginResponse struct {
 }
 
 type RefreshRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required"`
+	// opsional: browser mengandalkan cookie ns_refresh,
+	// klien non-browser mengirim refresh_token di body
+	RefreshToken string `json:"refresh_token"`
 }

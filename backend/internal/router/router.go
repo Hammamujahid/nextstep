@@ -1,6 +1,8 @@
 package router
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/handler"
@@ -18,18 +20,27 @@ func New(
 	jwtService *service.JWTService,
 	blacklistRepo *repository.TokenBlacklistRepository,
 	permissionRepo *repository.PermissionRepository,
+	auditRepo *repository.AuditRepository,
 	allowedOrigins []string,
 ) *gin.Engine {
 	router := gin.Default()
 	router.Use(middleware.CORS(allowedOrigins))
+	router.Use(middleware.SecurityHeaders())
 
+	// batas umum seluruh API agar loop liar satu IP tidak menenggelamkan server
 	api := router.Group("/api/v1")
+	api.Use(middleware.RateLimit(600, time.Minute))
+	api.Use(middleware.AuditLogger(auditRepo))
+
+	// batas ketat untuk endpoint sensitif brute-force
+	authStrict := middleware.RateLimit(10, time.Minute)
+	authRefresh := middleware.RateLimit(30, time.Minute)
 
 	auth := api.Group("/auth")
 	{
-		auth.POST("/register", authHandler.Register)
-		auth.POST("/login", authHandler.Login)
-		auth.POST("/refresh", authHandler.Refresh)
+		auth.POST("/register", authStrict, authHandler.Register)
+		auth.POST("/login", authStrict, authHandler.Login)
+		auth.POST("/refresh", authRefresh, authHandler.Refresh)
 		auth.GET("/google/login", authHandler.GoogleLogin)
 		auth.GET("/google/callback", authHandler.GoogleCallback)
 	}

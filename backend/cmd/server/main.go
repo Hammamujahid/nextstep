@@ -22,6 +22,7 @@ func main() {
 	refreshRepository := repository.NewRefreshTokenRepository(db)
 	workspaceRepository := repository.NewWorkspaceRepository(db)
 	permissionRepository := repository.NewPermissionRepository(db)
+	auditRepository := repository.NewAuditRepository(db)
 
 	jwtService := service.NewJWTService(
 		cfg.JWTSECRET,
@@ -68,6 +69,7 @@ func main() {
 
 	authHandler := handler.NewAuthHandler(
 		authService,
+		cfg,
 	)
 	workspaceHandler := handler.NewWorkspaceHandler(
 		workspaceService,
@@ -93,6 +95,7 @@ func main() {
 		jwtService,
 		blacklistRepository,
 		permissionRepository,
+		auditRepository,
 		[]string{cfg.FrontendURL, "http://localhost:3000"},
 	)
 

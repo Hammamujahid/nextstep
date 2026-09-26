@@ -3,23 +3,22 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { setRefreshToken, setToken } from "../../../lib/auth";
+import { sessionActive } from "../../../lib/auth";
 
 function CallbackHandler() {
   const router = useRouter();
   const params = useSearchParams();
 
   useEffect(() => {
-    const token = params.get("token");
-    const refresh = params.get("refresh_token");
-
-    if (token) {
-      setToken(token);
-      if (refresh) setRefreshToken(refresh);
-      router.replace("/dashboard");
+    // server sudah menyimpan sesi di cookie HttpOnly lalu redirect bersih
+    // (tanpa token di URL); pastikan sesi benar-benar aktif
+    if (params.get("error")) {
+      router.replace(`/login?error=${encodeURIComponent(params.get("error") ?? "oauth_failed")}`);
       return;
     }
-    router.replace(`/login?error=${encodeURIComponent(params.get("error") ?? "oauth_failed")}`);
+    sessionActive().then((ok) => {
+      router.replace(ok ? "/dashboard" : "/login?error=oauth_failed");
+    });
   }, [params, router]);
 
   return (

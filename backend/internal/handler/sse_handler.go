@@ -49,12 +49,12 @@ func (h *SSEHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	// SSE headers
+	// SSE headers (CORS origin sudah ditangani middleware global CORS,
+	// jangan timpa dengan "*" di sini)
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
 	c.Header("X-Accel-Buffering", "no")
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	ch, unsub := h.eventBus.Subscribe(workspaceID)
 	defer unsub()

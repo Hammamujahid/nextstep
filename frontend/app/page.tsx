@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import Logo from "../components/Logo";
 import Reveal from "../components/Reveal";
-import { getToken } from "../lib/auth";
+import { sessionActive } from "../lib/auth";
 
 const NAV_LINKS = [
   { label: "Features", href: "#features" },
@@ -282,11 +282,18 @@ export default function LandingPage() {
 
   // sudah login (belum logout) -> langsung buka dashboard workspace aktif
   useEffect(() => {
-    if (getToken()) {
-      router.replace("/dashboard");
-      return;
-    }
-    setChecking(false);
+    let alive = true;
+    sessionActive().then((ok) => {
+      if (!alive) return;
+      if (ok) {
+        router.replace("/dashboard");
+        return;
+      }
+      setChecking(false);
+    });
+    return () => {
+      alive = false;
+    };
   }, [router]);
 
   if (checking) {

@@ -194,7 +194,7 @@ func (h *DashboardHandler) CreateProject(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		log.Println("create project error:", err)
@@ -256,7 +256,7 @@ func (h *DashboardHandler) UpdateProject(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {
@@ -309,7 +309,7 @@ func (h *DashboardHandler) CreateGoal(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		log.Println("create goal error:", err)
@@ -343,7 +343,7 @@ func (h *DashboardHandler) UpdateGoal(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {
@@ -482,7 +482,7 @@ func (h *DashboardHandler) CreateApplication(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		log.Println("create application error:", err)
@@ -516,7 +516,7 @@ func (h *DashboardHandler) UpdateApplication(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {
@@ -581,7 +581,7 @@ func (h *DashboardHandler) CreateTask(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {
@@ -623,7 +623,7 @@ func (h *DashboardHandler) UpdateTask(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidAssignee) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": apperrors.ErrInvalidAssignee.Error()})
 			return
 		}
 		if errors.Is(err, apperrors.ErrNotFound) {

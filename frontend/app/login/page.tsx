@@ -6,7 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
 import AuthShell, { AuthFooter } from "../../components/AuthShell";
 import GoogleButton from "../../components/GoogleButton";
-import { getToken, loginApi, setRefreshToken, setToken } from "../../lib/auth";
+import { loginApi, sessionActive } from "../../lib/auth";
 
 const OAUTH_ERRORS: Record<string, string> = {
   oauth_failed: "Google login failed, please try again.",
@@ -30,11 +30,18 @@ function LoginForm() {
 
   // sudah login (belum logout) -> langsung buka dashboard workspace aktif
   useEffect(() => {
-    if (getToken()) {
-      router.replace("/dashboard");
-      return;
-    }
-    setChecking(false);
+    let alive = true;
+    sessionActive().then((ok) => {
+      if (!alive) return;
+      if (ok) {
+        router.replace("/dashboard");
+        return;
+      }
+      setChecking(false);
+    });
+    return () => {
+      alive = false;
+    };
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -49,9 +56,8 @@ function LoginForm() {
 
     setLoading(true);
     try {
-      const res = await loginApi({ email: email.trim(), password });
-      setToken(res.access_token);
-      setRefreshToken(res.refresh_token);
+      // cookie sesi diset server via Set-Cookie; tidak ada token di JS
+      await loginApi({ email: email.trim(), password });
       router.push("/dashboard");
     } catch (err: unknown) {
       const m = err as { message?: string; details?: string[] };

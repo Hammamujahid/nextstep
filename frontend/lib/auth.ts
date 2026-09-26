@@ -10,29 +10,9 @@ export function googleLoginUrl(): string {
 const TOKEN_KEY = "nextstep_token";
 const REFRESH_KEY = "nextstep_refresh_token";
 
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-}
-
-export function getRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(REFRESH_KEY);
-}
-
-export function setRefreshToken(token: string) {
-  localStorage.setItem(REFRESH_KEY, token);
-}
-
-// hapus kedua token (dipakai saat logout / sesi mati total)
+// Sesi memakai cookie HttpOnly (ns_access/ns_refresh) yang diset server,
+// jadi tidak ada token di localStorage. Helper di bawah hanya membersihkan
+// sisa token lama bila masih ada (migrasi dari versi sebelumnya).
 export function clearTokens() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
@@ -77,8 +57,10 @@ export async function loginApi(input: {
   email: string;
   password: string;
 }): Promise<{ access_token: string; refresh_token: string; expires_in: number }> {
+  // credentials:include agar Set-Cookie sesi dari API diterima browser
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
@@ -86,26 +68,28 @@ export async function loginApi(input: {
   return res.json();
 }
 
-export async function refreshApi(refreshToken: string): Promise<{
+// refresh memakai cookie ns_refresh (tanpa body); server merotasi cookie
+export async function refreshApi(): Promise<{
   access_token: string;
   refresh_token: string;
   expires_in: number;
 }> {
   const res = await fetch(`${API_BASE}/auth/refresh`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refreshToken }),
+    body: JSON.stringify({}),
   });
   if (!res.ok) throw await parseError(res);
   return res.json();
 }
 
 export async function logoutApi(): Promise<void> {
-  const refresh = getRefreshToken();
-  await apiFetch("/auth/logout", {
+  await fetch(`${API_BASE}/auth/logout`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(refresh ? { refresh_token: refresh } : {}),
+    body: JSON.stringify({}),
   });
 }
 
@@ -120,6 +104,16 @@ export type MeProfile = {
 export async function getMeApi(): Promise<MeProfile> {
   const json = (await apiFetch("/me")) as MeProfile;
   return json;
+}
+
+// pengganti cek getToken(): true bila cookie sesi masih valid
+export async function sessionActive(): Promise<boolean> {
+  try {
+    await getMeApi();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function updateProfileApi(input: {

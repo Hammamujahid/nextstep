@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"backend/internal/apperrors"
+	"backend/internal/config"
 	"backend/internal/model"
 	"backend/internal/service"
 
@@ -15,13 +16,58 @@ import (
 )
 
 type AuthHandler struct {
-	authService *service.AuthService
+	authService    *service.AuthService
+	cookieSecure   bool
+	cookieSameSite http.SameSite
 }
 
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
-	return &AuthHandler{
-		authService: authService,
+func NewAuthHandler(
+	authService *service.AuthService,
+	cfg config.Config,
+) *AuthHandler {
+	secure := cfg.CookieSecure
+	if cfg.CookieSameSite == http.SameSiteNoneMode {
+		secure = true
 	}
+	return &AuthHandler{
+		authService:    authService,
+		cookieSecure:   secure,
+		cookieSameSite: cfg.CookieSameSite,
+	}
+}
+
+// nama cookie sesi; Path=/ agar terbaca semua route API,
+// MaxAge mengikuti umur token masing-masing
+const (
+	cookieAccess  = "ns_access"
+	cookieRefresh = "ns_refresh"
+)
+
+// setAuthCookies menyimpan pasangan token ke cookie HttpOnly (tidak bisa
+// dibaca JS, kebal XSS pencuri token) dan tetap mengembalikan JSON yang sama
+// untuk kompatibilitas klien non-browser
+func (h *AuthHandler) setAuthCookies(c *gin.Context, access, refresh string) {
+	c.SetSameSite(h.cookieSameSite)
+	c.SetCookie(cookieAccess, access, 24*60*60, "/", "", h.cookieSecure, true)
+	c.SetCookie(cookieRefresh, refresh, 30*24*60*60, "/", "", h.cookieSecure, true)
+}
+
+func (h *AuthHandler) clearAuthCookies(c *gin.Context) {
+	c.SetSameSite(h.cookieSameSite)
+	c.SetCookie(cookieAccess, "", -1, "/", "", h.cookieSecure, true)
+	c.SetCookie(cookieRefresh, "", -1, "/", "", h.cookieSecure, true)
+}
+
+// refreshFromRequest mengambil refresh token dari body (klien non-browser)
+// atau cookie (browser); body diutamakan
+func refreshFromRequest(c *gin.Context, bodyToken string) string {
+	if bodyToken != "" {
+		return bodyToken
+	}
+	if v, err := c.Cookie(cookieRefresh); err == nil && v != "" {
+		return v
+	}
+	return ""
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -105,6 +151,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	h.setAuthCookies(c, response.AccessToken, response.RefreshToken)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -118,7 +165,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	response, err := h.authService.Refresh(c.Request.Context(), req.RefreshToken)
+	response, err := h.authService.Refresh(c.Request.Context(), refreshFromRequest(c, req.RefreshToken))
 	if err != nil {
 		switch {
 		case errors.Is(err, apperrors.ErrInvalidToken):
@@ -139,6 +186,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
+	h.setAuthCookies(c, response.AccessToken, response.RefreshToken)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -151,7 +199,7 @@ func validationMessages(err error) []string {
 		}
 		return msgs
 	}
-	return []string{err.Error()}
+	return []string{"Invalid request body"}
 }
 
 // GoogleLogin memulai Authorization Code Flow: buat state anti-CSRF,
@@ -166,13 +214,14 @@ func (h *AuthHandler) GoogleLogin(c *gin.Context) {
 		return
 	}
 
+	c.SetSameSite(h.cookieSameSite)
 	c.SetCookie(
 		"oauth_state",
 		state,
 		600,
 		"/",
 		"",
-		false,
+		h.cookieSecure,
 		true,
 	)
 	c.Redirect(http.StatusFound, h.authService.GoogleAuthURL(state))
@@ -192,7 +241,8 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 		fail("oauth_state")
 		return
 	}
-	c.SetCookie("oauth_state", "", -1, "/", "", false, true)
+	c.SetSameSite(h.cookieSameSite)
+	c.SetCookie("oauth_state", "", -1, "/", "", h.cookieSecure, true)
 
 	code := c.Query("code")
 	if code == "" {
@@ -215,7 +265,10 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, frontendURL+"/auth/callback?token="+token.AccessToken+"&refresh_token="+token.RefreshToken)
+	// token TIDAK dilewatkan via URL (bocor ke history/referrer/log);
+	// sesi langsung disimpan di cookie HttpOnly lalu redirect bersih
+	h.setAuthCookies(c, token.AccessToken, token.RefreshToken)
+	c.Redirect(http.StatusFound, frontendURL+"/auth/callback")
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -233,7 +286,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&body)
 
-	if err := h.authService.Logout(c.Request.Context(), parts[1], body.RefreshToken); err != nil {
+	if err := h.authService.Logout(c.Request.Context(), parts[1], refreshFromRequest(c, body.RefreshToken)); err != nil {
 		switch {
 		case errors.Is(err, apperrors.ErrInvalidToken):
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -253,6 +306,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
+	h.clearAuthCookies(c)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Logged out successfully",
 	})
