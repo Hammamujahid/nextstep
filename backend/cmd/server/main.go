@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	"backend/internal/config"
 	"backend/internal/database"
@@ -9,10 +10,24 @@ import (
 	"backend/internal/repository"
 	"backend/internal/router"
 	"backend/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	cfg := config.Load()
+
+	// mode production: gin release (tanpa debug log/routes) + guard fail-fast.
+	// Set APP_ENV=production di environment production.
+	if cfg.IsProduction() {
+		gin.SetMode(gin.ReleaseMode)
+		if len(cfg.JWTSECRET) < 32 {
+			log.Fatal("Refusing to start: JWT_SECRET must be at least 32 characters in production")
+		}
+		if strings.EqualFold(strings.TrimSpace(cfg.DBSSLMode), "disable") {
+			log.Println("WARNING: DB_SSLMODE=disable in production; use require/verify-full")
+		}
+	}
 
 	db := database.NewPostgresPool(cfg)
 	defer db.Close()
@@ -98,6 +113,15 @@ func main() {
 		auditRepository,
 		[]string{cfg.FrontendURL, "http://localhost:3000"},
 	)
+
+	// Di belakang reverse proxy (nginx/Caddy), IP klien asli hanya dipercaya
+	// dari proxy yang terdaftar; tanpa ini rate limiter melihat IP proxy saja.
+	// Kosongkan (= langsung, tanpa proxy) di dev; isi CIDR/IP proxy di prod.
+	if len(cfg.TrustedProxies) > 0 {
+		if err := r.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+			log.Fatal("Invalid TRUSTED_PROXIES:", err)
+		}
+	}
 
 	log.Println("Server running on port", cfg.Port)
 

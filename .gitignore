@@ -48,3 +48,8 @@
 
 /frontend/*.tsbuildinfo
 /frontend/next-env.d.ts
+
+# Backend build artifacts (dibangun lokal via `go build`, jangan di-commit)
+
+/backend/server.exe
+*.exe~

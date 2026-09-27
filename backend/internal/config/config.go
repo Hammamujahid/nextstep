@@ -23,6 +23,8 @@ type Config struct {
 	GoogleRedirectURL  string
 	CookieSecure       bool
 	CookieSameSite     http.SameSite
+	AppEnv             string
+	TrustedProxies     []string
 }
 
 func Load() Config {
@@ -49,7 +51,14 @@ func Load() Config {
 		),
 		CookieSecure:   cookieSecure(frontendURL),
 		CookieSameSite: cookieSameSite(os.Getenv("COOKIE_SAMESITE")),
+		AppEnv:         firstNonEmpty(os.Getenv("APP_ENV"), "development"),
+		TrustedProxies: splitCSV(os.Getenv("TRUSTED_PROXIES")),
 	}
+}
+
+// IsProduction true bila APP_ENV=production (release mode + guard ketat).
+func (c Config) IsProduction() bool {
+	return strings.EqualFold(strings.TrimSpace(c.AppEnv), "production")
 }
 
 func firstNonEmpty(values ...string) string {
@@ -59,6 +68,17 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+// splitCSV memecah env comma-separated (mis. TRUSTED_PROXIES) jadi list bersih.
+func splitCSV(raw string) []string {
+	var out []string
+	for _, p := range strings.Split(raw, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 // cookieSecure menyalakan flag Secure kalau frontend berjalan di https.
