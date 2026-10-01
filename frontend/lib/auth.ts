@@ -106,11 +106,15 @@ export async function getMeApi(): Promise<MeProfile> {
   return json;
 }
 
-// pengganti cek getToken(): true bila cookie sesi masih valid
+// Cek sesi pasif: satu request GET /me dengan cookie, tanpa silent-refresh
+// dan tanpa redirect. Dipakai halaman publik (/ dan /login) agar tidak
+// memicu reload-loop. Return true hanya bila benar-benar terautentikasi.
 export async function sessionActive(): Promise<boolean> {
   try {
-    await getMeApi();
-    return true;
+    const res = await fetch(`${API_BASE}/me`, {
+      credentials: "include",
+    });
+    return res.ok;
   } catch {
     return false;
   }

@@ -3,10 +3,15 @@ import { API_BASE, refreshApi } from "./auth";
 // inflight refresh bersama agar 401 berbarengan tidak menembak /auth/refresh berkali-kali
 let refreshPromise: Promise<boolean> | null = null;
 
+// Redirect ke /login saat sesi benar-benar habis (dipakai apiFetch).
+// Guard: jangan redirect bila sudah di halaman auth, supaya tidak reload-loop.
+// Halaman publik (/ dan /login) memakai sessionActive() (fetch pasif) sehingga
+// tidak pernah menyentuh jalur ini.
 function goLogin() {
-  if (typeof window !== "undefined") {
-    window.location.href = "/login";
-  }
+  if (typeof window === "undefined") return;
+  const path = window.location.pathname;
+  if (path === "/login" || path === "/register") return;
+  window.location.href = "/login";
 }
 
 async function tryRefresh(): Promise<boolean> {
@@ -52,7 +57,9 @@ async function parseError(res: Response): Promise<ApiErrorShape> {
  * - selalu credentials:include agar cookie ns_access/ns_refresh terkirim
  * - tanpa Authorization header / localStorage (kebal XSS pencuri token)
  * - sekali 401 -> coba silent refresh (rotasi cookie) lalu ulangi request sekali
- * - refresh gagal -> arahkan ke /login
+ * - refresh gagal -> throw { unauthorized: true }. Redirect ke /login diserahkan
+ *   ke pemanggil (mis. DashboardProvider) agar halaman publik tidak ikut ter-redirect
+ *   dan tidak terjadi reload-loop di /login.
  */
 export async function apiFetch(path: string, init?: RequestInit): Promise<unknown> {
   const doFetch = () =>
@@ -84,5 +91,3 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<unknow
   if (!res.ok) throw await parseError(res);
   return res.json();
 }
-
-export { goLogin };
