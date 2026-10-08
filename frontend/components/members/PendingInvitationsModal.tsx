@@ -56,7 +56,7 @@ export default function PendingInvitationsModal({
       aria-label="Pending invitations"
     >
       <div
-        className="anim-pop-in m-auto w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="anim-pop-in m-auto w-full max-w-lg clay p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

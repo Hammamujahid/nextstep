@@ -12,6 +12,7 @@ import {
   ListChecks,
   Plus,
   Settings,
+  Sparkles,
   Target,
   UserPlus,
   Users,
@@ -27,13 +28,13 @@ import {
 
 export type { NavKey };
 
-export const NAV_ITEMS: { key: NavKey; label: string; icon: typeof Target }[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "goals", label: "Goals", icon: Target },
-  { key: "tasks", label: "Tasks", icon: ListChecks },
-  { key: "projects", label: "Projects", icon: FolderKanban },
-  { key: "applications", label: "Job Applications", icon: Briefcase },
-  { key: "members", label: "Members", icon: Users },
+export const NAV_ITEMS: { key: NavKey; label: string; icon: typeof Target; tint: string }[] = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, tint: "text-indigo-500" },
+  { key: "goals", label: "Goals", icon: Target, tint: "text-violet-500" },
+  { key: "tasks", label: "Tasks", icon: ListChecks, tint: "text-emerald-500" },
+  { key: "projects", label: "Projects", icon: FolderKanban, tint: "text-indigo-500" },
+  { key: "applications", label: "Job Applications", icon: Briefcase, tint: "text-amber-500" },
+  { key: "members", label: "Members", icon: Users, tint: "text-pink-500" },
 ];
 
 type SidebarProps = {
@@ -50,28 +51,14 @@ type SidebarProps = {
   canManageWorkspace?: boolean;
 };
 
-type SidebarBodyProps = {
-  workspaces: Workspace[];
-  activeWorkspace: Workspace | null;
-  onSelectWorkspace: (id: number) => void;
-  onCreateWorkspace: () => void;
-  onWorkspaceSettings: () => void;
-  onInvite: () => void;
-  onCloseMobile: () => void;
-  hiddenNavs?: NavKey[];
-  canInvite?: boolean;
-  canManageWorkspace?: boolean;
-};
+type SidebarBodyProps = Omit<SidebarProps, "mobileOpen">;
 
 function workspaceInitial(name: string) {
   return (name.trim().charAt(0) || "?").toUpperCase();
 }
 
 // Isi sidebar dipisah jadi komponen sendiri supaya tiap <aside> yang ter-mount
-// (desktop + drawer mobile) punya dropdown state/ref sendiri. Sebelumnya satu
-// variabel `body` dipakai dua aside sehingga dropRef menunjuk ke instance yang
-// salah: klik opsi di desktop dianggap klik-di-luar (dropdown keburu menutup
-// saat pointerdown) dan onClick tidak pernah jalan.
+// (desktop + drawer mobile) punya dropdown state/ref sendiri.
 function SidebarBody({
   workspaces,
   activeWorkspace,
@@ -107,163 +94,149 @@ function SidebarBody({
     };
   }, [dropOpen]);
 
+  const visibleNavs = NAV_ITEMS.filter((item) => !hiddenNavs.includes(item.key));
+
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center justify-between border-b border-slate-200/80 px-4">
+    <div className="flex h-full flex-col gap-4 p-3.5">
+      <div className="flex h-11 items-center justify-between px-1.5">
         <Logo />
         <button
           onClick={onCloseMobile}
-          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 lg:hidden"
+          className="clay-btn rounded-xl p-1.5 text-slate-500 lg:hidden"
           aria-label="Close menu"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Section 1: Workspace */}
-      <div className="px-3 pt-4">
-        <p className="px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-          Workspace
-        </p>
-        <div ref={dropRef} className="relative mt-1.5">
-          <button
-            onClick={() => setDropOpen((v) => !v)}
-            className={`flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition ${
-              dropOpen
-                ? "border-sky-300 bg-sky-50 ring-2 ring-sky-100"
-                : "border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/50"
-            }`}
-            aria-haspopup="listbox"
-            aria-expanded={dropOpen}
-          >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-400 text-sm font-bold text-white">
-              {activeWorkspace ? workspaceInitial(activeWorkspace.name) : "?"}
+      {/* Workspace switcher (ClickUp-style) */}
+      <div ref={dropRef} className="relative">
+        <button
+          onClick={() => setDropOpen((v) => !v)}
+          className={`clay-sm flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition ${
+            dropOpen ? "ring-2 ring-indigo-200" : ""
+          }`}
+          aria-haspopup="listbox"
+          aria-expanded={dropOpen}
+        >
+          <span className="clay-icon h-9 w-9 shrink-0 bg-gradient-to-br from-indigo-400 to-violet-500 text-sm font-bold text-white">
+            {activeWorkspace ? workspaceInitial(activeWorkspace.name) : "?"}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-extrabold text-slate-800">
+              {activeWorkspace?.name ?? "Select workspace"}
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-slate-900">
-                {activeWorkspace?.name ?? "Select workspace"}
-              </span>
-              <span className="block text-xs capitalize text-slate-500">
-                {activeWorkspace?.member_role ?? "No workspace"}
-              </span>
+            <span className="block text-[11px] font-semibold capitalize text-indigo-400">
+              {activeWorkspace?.member_role ?? "No workspace"}
             </span>
-            {canManageWorkspace && (
-              <span
-                role="button"
-                tabIndex={0}
-                title="Workspace settings"
-                aria-label="Workspace settings"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDropOpen(false);
-                  onWorkspaceSettings();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setDropOpen(false);
-                    onWorkspaceSettings();
-                  }
-                }}
-                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-sky-100 hover:text-sky-600"
-              >
-                <Settings className="h-4 w-4" />
-              </span>
-            )}
-            <ChevronsUpDown
-              className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${dropOpen ? "rotate-180" : ""}`}
-            />
-          </button>
+          </span>
+          <ChevronsUpDown
+            className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${dropOpen ? "rotate-180" : ""}`}
+          />
+        </button>
 
-          {dropOpen && (
-            <div
-              role="listbox"
-              className="anim-pop-in absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
-            >
-              <div className="max-h-56 overflow-y-auto p-1.5">
-                {workspaces.map((w) => {
-                  const active = w.id === activeWorkspace?.id;
-                  return (
-                    <button
-                      key={w.id}
-                      role="option"
-                      aria-selected={active}
-                      onClick={() => {
-                        onSelectWorkspace(w.id);
-                        setDropOpen(false);
-                      }}
-                      className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition ${
-                        active ? "bg-sky-50" : "hover:bg-slate-50"
+        {dropOpen && (
+          <div
+            role="listbox"
+            className="clay anim-pop-in absolute inset-x-0 top-full z-30 mt-2 overflow-hidden !rounded-2xl p-1.5"
+          >
+            <div className="max-h-52 overflow-y-auto">
+              {workspaces.map((w) => {
+                const active = w.id === activeWorkspace?.id;
+                return (
+                  <button
+                    key={w.id}
+                    role="option"
+                    aria-selected={active}
+                    onClick={() => {
+                      onSelectWorkspace(w.id);
+                      setDropOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition ${
+                      active ? "bg-indigo-50" : "hover:bg-indigo-50/60"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                        active
+                          ? "bg-gradient-to-br from-indigo-400 to-violet-500 text-white"
+                          : "bg-white/70 text-slate-500"
                       }`}
                     >
-                      <span
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                          active
-                            ? "bg-sky-400 text-white"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        {workspaceInitial(w.name)}
+                      {workspaceInitial(w.name)}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-slate-800">
+                        {w.name}
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-slate-800">
-                          {w.name}
-                        </span>
-                        <span className="block text-xs capitalize text-slate-400">
-                          {w.member_role}
-                        </span>
+                      <span className="block text-[11px] capitalize text-slate-400">
+                        {w.member_role}
                       </span>
-                      {active && <Check className="h-4 w-4 shrink-0 text-sky-500" />}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="border-t border-slate-100 p-1.5">
+                    </span>
+                    {active && <Check className="h-4 w-4 shrink-0 text-indigo-500" />}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-1 border-t border-indigo-100/70 pt-1">
+              <button
+                onClick={() => {
+                  setDropOpen(false);
+                  onCreateWorkspace();
+                }}
+                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-dashed border-indigo-200 bg-indigo-50/70">
+                  <Plus className="h-4 w-4" />
+                </span>
+                Create workspace
+              </button>
+              {canManageWorkspace && (
                 <button
                   onClick={() => {
                     setDropOpen(false);
-                    onCreateWorkspace();
+                    onWorkspaceSettings();
                   }}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-sky-600 transition hover:bg-sky-50"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-semibold text-slate-500 transition hover:bg-indigo-50"
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-dashed border-sky-300 bg-sky-50">
-                    <Plus className="h-4 w-4" />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/70">
+                    <Settings className="h-4 w-4" />
                   </span>
-                  Create workspace
+                  Workspace settings
                 </button>
-              </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Section 2: Navigation */}
-      <nav className="mt-5 flex-1 overflow-y-auto px-3">
-        <p className="px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto">
+        <p className="mb-1.5 flex items-center gap-1.5 px-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+          <Sparkles className="h-3 w-3 text-indigo-400" />
           Menu
         </p>
-        <ul className="mt-1.5 space-y-0.5">
-          {NAV_ITEMS.filter((item) => !hiddenNavs.includes(item.key)).map((item) => {
+        <ul className="space-y-1">
+          {visibleNavs.map((item) => {
             const active = item.key === activeNav;
             return (
               <li key={item.key}>
                 <Link
                   href={NAV_HREF[item.key]}
                   onClick={onCloseMobile}
-                  className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition ${
+                  className={`clay-nav flex w-full items-center gap-3 px-3 py-2.5 text-sm font-semibold outline-none ${
                     active
-                      ? "bg-sky-100 text-sky-700"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "clay-nav-active"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
                   <item.icon
-                    className={`h-[18px] w-[18px] ${active ? "text-sky-600" : "text-slate-400"}`}
+                    className={`h-[18px] w-[18px] ${active ? "text-white" : item.tint}`}
                   />
                   {item.label}
                   {active && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sky-500" />
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90" />
                   )}
                 </Link>
               </li>
@@ -272,17 +245,15 @@ function SidebarBody({
         </ul>
       </nav>
 
-      {/* Section 3: Invite */}
+      {/* Invite */}
       {canInvite && (
-        <div className="border-t border-slate-200/80 p-3">
-          <button
-            onClick={onInvite}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-sky-300 bg-sky-50/60 px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-100"
-          >
-            <UserPlus className="h-4 w-4" />
-            Invite user
-          </button>
-        </div>
+        <button
+          onClick={onInvite}
+          className="clay-btn flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-indigo-600"
+        >
+          <UserPlus className="h-4 w-4" />
+          Invite teammate
+        </button>
       )}
     </div>
   );
@@ -316,14 +287,14 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden h-screen w-64 shrink-0 border-r border-slate-200/80 bg-white lg:block">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden h-screen w-72 shrink-0 lg:block">
         <SidebarBody {...bodyProps} />
       </aside>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="anim-fade-in fixed inset-0 z-40 bg-slate-900/40 lg:hidden"
+          className="anim-fade-in fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
           onClick={onCloseMobile}
           aria-hidden="true"
         />
@@ -331,7 +302,7 @@ export default function Sidebar({
 
       {/* Mobile drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transition-transform duration-300 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#f2f1fc] shadow-2xl transition-transform duration-300 lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-hidden={!mobileOpen}

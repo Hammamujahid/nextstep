@@ -65,8 +65,8 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
   if (status === "checking") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <Loader2 className="h-6 w-6 animate-spin text-sky-500" />
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-7 w-7 animate-spin text-indigo-500" />
       </div>
     );
   }
@@ -83,7 +83,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen">
       <Sidebar
         workspaces={workspaces}
         activeWorkspace={active}
@@ -98,7 +98,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         canManageWorkspace={canInvite}
       />
 
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-72">
         <Topbar
           title={view === "dashboard" ? undefined : meta.title}
           subtitle={
@@ -116,7 +116,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           onOpenMobile={() => setMobileOpen(true)}
         />
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-10 pt-4 sm:px-6">
           {children}
         </main>
       </div>

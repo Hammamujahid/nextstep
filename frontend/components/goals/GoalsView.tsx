@@ -235,7 +235,7 @@ function GoalCard({
                     <div className="min-w-0 flex-1">
                       <p className={`truncate text-sm font-medium ${t.status === "completed" ? "text-slate-400 line-through" : "text-slate-900"}`}>{t.title}</p>
                       <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${t.priority === "high" ? "bg-red-100 text-red-600" : t.priority === "medium" ? "bg-sky-100 text-sky-600" : "bg-slate-100 text-slate-500"}`}>{t.priority}</span>
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${t.priority === "high" ? "bg-red-100 text-red-600" : t.priority === "medium" ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>{t.priority}</span>
                         <span>{t.status.replace("_", " ")}</span>
                         {t.due_date && (
                           <>
@@ -248,7 +248,7 @@ function GoalCard({
                         )}
                       </p>
                     </div>
-                    <span className={`h-2 w-2 shrink-0 rounded-full ${t.status === "completed" ? "bg-emerald-500" : t.status === "in_progress" ? "bg-sky-400" : "bg-slate-300"}`} />
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${t.status === "completed" ? "bg-emerald-500" : t.status === "in_progress" ? "bg-indigo-500" : "bg-slate-300"}`} />
                   </div>
                 ))}
               </div>
@@ -275,7 +275,7 @@ function GoalCard({
               <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
                 {projects.map((p) => (
                   <div key={p.id} className="flex gap-3 rounded-xl bg-white p-3 shadow-sm">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sm font-bold text-sky-600">{p.project_name.charAt(0)}</span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-600">{p.project_name.charAt(0)}</span>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-slate-900">{p.project_name}</p>
                       <p className="mt-0.5 text-xs capitalize text-slate-500">{p.status.replace("_", " ")}</p>
@@ -608,7 +608,7 @@ export default function GoalsView() {
 
       {/* OVERVIEW + NEEDS ATTENTION */}
       <section className="grid items-start gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="clay p-5 sm:p-6">
           <h2 className="font-bold text-slate-900">Goal Overview</h2>
           <div className="mt-5 flex items-center gap-6">
             <div className="relative flex h-36 w-36 shrink-0 items-center justify-center">
@@ -650,7 +650,7 @@ export default function GoalsView() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="clay p-5 sm:p-6">
           <h2 className="font-bold text-slate-900">Goals Need Attention</h2>
           <div className="mt-4 space-y-3">
             {attention.length === 0 && (
@@ -681,7 +681,7 @@ export default function GoalsView() {
 
       {/* MAIN GRID (full width list) */}
       <section>
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="clay overflow-hidden">
           <div className="border-b border-slate-100 p-6">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
@@ -707,7 +707,7 @@ export default function GoalsView() {
                     value={sort}
                     onChange={(e) => setSort(e.target.value as GoalSort)}
                     aria-label="Sort goals"
-                    className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-3 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                    className="appearance-none clay-sm py-2.5 pl-3 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
                   >
                     {SORTS.map((o) => (
                       <option key={o.key} value={o.key}>
@@ -747,7 +747,7 @@ export default function GoalsView() {
                 </div>
               ))
             ) : visible.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center">
+              <div className="clay border-2 border-dashed border-indigo-200 p-10 text-center">
                 <ListChecks className="mx-auto h-8 w-8 text-slate-300" />
                 <p className="mt-2 text-sm text-slate-500">
                   {query ? `No goals match "${query}".` : "Belum ada goals. Buat goal pertama untuk mulai tracking."}

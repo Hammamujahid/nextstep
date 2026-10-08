@@ -15,7 +15,7 @@ type NextStepsProps = {
 
 const PRIORITY_STYLES: Record<TaskPriority, string> = {
   High: "bg-red-100 text-red-700",
-  Medium: "bg-sky-100 text-sky-700",
+  Medium: "bg-indigo-100 text-indigo-700",
   Normal: "bg-slate-100 text-slate-500",
 };
 
@@ -67,7 +67,7 @@ export default function NextSteps({ tasks, onToggle, onAdd, canEdit = true }: Ne
     <section aria-label="Your next steps">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2">
-          <ListChecks className="h-5 w-5 text-sky-500" />
+          <ListChecks className="h-5 w-5 text-indigo-500" />
           <h2 className="text-lg font-bold tracking-tight text-slate-900">
             Your Next Steps
           </h2>
@@ -107,7 +107,7 @@ function TaskList({
 }) {
   const getDone = (t: DashboardTask) => t.status === "completed";
   return (
-    <div className="mt-3 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="mt-3 divide-y divide-slate-100 clay overflow-hidden">
       {tasks.length === 0 && (
         <p className="p-6 text-center text-sm text-slate-400">
           Nothing here. Enjoy the clear sky.
@@ -121,7 +121,7 @@ function TaskList({
             data-priority={task.priority}
             data-due-today={task.dueToday ? "true" : "false"}
             data-done={done ? "true" : "false"}
-            className="task-row flex items-start gap-3 p-4 transition hover:bg-slate-50/70"
+            className="task-row flex items-start gap-3 p-4 transition hover:bg-indigo-50/50"
           >
             <button
               onClick={() => onToggle(task.id)}
@@ -130,7 +130,7 @@ function TaskList({
               aria-label={done ? "Mark as not done" : "Mark as done"}
               className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition disabled:cursor-not-allowed ${
                 done
-                  ? "border-sky-400 bg-sky-400 text-white"
+                  ? "border-sky-400 bg-indigo-500 text-white"
                   : "border-slate-300 bg-white text-transparent hover:border-sky-400"
               }`}
             >
@@ -163,7 +163,7 @@ function TaskList({
                 {task.project && (
                   <>
                     <span aria-hidden="true">•</span>
-                    <span className="font-medium text-sky-600">
+                    <span className="font-medium text-indigo-600">
                       {task.project}
                     </span>
                   </>
@@ -177,7 +177,7 @@ function TaskList({
         <div className="bg-slate-50 p-2">
           <button
             onClick={onAdd}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-sky-600 transition hover:bg-sky-100"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-100"
           >
             <Plus className="h-4 w-4" />
             Add Next Step

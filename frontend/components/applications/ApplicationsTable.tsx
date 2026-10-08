@@ -13,7 +13,7 @@ import {
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string; dot: string }[] = [
   { value: "wishlist", label: "Wishlist", dot: "bg-slate-400" },
-  { value: "applied", label: "Applied", dot: "bg-sky-400" },
+  { value: "applied", label: "Applied", dot: "bg-indigo-500" },
   { value: "under_review", label: "Under Review", dot: "bg-amber-400" },
   { value: "interviewing", label: "Interviewing", dot: "bg-violet-400" },
   { value: "offered", label: "Offered", dot: "bg-emerald-500" },
@@ -22,7 +22,7 @@ const STATUS_OPTIONS: { value: ApplicationStatus; label: string; dot: string }[]
 
 const STATUS_BADGE: Record<ApplicationStatus, string> = {
   wishlist: "bg-slate-100 text-slate-600",
-  applied: "bg-sky-100 text-sky-700",
+  applied: "bg-indigo-100 text-indigo-700",
   under_review: "bg-amber-100 text-amber-700",
   interviewing: "bg-violet-100 text-violet-700",
   offered: "bg-emerald-100 text-emerald-700",
@@ -129,7 +129,7 @@ function StatusDropdown({
                     if (opt.value === app.status) return;
                     onStatusChange(app.id, opt.value);
                   }}
-                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === app.status ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
+                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === app.status ? "bg-indigo-50 font-semibold text-indigo-700" : "text-slate-700"}`}
                 >
                   <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
                   {opt.label}
@@ -227,7 +227,7 @@ function DueCell({
                     type="date"
                     value={customDate}
                     onChange={(e) => setCustomDate(e.target.value)}
-                    className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
+                    className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
                   />
                 </div>
                 <div>
@@ -238,13 +238,13 @@ function DueCell({
                     type="time"
                     value={customTime}
                     onChange={(e) => setCustomTime(e.target.value)}
-                    className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
+                    className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
                   />
                 </div>
                 <button
                   onClick={applyCustom}
                   disabled={!customDate}
-                  className="w-full rounded-lg bg-sky-400 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-lg bg-indigo-500 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Set due date
                 </button>
@@ -269,7 +269,7 @@ type ApplicationsTableProps = {
 export default function ApplicationsTable({ apps, onStatusChange, onDueChange, onEdit, onDelete, canEdit = true }: ApplicationsTableProps) {
   if (apps.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div className="clay p-8 text-center shadow-sm">
         <p className="text-sm text-slate-400">
           No applications match the current filters.
         </p>
@@ -278,7 +278,7 @@ export default function ApplicationsTable({ apps, onStatusChange, onDueChange, o
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto clay">
       <table className="w-full min-w-[760px] text-left text-sm">
         <thead>
           <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
@@ -301,7 +301,7 @@ export default function ApplicationsTable({ apps, onStatusChange, onDueChange, o
         </thead>
         <tbody className="divide-y divide-slate-100">
           {apps.map((app) => (
-            <tr key={app.id} className="transition hover:bg-slate-50/70">
+            <tr key={app.id} className="transition hover:bg-indigo-50/50">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-1.5">
                   <span className="font-semibold text-slate-900">{app.job_title}</span>
@@ -312,7 +312,7 @@ export default function ApplicationsTable({ apps, onStatusChange, onDueChange, o
                       rel="noopener noreferrer"
                       aria-label={`View job for ${app.job_title}`}
                       title="View job"
-                      className="rounded p-0.5 text-slate-300 transition hover:text-sky-600"
+                      className="rounded p-0.5 text-slate-300 transition hover:text-indigo-600"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
@@ -321,7 +321,7 @@ export default function ApplicationsTable({ apps, onStatusChange, onDueChange, o
               </td>
               <td className="px-4 py-3 text-slate-600">
                 <span className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-sky-600">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-indigo-600">
                     {app.company_name.charAt(0).toUpperCase()}
                   </span>
                   {app.company_name}

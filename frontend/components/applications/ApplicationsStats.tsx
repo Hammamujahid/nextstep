@@ -24,15 +24,15 @@ export default function ApplicationsStats({
       sub: "Across all stages",
       subCls: "text-slate-500",
       icon: Briefcase,
-      iconCls: "bg-slate-100 text-sky-600",
+      iconCls: "bg-slate-100 text-indigo-600",
     },
     {
       label: "Interviewing",
       value: String(interviewing),
       sub: "Active interview stages",
-      subCls: "text-sky-600 font-medium",
+      subCls: "text-indigo-600 font-medium",
       icon: Video,
-      iconCls: "bg-sky-100 text-sky-600",
+      iconCls: "bg-indigo-100 text-indigo-600",
     },
     {
       label: "Under Review",
@@ -60,7 +60,7 @@ export default function ApplicationsStats({
       {cards.map((c) => (
         <div
           key={c.label}
-          className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md"
+          className="flex items-center justify-between clay p-4 transition duration-300 hover:-translate-y-1 hover:shadow-md"
         >
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">

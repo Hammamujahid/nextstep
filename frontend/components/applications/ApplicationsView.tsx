@@ -418,7 +418,7 @@ export default function ApplicationsView() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="clay p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="font-bold text-slate-900">Upcoming Activities</h2>
@@ -455,7 +455,7 @@ export default function ApplicationsView() {
       </section>
 
       {/* FILTER BAR */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="clay p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="relative w-full xl:max-w-md">
             <Search size={17} className="absolute left-3.5 top-3 text-slate-400" />
@@ -465,7 +465,7 @@ export default function ApplicationsView() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search company, position..."
               aria-label="Search applications"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
+              className="w-full clay-inset py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
             />
             {search && (
               <button
@@ -483,7 +483,7 @@ export default function ApplicationsView() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
                 aria-label="Filter by status"
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                className="appearance-none clay-sm py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
               >
                 <option value="all">All Status</option>
                 {PIPELINE.map((s) => (
@@ -533,7 +533,7 @@ export default function ApplicationsView() {
               {PIPELINE.map((col) => {
                 const columnApps = visible.filter((a) => a.status === col.value);
                 return (
-                  <div key={col.value} className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <div key={col.value} className="clay p-4">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex min-w-0 items-center gap-2">
                         <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${STATUS_DOT[col.value]}`} />
@@ -547,7 +547,7 @@ export default function ApplicationsView() {
                       {columnApps.map((a) => (
                         <div
                           key={a.id}
-                          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md"
+                          className="clay-sm p-4 transition hover:border-blue-200 hover:shadow-md"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-sky-100 text-xs font-bold text-blue-500">
@@ -612,7 +612,7 @@ export default function ApplicationsView() {
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="clay overflow-hidden">
             <div className="border-b border-slate-100 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -624,7 +624,7 @@ export default function ApplicationsView() {
                     value={sort}
                     onChange={(e) => setSort(e.target.value as SortKey)}
                     aria-label="Sort applications"
-                    className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                    className="appearance-none clay-sm py-2 pl-3 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
                   >
                     <option value="newest">Sort by: Newest</option>
                     <option value="oldest">Sort by: Oldest</option>
@@ -646,7 +646,7 @@ export default function ApplicationsView() {
               ) : (
                 <table className="w-full min-w-[920px]">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50/70 text-left text-xs text-slate-400">
+                    <tr className="border-b border-indigo-100/70 bg-indigo-50/50 text-left text-xs text-slate-400">
                       <th className="px-5 py-4 font-medium">Company</th>
                       <th className="px-4 py-4 font-medium">Position</th>
                       <th className="px-4 py-4 font-medium">Status</th>

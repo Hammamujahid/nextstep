@@ -13,7 +13,7 @@ import RowActionMenu from "../ui/RowActionMenu";
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string; dot: string }[] = [
   { value: "wishlist", label: "Wishlist", dot: "bg-slate-400" },
-  { value: "applied", label: "Applied", dot: "bg-sky-400" },
+  { value: "applied", label: "Applied", dot: "bg-indigo-500" },
   { value: "under_review", label: "Under Review", dot: "bg-amber-400" },
   { value: "interviewing", label: "Interviewing", dot: "bg-violet-400" },
   { value: "offered", label: "Offered", dot: "bg-emerald-500" },
@@ -22,7 +22,7 @@ const STATUS_OPTIONS: { value: ApplicationStatus; label: string; dot: string }[]
 
 const STATUS_BADGE: Record<ApplicationStatus, string> = {
   wishlist: "bg-slate-100 text-slate-600",
-  applied: "bg-sky-100 text-sky-700",
+  applied: "bg-indigo-100 text-indigo-700",
   under_review: "bg-amber-100 text-amber-700",
   interviewing: "bg-violet-100 text-violet-700",
   offered: "bg-emerald-100 text-emerald-700",
@@ -131,17 +131,17 @@ export default function ApplicationCard({ app, onStatusChange, onDueChange, onEd
 
   return (
     <article
-      className={`group flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md ${
+      className={`group flex flex-col gap-2.5 clay-sm p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-md ${
         anyMenuOpen ? "relative z-30" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-sky-600">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-indigo-600">
             {app.company_name.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0">
-            <h3 className="truncate text-sm font-bold text-slate-900 transition group-hover:text-sky-600">
+            <h3 className="truncate text-sm font-bold text-slate-900 transition group-hover:text-indigo-600">
               {app.job_title}
             </h3>
             <p className="truncate text-[13px] text-slate-500">
@@ -193,7 +193,7 @@ export default function ApplicationCard({ app, onStatusChange, onDueChange, onEd
                       if (opt.value === app.status) return;
                       onStatusChange(app.id, opt.value);
                     }}
-                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === app.status ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === app.status ? "bg-indigo-50 font-semibold text-indigo-700" : "text-slate-700"}`}
                   >
                     <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
                     {opt.label}
@@ -251,7 +251,7 @@ export default function ApplicationCard({ app, onStatusChange, onDueChange, onEd
                         type="date"
                         value={customDate}
                         onChange={(e) => setCustomDate(e.target.value)}
-                        className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
+                        className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
                       />
                     </div>
                     <div>
@@ -262,13 +262,13 @@ export default function ApplicationCard({ app, onStatusChange, onDueChange, onEd
                         type="time"
                         value={customTime}
                         onChange={(e) => setCustomTime(e.target.value)}
-                        className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
+                        className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
                       />
                     </div>
                     <button
                       onClick={applyCustomDue}
                       disabled={!customDate}
-                      className="w-full rounded-lg bg-sky-400 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="w-full rounded-lg bg-indigo-500 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Set due date
                     </button>
@@ -283,7 +283,7 @@ export default function ApplicationCard({ app, onStatusChange, onDueChange, onEd
             href={app.job_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-sky-600 hover:text-sky-700"
+            className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
           >
             <ExternalLink className="h-3 w-3" />
             View Job

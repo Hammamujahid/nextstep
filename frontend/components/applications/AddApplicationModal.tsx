@@ -76,7 +76,7 @@ export default function AddApplicationModal({
 
   const labelCls = "mb-1 block text-[13px] font-semibold text-slate-700";
   const inputCls =
-    "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
+    "h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
   return createPortal(
     <div
@@ -87,12 +87,12 @@ export default function AddApplicationModal({
       aria-label="Add new application"
     >
       <div
-        className="anim-pop-in m-auto max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="anim-pop-in m-auto max-h-[90vh] w-full max-w-xl overflow-y-auto clay shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
               <BriefcaseBusiness className="h-5 w-5" />
             </span>
             <div>
@@ -214,7 +214,7 @@ export default function AddApplicationModal({
             <button
               onClick={handleSave}
               disabled={!jobTitle.trim() || !companyName.trim()}
-              className="btn-shine rounded-xl bg-sky-400 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-shine rounded-xl bg-indigo-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Save Application
             </button>

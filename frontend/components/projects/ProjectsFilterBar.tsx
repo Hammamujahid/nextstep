@@ -28,7 +28,7 @@ export default function ProjectsFilterBar({
   counts,
 }: ProjectsFilterBarProps) {
   return (
-    <div className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm md:flex-row md:items-center">
+    <div className="flex flex-col justify-between gap-3 clay p-2.5 shadow-sm md:flex-row md:items-center">
       <div className="flex items-center gap-1 overflow-x-auto py-0.5">
         {STATUS_FILTERS.map((s) => (
           <button
@@ -54,7 +54,7 @@ export default function ProjectsFilterBar({
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="Filter by name or description..."
             aria-label="Filter projects"
-            className="h-9 w-full rounded-lg bg-slate-100 pl-9 pr-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:bg-slate-50 focus:ring-2 focus:ring-sky-100"
+            className="h-9 w-full rounded-lg bg-slate-100 pl-9 pr-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-100"
           />
         </div>
       </div>

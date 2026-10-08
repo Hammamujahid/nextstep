@@ -95,7 +95,7 @@ export default function DueDateSelect({
   }
 
   const inputCls =
-    "h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none transition focus:border-sky-400";
+    "clay-inset h-9 w-full px-2.5 text-xs font-semibold text-slate-700 outline-none";
 
   return (
     <>
@@ -106,7 +106,7 @@ export default function DueDateSelect({
         aria-expanded={open}
         aria-label={label}
         title={label}
-        className="inline-flex items-center gap-1 text-[10px] text-slate-400 transition hover:text-slate-600"
+        className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 transition hover:text-indigo-600"
       >
         <CalendarDays size={12} />
         <span className="truncate">{display}</span>
@@ -124,10 +124,10 @@ export default function DueDateSelect({
             <div
               role="dialog"
               aria-label={label}
-              className="fixed z-[100] rounded-lg border border-slate-200 bg-white p-3 shadow-lg"
+              className="clay fixed z-[100] !rounded-2xl p-3"
               style={{ top: pos.top, bottom: pos.bottom, left: pos.left, width: MENU_WIDTH }}
             >
-              <p className="text-[11px] font-semibold text-slate-700">Due date</p>
+              <p className="text-[11px] font-bold text-slate-700">Due date</p>
               <div className="mt-2 space-y-2">
                 <input
                   type="date"
@@ -150,13 +150,13 @@ export default function DueDateSelect({
                     setOpen(false);
                     if (valueISO !== null) onChange(null);
                   }}
-                  className="rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                  className="clay-btn px-2.5 py-1.5 text-[11px] font-bold text-slate-500"
                 >
                   Clear
                 </button>
                 <button
                   onClick={handleSave}
-                  className="rounded-lg bg-sky-400 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-sky-500"
+                  className="clay-btn-primary px-3 py-1.5 text-[11px] font-bold"
                 >
                   Save
                 </button>

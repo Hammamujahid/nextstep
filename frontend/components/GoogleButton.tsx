@@ -33,7 +33,7 @@ export default function GoogleButton({ label }: { label: string }) {
       </div>
       <a
         href={googleLoginUrl()}
-        className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+        className="mt-4 inline-flex w-full items-center justify-center gap-2.5 clay-sm px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
       >
         <GoogleIcon />
         {label}

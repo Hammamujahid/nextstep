@@ -61,7 +61,7 @@ export default function PrimaryGoalCard() {
 
   if (loading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="relative clay overflow-hidden p-5 sm:p-6">
         <div className="animate-pulse">
           <div className="h-5 w-24 rounded-full bg-slate-100" />
           <div className="mt-3 h-7 w-64 rounded bg-slate-100" />
@@ -82,8 +82,8 @@ export default function PrimaryGoalCard() {
 
   if (!goal) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+      <div className="flex flex-col items-center justify-center clay border-2 border-dashed border-indigo-200 p-8 shadow-sm sm:p-10">
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
           <Target className="h-6 w-6" />
         </span>
         <h3 className="mt-3 text-base font-bold text-slate-900">No goals yet</h3>
@@ -92,7 +92,7 @@ export default function PrimaryGoalCard() {
         </p>
         <Link
           href="/dashboard/goals"
-          className="mt-4 inline-flex items-center gap-1 rounded-xl bg-sky-400 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500"
+          className="mt-4 inline-flex items-center gap-1 rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-600"
         >
           Create Goal
           <ChevronRight className="h-4 w-4" />
@@ -107,14 +107,14 @@ export default function PrimaryGoalCard() {
       : "No linked projects or tasks";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-500 hover:shadow-[0_16px_40px_-16px_rgba(2,132,199,0.3)] sm:p-6">
+    <div className="relative clay overflow-hidden p-5 transition duration-500 hover:shadow-[0_16px_40px_-16px_rgba(2,132,199,0.3)] sm:p-6">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-sky-100 blur-3xl"
+        className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-indigo-100 blur-3xl"
       />
       <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
         <div className="max-w-2xl">
-          <span className="inline-block rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-sky-700">
+          <span className="inline-block rounded-full bg-indigo-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-indigo-700">
             {formatStatus(goal.status)}
           </span>
           <h2 className="mt-3 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
@@ -140,11 +140,11 @@ export default function PrimaryGoalCard() {
         <div className="w-full shrink-0 lg:w-72">
           <div className="flex items-center justify-between text-sm">
             <span className="font-semibold text-slate-500">Progress</span>
-            <span className="font-bold text-sky-600">{goal.progress}%</span>
+            <span className="font-bold text-indigo-600">{goal.progress}%</span>
           </div>
           <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="anim-grow-bar h-full rounded-full bg-gradient-to-r from-sky-400 to-sky-500"
+              className="anim-grow-bar h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-500"
               style={{ width: `${goal.progress}%` }}
             />
           </div>
@@ -154,7 +154,7 @@ export default function PrimaryGoalCard() {
           <div className="mt-2 flex justify-end">
             <Link
               href="/dashboard/goals"
-              className="group inline-flex items-center gap-0.5 text-xs font-semibold text-sky-600 hover:text-sky-700"
+              className="group inline-flex items-center gap-0.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
             >
               Details
               <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />

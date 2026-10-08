@@ -4,7 +4,7 @@ import type { PermissionValue, WorkspaceInvitation } from "../../lib/workspaces"
 
 const TAG_STYLE: Record<PermissionValue, string> = {
   none: "bg-slate-100 text-slate-500",
-  viewer: "bg-sky-100 text-sky-700",
+  viewer: "bg-indigo-100 text-indigo-700",
   editor: "bg-emerald-100 text-emerald-700",
 };
 

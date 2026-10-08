@@ -15,7 +15,7 @@ type ApplicationsBoardProps = {
 export default function ApplicationsBoard({ apps, onStatusChange, onDueChange, onEdit, onDelete, canEdit = true }: ApplicationsBoardProps) {
   if (apps.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-300 bg-white/60 px-3 py-10 text-center text-sm text-slate-400">
+      <p className="clay border-2 border-dashed border-indigo-200 bg-white/60 px-3 py-10 text-center text-sm text-slate-400">
         No applications here.
       </p>
     );

@@ -272,13 +272,21 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
+	// token boleh dari header Bearer (klien non-browser) atau cookie ns_access
+	// (browser). Karena sesi browser berbasis cookie, logout tidak boleh
+	// mewajibkan header Authorization.
+	tokenString := ""
 	authHeader := c.GetHeader("Authorization")
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || parts[0] != "Bearer" || parts[1] == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "Authorization header format must be Bearer {token}",
-		})
-		return
+	if authHeader != "" {
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) == 2 && parts[0] == "Bearer" && parts[1] != "" {
+			tokenString = parts[1]
+		}
+	}
+	if tokenString == "" {
+		if v, err := c.Cookie(cookieAccess); err == nil && v != "" {
+			tokenString = v
+		}
 	}
 
 	var body struct {
@@ -286,12 +294,20 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&body)
 
-	if err := h.authService.Logout(c.Request.Context(), parts[1], refreshFromRequest(c, body.RefreshToken)); err != nil {
+	// selalu bersihkan cookie sesi walau token tidak ada/kadaluarsa, supaya
+	// user benar-benar keluar dan tidak terjebak redirect balik ke dashboard
+	if tokenString == "" {
+		h.clearAuthCookies(c)
+		c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+		return
+	}
+
+	if err := h.authService.Logout(c.Request.Context(), tokenString, refreshFromRequest(c, body.RefreshToken)); err != nil {
 		switch {
 		case errors.Is(err, apperrors.ErrInvalidToken):
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Invalid or expired token",
-			})
+			// token sudah tidak valid: tetap anggap logout sukses + bersihkan cookie
+			h.clearAuthCookies(c)
+			c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 		case errors.Is(err, apperrors.ErrDatabase):
 			log.Println("logout database error:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{

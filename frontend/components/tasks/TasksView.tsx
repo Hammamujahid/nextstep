@@ -688,7 +688,7 @@ export default function TasksView() {
 
       {/* TODAY + UPCOMING */}
       <section className="grid items-start gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="clay p-5">
           <div className="flex items-center gap-2">
             <CalendarDays size={19} className="text-blue-500" />
             <h2 className="font-bold text-slate-900">Today</h2>
@@ -706,7 +706,7 @@ export default function TasksView() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="clay p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-slate-900">Upcoming Tasks</h2>
           </div>
@@ -738,7 +738,7 @@ export default function TasksView() {
       </section>
 
       {/* FILTER BAR */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="clay p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="relative w-full xl:max-w-md">
             <Search size={17} className="absolute left-3.5 top-3 text-slate-400" />
@@ -748,7 +748,7 @@ export default function TasksView() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tasks..."
               aria-label="Search tasks"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
+              className="w-full clay-inset py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
             />
             {search && (
               <button
@@ -766,7 +766,7 @@ export default function TasksView() {
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as PriorityFilter)}
                 aria-label="Filter by priority"
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                className="appearance-none clay-sm py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
               >
                 <option value="all">All Priorities</option>
                 <option value="high">High</option>
@@ -780,7 +780,7 @@ export default function TasksView() {
                 value={status}
                 onChange={(e) => setStatus(e.target.value as StatusFilter)}
                 aria-label="Filter by status"
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                className="appearance-none clay-sm py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
               >
                 <option value="all">All Status</option>
                 <option value="not_started">To Do</option>
@@ -794,7 +794,7 @@ export default function TasksView() {
                 value={date}
                 onChange={(e) => setDate(e.target.value as DateFilter)}
                 aria-label="Filter by due date"
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                className="appearance-none clay-sm py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
               >
                 <option value="all">All Dates</option>
                 <option value="today">Due Today</option>
@@ -835,7 +835,7 @@ export default function TasksView() {
       <section>
         <div>
           {view === "list" ? (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="clay overflow-hidden">
               <div className="border-b border-slate-100 p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -847,7 +847,7 @@ export default function TasksView() {
                       value={sort}
                       onChange={(e) => setSort(e.target.value as SortKey)}
                       aria-label="Sort tasks"
-                      className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                      className="appearance-none clay-sm py-2 pl-3 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
                     >
                       <option value="due">Sort by: Due Date</option>
                       <option value="priority">Sort by: Priority</option>
@@ -869,7 +869,7 @@ export default function TasksView() {
                 ) : (
                   <table className="w-full min-w-[720px]">
                     <thead>
-                      <tr className="border-b border-slate-100 bg-slate-50/70 text-left text-xs text-slate-400">
+                      <tr className="border-b border-indigo-100/70 bg-indigo-50/50 text-left text-xs text-slate-400">
                         <th className="px-5 py-4 font-medium">Task</th>
                         <th className="px-4 py-4 font-medium">Priority</th>
                         <th className="px-4 py-4 font-medium">Status</th>
@@ -984,7 +984,7 @@ export default function TasksView() {
               {boardColumns.map((col) => {
                 const columnTasks = visible.filter((t) => t.status === col);
                 return (
-                  <div key={col} className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <div key={col} className="clay p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className={`h-2.5 w-2.5 rounded-full ${boardDot[col]}`} />
@@ -1000,7 +1000,7 @@ export default function TasksView() {
                         return (
                           <div
                             key={t.id}
-                            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md"
+                            className="clay-sm p-4 transition hover:border-blue-200 hover:shadow-md"
                           >
                             <div className="flex items-start justify-between gap-2">
                               {editable ? (

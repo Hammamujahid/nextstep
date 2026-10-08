@@ -54,15 +54,15 @@ export default function WorkspaceGate({
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-50 px-4 py-10">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="anim-drift absolute -left-24 top-10 h-72 w-72 rounded-full bg-sky-200/50 blur-3xl" />
-        <div className="anim-drift-late absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-sky-100 blur-3xl" />
+        <div className="anim-drift-late absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-indigo-100 blur-3xl" />
       </div>
 
-      <div className="anim-pop-in relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-[0_8px_30px_-12px_rgba(2,132,199,0.25)] sm:p-8">
+      <div className="anim-pop-in relative w-full max-w-md clay p-6 text-center shadow-[0_8px_30px_-12px_rgba(2,132,199,0.25)] sm:p-8">
         <div className="mx-auto w-fit">
           <Logo />
         </div>
 
-        <span className="anim-float mx-auto mt-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
+        <span className="anim-float mx-auto mt-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
           <FolderKanban className="h-7 w-7" />
         </span>
 
@@ -105,7 +105,7 @@ export default function WorkspaceGate({
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={100}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+              className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
             />
           </div>
           <div>
@@ -123,14 +123,14 @@ export default function WorkspaceGate({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={500}
-              className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+              className="w-full resize-none clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="btn-shine inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="btn-shine inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

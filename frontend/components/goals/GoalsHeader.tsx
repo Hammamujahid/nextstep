@@ -18,9 +18,9 @@ export default function GoalsHeader({
   return (
     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
       <div>
-        <p className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-sky-600">
+        <p className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-indigo-600">
           Strategic Roadmapping
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
           <span className="font-medium normal-case tracking-normal text-slate-500">
             Q2-Q3 2025 Cycle
           </span>
@@ -35,7 +35,7 @@ export default function GoalsHeader({
           aria-pressed={filtersVisible}
           className={`inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium shadow-sm transition ${
             filtersVisible
-              ? "bg-sky-100 text-sky-700"
+              ? "bg-indigo-100 text-indigo-700"
               : "bg-white text-slate-700 hover:bg-slate-50"
           }`}
         >
@@ -45,7 +45,7 @@ export default function GoalsHeader({
         {canEdit && (
           <button
             onClick={onNewGoal}
-            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-sky-400 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md active:translate-y-0"
+            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-600 hover:shadow-md active:translate-y-0"
           >
             <CirclePlus className="h-[18px] w-[18px]" />
             New Goal

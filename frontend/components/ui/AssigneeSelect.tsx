@@ -47,8 +47,8 @@ export default function AssigneeSelect({
 
   const buttonClassName =
     variant === "pill"
-      ? "rounded-full bg-sky-50 py-1 pl-2 pr-1.5 text-[10px] font-medium text-sky-700 outline-none transition hover:bg-sky-100"
-      : "w-full rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-7 text-xs font-medium text-slate-600 outline-none transition focus:border-blue-400";
+      ? "clay-chip bg-white/80 py-1 pl-2 pr-1.5 text-[10px] font-bold text-indigo-600 outline-none transition hover:bg-white"
+      : "clay-inset w-full py-2 pl-3 pr-7 text-xs font-semibold text-slate-600 outline-none transition";
 
   return (
     <InlineSelect

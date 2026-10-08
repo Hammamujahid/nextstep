@@ -50,7 +50,7 @@ export default function HeroHeader({ username, onNewTask, canEdit = true }: Hero
       {canEdit && (
         <button
           onClick={onNewTask}
-          className="btn-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-md"
+          className="btn-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-600 hover:shadow-md"
         >
           <ListPlus className="h-4 w-4" />
           New Task

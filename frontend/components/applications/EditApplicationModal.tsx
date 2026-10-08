@@ -47,7 +47,7 @@ export default function EditApplicationModal({ app, onClose, onSave }: EditAppli
 
   const labelCls = "mb-1 block text-[13px] font-semibold text-slate-700";
   const inputCls =
-    "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
+    "h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
   return createPortal(
     <div
@@ -58,12 +58,12 @@ export default function EditApplicationModal({ app, onClose, onSave }: EditAppli
       aria-label={`Edit ${app.job_title}`}
     >
       <div
-        className="anim-pop-in m-auto w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="anim-pop-in m-auto w-full max-w-lg clay p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BriefcaseBusiness className="h-5 w-5 text-sky-500" />
+            <BriefcaseBusiness className="h-5 w-5 text-indigo-500" />
             <h3 className="text-lg font-bold tracking-tight text-slate-900">
               Edit Application
             </h3>
@@ -140,7 +140,7 @@ export default function EditApplicationModal({ app, onClose, onSave }: EditAppli
           <button
             onClick={handleSave}
             disabled={!jobTitle.trim() || !companyName.trim()}
-            className="btn-shine rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-shine rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Save Changes
           </button>

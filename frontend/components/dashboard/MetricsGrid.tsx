@@ -59,7 +59,7 @@ export default function MetricsGrid() {
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            className="clay p-4"
           >
             <div className="animate-pulse">
               <div className="h-3 w-24 rounded bg-slate-100" />
@@ -83,7 +83,7 @@ export default function MetricsGrid() {
     {
       label: "Goals In Progress",
       icon: Flag,
-      iconBg: "bg-sky-100 text-sky-600",
+      iconBg: "bg-indigo-100 text-indigo-600",
       value: `${goals.in_progress} Active`,
       foot: goals.total === 0
         ? "No goals yet"
@@ -96,12 +96,12 @@ export default function MetricsGrid() {
       iconBg: "bg-emerald-100 text-emerald-600",
       value: `${tasks.completed} / ${tasks.total}`,
       foot: `${taskVelocity}% completed`,
-      footTone: "text-sky-600",
+      footTone: "text-indigo-600",
     },
     {
       label: "Applications",
       icon: Briefcase,
-      iconBg: "bg-sky-100 text-sky-600",
+      iconBg: "bg-indigo-100 text-indigo-600",
       value: `${apps.total} Total`,
       foot: `${apps.interviewing} interviewing \u2022 ${apps.applied} applied`,
       footTone: "text-slate-500",
@@ -109,7 +109,7 @@ export default function MetricsGrid() {
     {
       label: "Active Projects",
       icon: FolderKanban,
-      iconBg: "bg-sky-100 text-sky-600",
+      iconBg: "bg-indigo-100 text-indigo-600",
       value: `${projects.total} Builds`,
       foot: `${projects.completed} completed \u2022 ${projects.in_progress} active`,
       footTone: "text-slate-500",
@@ -124,7 +124,7 @@ export default function MetricsGrid() {
       {items.map((m) => (
         <div
           key={m.label}
-          className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md"
+          className="flex flex-col justify-between clay p-4 transition duration-300 hover:-translate-y-1 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">

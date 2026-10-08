@@ -26,7 +26,7 @@ function menuPos(rect: DOMRect, width: number, heightEstimate: number) {
 function Avatar({ name }: { name: string }) {
   const initial = (name.trim().charAt(0) || "?").toUpperCase();
   return (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[10px] font-bold text-sky-700">
+    <span className="clay-icon h-5 w-5 shrink-0 bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
       {initial}
     </span>
   );
@@ -113,7 +113,7 @@ export default function InlineSelect({
             <div
               role="listbox"
               aria-label={label}
-              className="fixed z-[100] overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+              className="clay fixed z-[100] overflow-hidden !rounded-2xl p-1.5"
               style={{ top: pos.top, bottom: pos.bottom, left: pos.left, width: menuWidth }}
             >
               {options.map((opt) => {
@@ -128,10 +128,10 @@ export default function InlineSelect({
                       setOpen(false);
                       if (!opt.disabled && opt.value !== value) onChange(opt.value);
                     }}
-                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition disabled:cursor-default ${
+                    className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition disabled:cursor-default ${
                       isSelected
-                        ? "bg-sky-50 font-semibold text-sky-700"
-                        : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-slate-600 hover:bg-indigo-50/70"
                     }`}
                   >
                     {opt.dot && <span className={`h-2 w-2 shrink-0 rounded-full ${opt.dot}`} />}

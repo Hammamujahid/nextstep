@@ -84,7 +84,7 @@ export default function NotificationsBell({
       .map<Item>((t) => ({
         key: `today-${t.id}`,
         icon: CalendarClock,
-        iconCls: "text-sky-500",
+        iconCls: "text-indigo-500",
         title: t.title,
         detail: `Due today · ${fmtTime(t.due_date as string)}`,
         href: "/dashboard/tasks",
@@ -134,7 +134,7 @@ export default function NotificationsBell({
       >
         <Bell className="h-5 w-5" />
         {items.length > 0 && (
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-sky-400 ring-2 ring-white" />
+          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-white" />
         )}
       </button>
       {open && (
@@ -144,7 +144,7 @@ export default function NotificationsBell({
             className="fixed inset-0 z-40 cursor-default"
             onClick={() => setOpen(false)}
           />
-          <div className="anim-pop-in absolute right-0 top-full z-50 mt-2 max-h-96 w-80 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+          <div className="anim-pop-in absolute right-0 top-full z-50 mt-2 max-h-96 w-80 overflow-y-auto clay p-1.5 shadow-xl">
             <p className="px-3 pb-1 pt-2 text-sm font-bold text-slate-900">
               Notifications
             </p>

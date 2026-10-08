@@ -46,9 +46,9 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
           <TrendingUp className="h-3.5 w-3.5" /> {todayCount} scheduled today
         </>
       ),
-      footCls: "text-sky-600",
+      footCls: "text-indigo-600",
       icon: CalendarClock,
-      iconCls: "bg-sky-100 text-sky-600",
+      iconCls: "bg-indigo-100 text-indigo-600",
     },
     {
       label: "Completed",
@@ -96,7 +96,7 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
       {cards.map((c) => (
         <div
           key={c.label}
-          className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md"
+          className="flex items-center justify-between clay p-4 transition duration-300 hover:-translate-y-1 hover:shadow-md"
         >
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">

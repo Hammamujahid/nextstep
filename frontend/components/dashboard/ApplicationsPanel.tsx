@@ -9,14 +9,14 @@ type ApplicationsPanelProps = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  interview: "bg-sky-100 text-sky-700",
-  review: "bg-sky-100 text-sky-700",
+  interview: "bg-indigo-100 text-indigo-700",
+  review: "bg-indigo-100 text-indigo-700",
   final: "bg-emerald-100 text-emerald-700",
   submitted: "bg-slate-100 text-slate-500",
 };
 
 const NOTE_STYLES: Record<string, string> = {
-  sky: "font-medium text-sky-600",
+  sky: "font-medium text-indigo-600",
   slate: "text-slate-500",
   emerald: "font-semibold text-emerald-600",
 };
@@ -40,7 +40,7 @@ export default function ApplicationsPanel({ applications = [] }: ApplicationsPan
     <section aria-label="Job applications">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Briefcase className="h-5 w-5 text-sky-500" />
+          <Briefcase className="h-5 w-5 text-indigo-500" />
           <h2 className="text-lg font-bold tracking-tight text-slate-900">
             Job Applications
           </h2>
@@ -51,15 +51,15 @@ export default function ApplicationsPanel({ applications = [] }: ApplicationsPan
       </div>
 
       {list.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
+        <p className="clay border-2 border-dashed border-indigo-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
           No applications yet. Start applying to see them here.
         </p>
       ) : (
-        <div className="mt-3 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="mt-3 divide-y divide-slate-100 clay overflow-hidden">
           {list.map((app) => (
           <div
             key={app.id}
-            className="p-4 transition hover:bg-slate-50/70"
+            className="p-4 transition hover:bg-indigo-50/50"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
@@ -93,7 +93,7 @@ export default function ApplicationsPanel({ applications = [] }: ApplicationsPan
           <div className="bg-slate-50 p-2">
             <Link
               href="/dashboard/applications"
-              className="group flex items-center justify-center gap-1 rounded-xl py-2 text-sm font-semibold text-sky-600 transition hover:bg-sky-100"
+              className="group flex items-center justify-center gap-1 rounded-xl py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-100"
             >
               View All Applications
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />

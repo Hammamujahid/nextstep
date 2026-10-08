@@ -510,7 +510,7 @@ export default function DashboardHome() {
             Here&apos;s what&apos;s happening with your work today. Keep going!
           </p>
         </div>
-        <div className="flex items-center gap-4 self-start rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm md:self-auto">
+        <div className="flex items-center gap-4 self-start clay px-5 py-3 shadow-sm md:self-auto">
           <div>
             <p className="text-xs text-slate-400">Today</p>
             <p className="text-sm font-semibold text-slate-900">{todayLabel}</p>
@@ -528,7 +528,7 @@ export default function DashboardHome() {
       {/* STAT CARDS */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {statCards.map((s) => (
-          <div key={s.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div key={s.title} className="clay p-5">
             <div className="flex items-start justify-between">
               <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${s.iconStyle}`}>
                 <s.icon size={22} />
@@ -544,7 +544,7 @@ export default function DashboardHome() {
       {/* TASKS + CALENDAR */}
       {readTask && (
         <section className="grid items-start gap-6 xl:grid-cols-[1fr_350px]">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="clay overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-6">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">My Tasks</h2>
@@ -644,7 +644,7 @@ export default function DashboardHome() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="clay p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CalendarDays size={19} className="text-blue-500" />
@@ -702,7 +702,7 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="clay p-5">
               <div className="flex items-center justify-between">
                 <h2 className="font-bold text-slate-900">Upcoming Tasks</h2>
                 <Link href="/dashboard/tasks" className="text-xs font-medium text-blue-500 hover:text-blue-600">
@@ -738,7 +738,7 @@ export default function DashboardHome() {
 
       {/* BOTTOM CARDS */}
       <section className="grid items-start gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="clay p-5">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="font-bold text-slate-900">Workspace Overview</h2>
             <Link href="/dashboard/members" className="text-xs font-medium text-blue-500 hover:text-blue-600">
@@ -778,7 +778,7 @@ export default function DashboardHome() {
         </div>
 
         {(readTask || readGoal || readProject || readApp) && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="clay p-5">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-bold text-slate-900">Progress Overview</h2>
             </div>
@@ -800,7 +800,7 @@ export default function DashboardHome() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="clay p-5">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="font-bold text-slate-900">Recent Activity</h2>
           </div>

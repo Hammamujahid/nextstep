@@ -16,7 +16,7 @@ export default function Logo({
           alt="NextStep logo"
           width={36}
           height={36}
-          className="h-9 w-9 rounded-xl shadow-sm"
+          className="h-9 w-9 rounded-xl shadow-sm hue-rotate-[35deg]"
           priority
         />
       </span>

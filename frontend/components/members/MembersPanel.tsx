@@ -187,7 +187,7 @@ export default function MembersPanel() {
 
   if (!active) {
     return (
-      <div className="anim-fade-up rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div className="anim-fade-up clay p-8 text-center shadow-sm">
         <p className="text-sm text-slate-400">No workspace selected.</p>
       </div>
     );
@@ -231,7 +231,7 @@ export default function MembersPanel() {
       {/* STATS */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((s) => (
-          <div key={s.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div key={s.title} className="clay p-5">
             <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${s.iconStyle}`}>
               <s.icon size={21} />
             </div>
@@ -243,7 +243,7 @@ export default function MembersPanel() {
       </section>
 
       {/* FILTER BAR */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="clay p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="relative w-full xl:max-w-md">
             <Search size={17} className="absolute left-3.5 top-3 text-slate-400" />
@@ -253,7 +253,7 @@ export default function MembersPanel() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search members..."
               aria-label="Search members"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
+              className="w-full clay-inset py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
             />
             {search && (
               <button
@@ -271,7 +271,7 @@ export default function MembersPanel() {
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
                 aria-label="Filter by role"
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                className="appearance-none clay-sm py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
               >
                 <option value="all">All Roles</option>
                 <option value="admin">Admin</option>
@@ -284,7 +284,7 @@ export default function MembersPanel() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
                 aria-label="Filter by status"
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
+                className="appearance-none clay-sm py-2.5 pl-4 pr-8 text-xs font-medium text-slate-500 outline-none transition focus:border-blue-400"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -309,7 +309,7 @@ export default function MembersPanel() {
       </section>
 
       {/* MEMBERS TABLE */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="clay overflow-hidden">
         <div className="border-b border-slate-100 p-5">
           <h2 className="font-bold text-slate-900">Workspace Members</h2>
           <p className="mt-1 text-xs text-slate-400">{rows.length} members found</p>
@@ -334,7 +334,7 @@ export default function MembersPanel() {
           ) : (
             <table className="w-full min-w-[1100px]">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/70 text-left text-xs text-slate-400">
+                <tr className="border-b border-indigo-100/70 bg-indigo-50/50 text-left text-xs text-slate-400">
                   <th className="px-5 py-4 font-medium">Member</th>
                   <th className="px-4 py-4 font-medium">Role</th>
                   <th className="px-4 py-4 font-medium">Tasks</th>
@@ -469,7 +469,7 @@ export default function MembersPanel() {
       </section>
 
       {/* PERMISSION LEVELS (full width) */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6">
+      <section className="clay p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
             <ShieldCheck size={20} />

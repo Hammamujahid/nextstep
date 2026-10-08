@@ -190,14 +190,14 @@ export default function SearchBar({ workspaceId }: SearchBarProps) {
           ensureLoaded();
           setOpen(true);
         }}
-        className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-12 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
+        className="h-10 w-full clay-inset pl-10 pr-12 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
       />
       <kbd className="pointer-events-none absolute right-3 rounded bg-slate-200/70 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">
         ⌘K
       </kbd>
 
       {showDropdown && (
-        <div className="anim-pop-in absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+        <div className="anim-pop-in absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto clay p-1.5 shadow-xl">
           {loading ? (
             <p className="px-3 py-6 text-center text-sm text-slate-400">
               Searching...

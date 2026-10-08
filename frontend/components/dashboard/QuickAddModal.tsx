@@ -109,7 +109,7 @@ export default function QuickAddModal({
   }
 
   const selectCls =
-    "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
+    "h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
   return createPortal(
     <div
@@ -120,12 +120,12 @@ export default function QuickAddModal({
       aria-label="Add next step"
     >
       <div
-        className="anim-pop-in m-auto flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="anim-pop-in m-auto flex w-full max-w-lg flex-col gap-4 clay p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ListPlus className="h-5 w-5 text-sky-500" />
+            <ListPlus className="h-5 w-5 text-indigo-500" />
             <h3 className="text-lg font-bold tracking-tight text-slate-900">
               Add Next Step
             </h3>
@@ -156,7 +156,7 @@ export default function QuickAddModal({
               if (e.key === "Enter") handleSave();
             }}
             placeholder="e.g., Practice mock interview with Dan"
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+            className="h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
           />
         </div>
 
@@ -281,7 +281,7 @@ export default function QuickAddModal({
           <button
             onClick={handleSave}
             disabled={!title.trim() || saving}
-            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             Save Action

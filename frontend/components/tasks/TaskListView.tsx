@@ -24,13 +24,13 @@ const LANE_LABEL: Record<BoardTask["lane"], string> = Object.fromEntries(
 
 const STATUS_OPTIONS: { value: BoardTask["status"]; label: string; dot: string }[] = [
   { value: "not_started", label: "Not Started", dot: "bg-slate-300" },
-  { value: "in_progress", label: "In Progress", dot: "bg-sky-400" },
+  { value: "in_progress", label: "In Progress", dot: "bg-indigo-500" },
   { value: "completed", label: "Completed", dot: "bg-emerald-500" },
 ];
 
 const PRIORITY_OPTIONS: { value: BoardTask["priority"]; label: string; dot: string }[] = [
   { value: "high", label: "High", dot: "bg-red-500" },
-  { value: "medium", label: "Med", dot: "bg-sky-400" },
+  { value: "medium", label: "Med", dot: "bg-indigo-500" },
   { value: "low", label: "Low", dot: "bg-slate-300" },
 ];
 
@@ -102,7 +102,7 @@ function StatusDropdown({
                 if (opt.value === task.status) return;
                 onStatusChange(task.id, opt.value);
               }}
-              className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.status ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
+              className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.status ? "bg-indigo-50 font-semibold text-indigo-700" : "text-slate-700"}`}
             >
               <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
               {opt.label}
@@ -161,7 +161,7 @@ function PriorityDropdown({
                   if (opt.value === task.priority) return;
                   onPriorityChange(task.id, opt.value);
                 }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.priority ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.priority ? "bg-indigo-50 font-semibold text-indigo-700" : "text-slate-700"}`}
               >
                 <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
                 {opt.label}
@@ -245,7 +245,7 @@ function DueDropdown({
                   type="date"
                   value={customDate}
                   onChange={(e) => setCustomDate(e.target.value)}
-                  className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
+                  className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
                 />
               </div>
               <div>
@@ -256,13 +256,13 @@ function DueDropdown({
                   type="time"
                   value={customTime}
                   onChange={(e) => setCustomTime(e.target.value)}
-                  className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
+                  className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
                 />
               </div>
               <button
                 onClick={applyCustom}
                 disabled={!customDate}
-                className="w-full rounded-lg bg-sky-400 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-lg bg-indigo-500 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Set due date
               </button>
@@ -329,12 +329,12 @@ function EstimateDropdown({
                   if (e.key === "Enter") applyCustom();
                 }}
                 placeholder="e.g., 45m or 1.5h"
-                className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
+                className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
               />
               <button
                 onClick={applyCustom}
                 disabled={parseEstimateToMinutes(custom) === null}
-                className="w-full rounded-lg bg-sky-400 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-lg bg-indigo-500 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Set estimate
               </button>
@@ -349,7 +349,7 @@ function EstimateDropdown({
 export default function TaskListView({ tasks, onToggle, onStatusChange, onPriorityChange, onDueChange, onEstimateChange, onEdit, onDelete, canEdit = true }: TaskListViewProps) {
   if (tasks.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div className="clay p-8 text-center shadow-sm">
         <p className="text-sm text-slate-400">
           No tasks match the current filters.
         </p>
@@ -358,13 +358,13 @@ export default function TaskListView({ tasks, onToggle, onStatusChange, onPriori
   }
 
   return (
-    <div className="divide-y divide-slate-100 overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="divide-y divide-slate-100 overflow-visible clay">
       {tasks.map((task) => {
         const done = task.status === "completed";
         return (
           <div
             key={task.id}
-            className="flex items-center gap-3 bg-white p-4 transition first:rounded-t-2xl last:rounded-b-2xl hover:bg-slate-50/70"
+            className="flex items-center gap-3 bg-white p-4 transition first:rounded-t-2xl last:rounded-b-2xl hover:bg-indigo-50/50"
           >
             <input
               type="checkbox"
