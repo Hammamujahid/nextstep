@@ -71,7 +71,7 @@ export default function AuthShell({
                   <p className="text-xs text-sky-100">Good morning, Tila 👋</p>
                   <p className="mt-1 font-bold">Become a Fullstack Developer</p>
                 </div>
-                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-indigo-700">
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-sky-700">
                   72%
                 </span>
               </div>
@@ -89,7 +89,7 @@ export default function AuthShell({
                         m.state === "current"
                           ? "pulse-dot flex h-5 w-5 items-center justify-center rounded-full bg-white"
                           : m.state === "done"
-                            ? "flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-indigo-600"
+                            ? "flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-sky-600"
                             : "flex h-5 w-5 items-center justify-center rounded-full bg-white/25"
                       }
                     >
@@ -98,7 +98,7 @@ export default function AuthShell({
                       ) : (
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
-                            m.state === "current" ? "bg-indigo-500" : "bg-white/70"
+                            m.state === "current" ? "bg-sky-500" : "bg-white/70"
                           }`}
                         />
                       )}
@@ -117,7 +117,7 @@ export default function AuthShell({
 
             {/* Floating task chip */}
             <div className="anim-float absolute -right-4 -top-5 flex rotate-2 items-center gap-2.5 rounded-xl border border-white/40 bg-white px-3.5 py-2.5 text-slate-800 shadow-lg">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500 text-white">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-sky-500 text-white">
                 <Check className="h-3.5 w-3.5" />
               </span>
               <div>
@@ -173,7 +173,7 @@ export function AuthFooter({ text, linkText, href }: { text: string; linkText: s
   return (
     <p className="mt-6 text-center text-sm text-slate-600">
       {text}{" "}
-      <Link href={href} className="font-semibold text-indigo-600 hover:text-indigo-700">
+      <Link href={href} className="font-semibold text-sky-600 hover:text-sky-700">
         {linkText}
       </Link>
     </p>

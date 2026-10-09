@@ -109,7 +109,7 @@ export default function QuickAddModal({
   }
 
   const selectCls =
-    "h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
+    "h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
 
   return createPortal(
     <div
@@ -125,7 +125,7 @@ export default function QuickAddModal({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ListPlus className="h-5 w-5 text-indigo-500" />
+            <ListPlus className="h-5 w-5 text-sky-500" />
             <h3 className="text-lg font-bold tracking-tight text-slate-900">
               Add Next Step
             </h3>
@@ -156,7 +156,7 @@ export default function QuickAddModal({
               if (e.key === "Enter") handleSave();
             }}
             placeholder="e.g., Practice mock interview with Dan"
-            className="h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            className="h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
           />
         </div>
 
@@ -281,7 +281,7 @@ export default function QuickAddModal({
           <button
             onClick={handleSave}
             disabled={!title.trim() || saving}
-            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             Save Action

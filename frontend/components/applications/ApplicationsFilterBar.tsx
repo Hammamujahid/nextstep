@@ -38,7 +38,7 @@ export default function ApplicationsFilterBar({
   const viewBtn = (active: boolean) =>
     `flex items-center gap-1 rounded-md px-2.5 py-1 text-[13px] transition ${
       active
-        ? "bg-indigo-100 font-semibold text-indigo-700 shadow-sm"
+        ? "bg-sky-100 font-semibold text-sky-700 shadow-sm"
         : "font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
     }`;
 
@@ -52,7 +52,7 @@ export default function ApplicationsFilterBar({
             aria-pressed={filter === c.key}
             className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] transition ${
               filter === c.key
-                ? "bg-indigo-100 font-semibold text-indigo-700"
+                ? "bg-sky-100 font-semibold text-sky-700"
                 : "font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
             }`}
           >

@@ -55,7 +55,7 @@ function Avatar({ user, size }: { user: TopbarUser; size: "md" | "lg" }) {
   }
   return (
     <span
-      className={`${cls} clay-icon shrink-0 bg-gradient-to-br from-indigo-400 to-violet-500 font-bold text-white`}
+      className={`${cls} clay-icon shrink-0 bg-gradient-to-br from-sky-400 to-blue-500 font-bold text-white`}
     >
       {userInitial(user.username || "?")}
     </span>
@@ -175,7 +175,7 @@ export default function Topbar({
           aria-haspopup="menu"
           aria-expanded={accountOpen}
           aria-label="Account menu"
-          className={`clay-btn flex items-center gap-2 p-1 pr-1 sm:pr-2.5 ${accountOpen ? "ring-2 ring-indigo-200" : ""}`}
+          className={`clay-btn flex items-center gap-2 p-1 pr-1 sm:pr-2.5 ${accountOpen ? "ring-2 ring-sky-200" : ""}`}
         >
           <Avatar user={user} size="md" />
           <span className="hidden text-left md:block">
@@ -196,7 +196,7 @@ export default function Topbar({
             role="menu"
             className="clay anim-pop-in absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden !rounded-2xl p-1.5"
           >
-            <div className="flex items-center gap-3 border-b border-indigo-100/70 p-3">
+            <div className="flex items-center gap-3 border-b border-sky-100/70 p-3">
               <Avatar user={user} size="lg" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-extrabold text-slate-800">

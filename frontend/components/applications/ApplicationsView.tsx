@@ -59,7 +59,7 @@ function statusLabel(s: ApplicationStatus): string {
 const STATUS_STYLE: Record<ApplicationStatus, string> = {
   wishlist: "bg-slate-100 text-slate-500",
   applied: "bg-blue-50 text-blue-500",
-  under_review: "bg-purple-50 text-purple-500",
+  under_review: "bg-sky-50 text-sky-500",
   interviewing: "bg-orange-50 text-orange-500",
   offered: "bg-emerald-50 text-emerald-600",
   rejected: "bg-red-50 text-red-500",
@@ -68,7 +68,7 @@ const STATUS_STYLE: Record<ApplicationStatus, string> = {
 const STATUS_DOT: Record<ApplicationStatus, string> = {
   wishlist: "bg-slate-400",
   applied: "bg-blue-500",
-  under_review: "bg-purple-500",
+  under_review: "bg-sky-500",
   interviewing: "bg-orange-500",
   offered: "bg-emerald-500",
   rejected: "bg-red-500",
@@ -646,7 +646,7 @@ export default function ApplicationsView() {
               ) : (
                 <table className="w-full min-w-[920px]">
                   <thead>
-                    <tr className="border-b border-indigo-100/70 bg-indigo-50/50 text-left text-xs text-slate-400">
+                    <tr className="border-b border-sky-100/70 bg-sky-50/50 text-left text-xs text-slate-400">
                       <th className="px-5 py-4 font-medium">Company</th>
                       <th className="px-4 py-4 font-medium">Position</th>
                       <th className="px-4 py-4 font-medium">Status</th>

@@ -28,14 +28,14 @@ export default function ProjectsPanel({ tasks = [], projects = [] }: ProjectsPan
     <section aria-label="Active projects">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Terminal className="h-5 w-5 text-indigo-500" />
+          <Terminal className="h-5 w-5 text-sky-500" />
           <h2 className="text-lg font-bold tracking-tight text-slate-900">
             Active Projects
           </h2>
         </div>
         <Link
           href="/dashboard/projects"
-          className="group flex items-center text-[13px] font-semibold text-indigo-600 hover:text-indigo-700"
+          className="group flex items-center text-[13px] font-semibold text-sky-600 hover:text-sky-700"
         >
           All Projects ({list.length})
           <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -65,7 +65,7 @@ export default function ProjectsPanel({ tasks = [], projects = [] }: ProjectsPan
                   <span
                     className={`flex h-10 w-10 items-center justify-center rounded-xl transition duration-300 group-hover:scale-105 ${
                       i === 0
-                        ? "bg-indigo-100 text-indigo-600"
+                        ? "bg-sky-100 text-sky-600"
                         : "bg-emerald-100 text-emerald-600"
                     }`}
                   >
@@ -78,14 +78,14 @@ export default function ProjectsPanel({ tasks = [], projects = [] }: ProjectsPan
                   <span
                     className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                       p.stageTone === "polish"
-                        ? "bg-indigo-100 text-indigo-700"
+                        ? "bg-sky-100 text-sky-700"
                         : "bg-slate-100 text-slate-600"
                     }`}
                   >
                     {p.stage}
                   </span>
                 </div>
-                <h3 className="mt-3 font-bold text-slate-900 transition group-hover:text-indigo-600">
+                <h3 className="mt-3 font-bold text-slate-900 transition group-hover:text-sky-600">
                   {p.name}
                 </h3>
                 <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-slate-500">
@@ -98,7 +98,7 @@ export default function ProjectsPanel({ tasks = [], projects = [] }: ProjectsPan
                     {done} / {total} Tasks
                   </span>
                   <span
-                    className={`font-bold ${i === 0 ? "text-indigo-600" : "text-emerald-600"}`}
+                    className={`font-bold ${i === 0 ? "text-sky-600" : "text-emerald-600"}`}
                   >
                     {pct}%
                   </span>
@@ -107,7 +107,7 @@ export default function ProjectsPanel({ tasks = [], projects = [] }: ProjectsPan
                   <div
                     className={`h-full rounded-full ${
                       i === 0
-                        ? "bg-gradient-to-r from-indigo-400 to-violet-500"
+                        ? "bg-gradient-to-r from-sky-400 to-blue-500"
                         : "bg-gradient-to-r from-emerald-400 to-emerald-500"
                     }`}
                     style={{ width: `${pct}%` }}

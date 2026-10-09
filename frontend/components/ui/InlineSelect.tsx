@@ -26,7 +26,7 @@ function menuPos(rect: DOMRect, width: number, heightEstimate: number) {
 function Avatar({ name }: { name: string }) {
   const initial = (name.trim().charAt(0) || "?").toUpperCase();
   return (
-    <span className="clay-icon h-5 w-5 shrink-0 bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
+    <span className="clay-icon h-5 w-5 shrink-0 bg-gradient-to-br from-sky-400 to-blue-500 text-[10px] font-bold text-white">
       {initial}
     </span>
   );
@@ -130,8 +130,8 @@ export default function InlineSelect({
                     }}
                     className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition disabled:cursor-default ${
                       isSelected
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-slate-600 hover:bg-indigo-50/70"
+                        ? "bg-sky-50 text-sky-700"
+                        : "text-slate-600 hover:bg-sky-50/70"
                     }`}
                   >
                     {opt.dot && <span className={`h-2 w-2 shrink-0 rounded-full ${opt.dot}`} />}

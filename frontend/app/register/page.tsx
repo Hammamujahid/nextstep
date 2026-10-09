@@ -86,7 +86,7 @@ export default function RegisterPage() {
             placeholder="tila_dev"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
           />
         </div>
         <div>
@@ -100,7 +100,7 @@ export default function RegisterPage() {
             placeholder="tila@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                 placeholder="Min. 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full clay-sm px-3.5 py-2.5 pr-11 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                className="w-full clay-sm px-3.5 py-2.5 pr-11 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
               />
               <button
                 type="button"
@@ -139,7 +139,7 @@ export default function RegisterPage() {
               placeholder="Repeat password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
             />
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? "Creating account..." : "Create account"}

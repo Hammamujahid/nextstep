@@ -83,7 +83,7 @@ export default function MetricsGrid() {
     {
       label: "Goals In Progress",
       icon: Flag,
-      iconBg: "bg-indigo-100 text-indigo-600",
+      iconBg: "bg-sky-100 text-sky-600",
       value: `${goals.in_progress} Active`,
       foot: goals.total === 0
         ? "No goals yet"
@@ -96,12 +96,12 @@ export default function MetricsGrid() {
       iconBg: "bg-emerald-100 text-emerald-600",
       value: `${tasks.completed} / ${tasks.total}`,
       foot: `${taskVelocity}% completed`,
-      footTone: "text-indigo-600",
+      footTone: "text-sky-600",
     },
     {
       label: "Applications",
       icon: Briefcase,
-      iconBg: "bg-indigo-100 text-indigo-600",
+      iconBg: "bg-sky-100 text-sky-600",
       value: `${apps.total} Total`,
       foot: `${apps.interviewing} interviewing \u2022 ${apps.applied} applied`,
       footTone: "text-slate-500",
@@ -109,7 +109,7 @@ export default function MetricsGrid() {
     {
       label: "Active Projects",
       icon: FolderKanban,
-      iconBg: "bg-indigo-100 text-indigo-600",
+      iconBg: "bg-sky-100 text-sky-600",
       value: `${projects.total} Builds`,
       foot: `${projects.completed} completed \u2022 ${projects.in_progress} active`,
       footTone: "text-slate-500",

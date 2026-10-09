@@ -106,7 +106,7 @@ export default function DueDateSelect({
         aria-expanded={open}
         aria-label={label}
         title={label}
-        className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 transition hover:text-indigo-600"
+        className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 transition hover:text-sky-600"
       >
         <CalendarDays size={12} />
         <span className="truncate">{display}</span>

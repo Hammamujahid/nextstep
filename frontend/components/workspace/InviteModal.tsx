@@ -27,7 +27,7 @@ const RESOURCES: { key: keyof InvitePermissions; label: string }[] = [
 
 const PERM_OPTIONS: { value: PermissionValue; label: string; active: string }[] = [
   { value: "none", label: "None", active: "bg-slate-500 text-white border-slate-500" },
-  { value: "viewer", label: "Viewer", active: "bg-indigo-500 text-white border-sky-400" },
+  { value: "viewer", label: "Viewer", active: "bg-sky-500 text-white border-sky-400" },
   { value: "editor", label: "Editor", active: "bg-emerald-500 text-white border-emerald-500" },
 ];
 
@@ -159,7 +159,7 @@ export default function InviteModal({
               placeholder="teammate@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
             />
           </div>
 
@@ -226,7 +226,7 @@ export default function InviteModal({
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

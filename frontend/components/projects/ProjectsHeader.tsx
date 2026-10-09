@@ -14,7 +14,7 @@ export default function ProjectsHeader({
   return (
     <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
       <div>
-        <p className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-indigo-600">
+        <p className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-sky-600">
           Repository and Milestone Track
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
@@ -29,7 +29,7 @@ export default function ProjectsHeader({
         {canEdit && (
           <button
             onClick={onNew}
-            className="btn-shine inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-600 hover:shadow-md"
+            className="btn-shine inline-flex h-10 items-center gap-2 rounded-xl bg-sky-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-600 hover:shadow-md"
           >
             <Plus className="h-[18px] w-[18px]" />
             New Project

@@ -7,10 +7,10 @@ export default function FooterBanner() {
     <section className="relative flex flex-col items-center justify-between gap-4 clay overflow-hidden p-6 sm:flex-row">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-indigo-100 blur-3xl"
+        className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-sky-100 blur-3xl"
       />
       <div className="relative flex items-center gap-4">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
           <Sprout className="h-6 w-6" />
         </span>
         <div>
@@ -25,7 +25,7 @@ export default function FooterBanner() {
       </div>
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="relative inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-100 hover:text-indigo-700"
+        className="relative inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-100 hover:text-sky-700"
       >
         <ArrowUp className="h-4 w-4" />
         Back to Top

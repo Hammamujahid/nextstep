@@ -53,9 +53,9 @@ const STEPS = [
 function MockWindow() {
   const nav = [LayoutDashboard, Target, ListChecks, FolderKanban, Briefcase, Users];
   const stats = [
-    { label: "Tasks", value: "8", tone: "from-indigo-400 to-violet-500" },
-    { label: "Goals", value: "3", tone: "from-violet-400 to-fuchsia-500" },
-    { label: "Projects", value: "2", tone: "from-sky-400 to-indigo-500" },
+    { label: "Tasks", value: "8", tone: "from-sky-400 to-blue-500" },
+    { label: "Goals", value: "3", tone: "from-blue-400 to-sky-500" },
+    { label: "Projects", value: "2", tone: "from-sky-400 to-sky-500" },
   ];
   const tabs = [
     { label: "All", count: 8, active: true },
@@ -63,7 +63,7 @@ function MockWindow() {
     { label: "This Week", count: 5, active: false },
   ];
   const tasks = [
-    { t: "Apply to 3 frontend roles", priority: "High", p: "bg-rose-100 text-rose-600", status: "In Progress", s: "bg-indigo-100 text-indigo-600", a: "T", done: false },
+    { t: "Apply to 3 frontend roles", priority: "High", p: "bg-red-100 text-red-600", status: "In Progress", s: "bg-sky-100 text-sky-600", a: "T", done: false },
     { t: "Finish portfolio hero section", priority: "Medium", p: "bg-amber-100 text-amber-600", status: "To Do", s: "bg-slate-100 text-slate-500", a: "T", done: false },
     { t: "Update CV with latest project", priority: "Low", p: "bg-emerald-100 text-emerald-600", status: "Completed", s: "bg-emerald-100 text-emerald-600", a: "S", done: true },
   ];
@@ -71,7 +71,7 @@ function MockWindow() {
   return (
     <div className="clay overflow-hidden">
       {/* window chrome */}
-      <div className="flex items-center gap-2 border-b border-indigo-100/60 bg-white/40 px-4 py-3">
+      <div className="flex items-center gap-2 border-b border-sky-100/60 bg-white/40 px-4 py-3">
         <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
@@ -84,7 +84,7 @@ function MockWindow() {
 
       <div className="grid sm:grid-cols-[60px_1fr]">
         {/* mini sidebar */}
-        <div className="hidden flex-col items-center gap-2 border-r border-indigo-100/60 py-4 sm:flex">
+        <div className="hidden flex-col items-center gap-2 border-r border-sky-100/60 py-4 sm:flex">
           {nav.map((Icon, i) => (
             <span
               key={i}
@@ -109,7 +109,7 @@ function MockWindow() {
               </p>
             </div>
             <span className="clay-chip flex items-center gap-1.5 bg-white/70 px-2.5 py-1 text-[10px] font-bold text-slate-500">
-              <CalendarDays className="h-3 w-3 text-indigo-400" />
+              <CalendarDays className="h-3 w-3 text-sky-400" />
               Mon, 8 Sep
             </span>
           </div>
@@ -130,17 +130,17 @@ function MockWindow() {
           <div className="mt-3 clay-sm p-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-[12px] font-extrabold text-slate-800">My Tasks</p>
-              <span className="clay-chip flex items-center gap-1 bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
+              <span className="clay-chip flex items-center gap-1 bg-sky-500 px-2 py-0.5 text-[10px] font-bold text-white">
                 <Plus className="h-2.5 w-2.5" />
                 Add
               </span>
             </div>
-            <div className="mt-2.5 flex gap-3 border-b border-indigo-100/60 pb-2">
+            <div className="mt-2.5 flex gap-3 border-b border-sky-100/60 pb-2">
               {tabs.map((t) => (
                 <span
                   key={t.label}
                   className={`text-[10px] font-bold ${
-                    t.active ? "text-indigo-600" : "text-slate-300"
+                    t.active ? "text-sky-600" : "text-slate-300"
                   }`}
                 >
                   {t.label} {t.count}
@@ -172,7 +172,7 @@ function MockWindow() {
                   <span className={`hidden shrink-0 rounded-full px-2 py-px text-[9px] font-bold sm:inline ${t.s}`}>
                     {t.status}
                   </span>
-                  <span className="clay-icon h-5 w-5 shrink-0 bg-gradient-to-br from-indigo-400 to-violet-500 text-[9px] font-bold text-white">
+                  <span className="clay-icon h-5 w-5 shrink-0 bg-gradient-to-br from-sky-400 to-blue-500 text-[9px] font-bold text-white">
                     {t.a}
                   </span>
                 </div>
@@ -188,17 +188,17 @@ function MockWindow() {
 const FEATURES = [
   {
     icon: Target,
-    tint: "bg-indigo-100 text-indigo-600",
+    tint: "bg-sky-100 text-sky-600",
     title: "Goals with real progress",
     desc: "Define where you are headed and watch the bar move as tasks and projects complete.",
     visual: (
       <div className="clay-inset mt-4 p-3">
         <div className="flex justify-between text-[11px] font-semibold">
           <span className="text-slate-600">Fullstack Developer</span>
-          <span className="text-indigo-600">72%</span>
+          <span className="text-sky-600">72%</span>
         </div>
         <div className="clay-track mt-2 h-2">
-          <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-indigo-400 to-violet-500" />
+          <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-sky-400 to-blue-500" />
         </div>
       </div>
     ),
@@ -212,7 +212,7 @@ const FEATURES = [
       <div className="mt-4 space-y-1.5">
         {["Apply to 3 roles", "Mock interview"].map((t, i) => (
           <div key={t} className="clay-inset flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-slate-700">
-            <span className={`flex h-4 w-4 items-center justify-center rounded ${i === 1 ? "bg-indigo-500 text-white" : "bg-white text-transparent"}`}>
+            <span className={`flex h-4 w-4 items-center justify-center rounded ${i === 1 ? "bg-sky-500 text-white" : "bg-white text-transparent"}`}>
               <Check className="h-2.5 w-2.5" strokeWidth={3} />
             </span>
             <span className={i === 1 ? "text-slate-400 line-through" : ""}>{t}</span>
@@ -223,13 +223,13 @@ const FEATURES = [
   },
   {
     icon: FolderKanban,
-    tint: "bg-violet-100 text-violet-600",
+    tint: "bg-blue-100 text-blue-600",
     title: "Portfolio projects",
     desc: "Turn goals into portfolio-ready builds with clear status and task counts.",
     visual: (
       <div className="mt-4 flex gap-1.5">
         {["Planning", "Building", "Done"].map((s, i) => (
-          <span key={s} className={`flex-1 rounded-xl px-2 py-1.5 text-center text-[11px] font-semibold ${i === 1 ? "bg-indigo-500 text-white" : "clay-inset text-slate-500"}`}>
+          <span key={s} className={`flex-1 rounded-xl px-2 py-1.5 text-center text-[11px] font-semibold ${i === 1 ? "bg-sky-500 text-white" : "clay-inset text-slate-500"}`}>
             {s}
           </span>
         ))}
@@ -254,13 +254,13 @@ const FEATURES = [
   },
   {
     icon: Users,
-    tint: "bg-rose-100 text-rose-600",
+    tint: "bg-sky-100 text-sky-600",
     title: "Workspaces",
     desc: "Collaborate with mentors or peers, with per-resource roles and no HR complexity.",
     visual: (
       <div className="mt-4 flex items-center">
         {["AK", "SJ", "+3"].map((t, i) => (
-          <span key={t} className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ring-2 ring-white ${i === 0 ? "bg-indigo-500 text-white" : i === 1 ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-500"} ${i > 0 ? "-ml-2" : ""}`}>
+          <span key={t} className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ring-2 ring-white ${i === 0 ? "bg-sky-500 text-white" : i === 1 ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-500"} ${i > 0 ? "-ml-2" : ""}`}>
             {t}
           </span>
         ))}
@@ -277,10 +277,10 @@ const FEATURES = [
       <div className="clay-inset mt-4 p-3">
         <div className="flex justify-between text-[11px] font-semibold">
           <span className="text-slate-600">Today&apos;s progress</span>
-          <span className="text-indigo-600">5/8 done</span>
+          <span className="text-sky-600">5/8 done</span>
         </div>
         <div className="clay-track mt-2 h-2">
-          <div className="h-full w-[62%] rounded-full bg-gradient-to-r from-indigo-400 to-violet-500" />
+          <div className="h-full w-[62%] rounded-full bg-gradient-to-r from-sky-400 to-blue-500" />
         </div>
       </div>
     ),
@@ -321,7 +321,7 @@ export default function LandingPage() {
   if (checking) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-7 w-7 animate-spin text-indigo-500" />
+        <Loader2 className="h-7 w-7 animate-spin text-sky-500" />
       </div>
     );
   }
@@ -332,7 +332,7 @@ export default function LandingPage() {
       <header
         className={`anim-fade-in sticky top-0 z-40 transition-colors duration-300 ${
           scrolled || open
-            ? "border-b border-indigo-100/70 bg-white/80 backdrop-blur-xl"
+            ? "border-b border-sky-100/70 bg-white/80 backdrop-blur-xl"
             : "border-b border-transparent bg-transparent"
         }`}
       >
@@ -343,7 +343,7 @@ export default function LandingPage() {
               <a
                 key={l.href}
                 href={l.href}
-                className="text-sm font-semibold text-slate-500 transition hover:text-indigo-600"
+                className="text-sm font-semibold text-slate-500 transition hover:text-sky-600"
               >
                 {l.label}
               </a>
@@ -370,14 +370,14 @@ export default function LandingPage() {
           </button>
         </div>
         {open && (
-          <div className="anim-slide-down border-t border-indigo-100/70 bg-white/95 px-4 py-3 md:hidden">
+          <div className="anim-slide-down border-t border-sky-100/70 bg-white/95 px-4 py-3 md:hidden">
             <div className="flex flex-col gap-1">
               {NAV_LINKS.map((l) => (
                 <a
                   key={l.href}
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-indigo-50"
+                  className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-sky-50"
                 >
                   {l.label}
                 </a>
@@ -405,14 +405,14 @@ export default function LandingPage() {
       <section className="relative overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="anim-drift absolute -top-48 -left-40 h-[30rem] w-[44rem] rounded-full bg-[#efe9ff]/70 blur-3xl" />
-          <div className="anim-drift-late absolute left-1/3 top-40 h-72 w-72 rounded-full bg-indigo-100/40 blur-3xl" />
-          <div className="absolute right-0 top-24 h-72 w-72 rounded-full bg-indigo-100/40 blur-3xl" />
+          <div className="anim-drift-late absolute left-1/3 top-40 h-72 w-72 rounded-full bg-sky-100/40 blur-3xl" />
+          <div className="absolute right-0 top-24 h-72 w-72 rounded-full bg-sky-100/40 blur-3xl" />
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 text-left sm:px-6 lg:pt-20">
           <h1 className="anim-fade-up max-w-3xl text-4xl font-extrabold leading-[1.08] tracking-tight text-slate-800 sm:text-6xl">
             Every goal starts with the{" "}
-            <span className="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-sky-500 to-blue-500 bg-clip-text text-transparent">
               next step.
             </span>
           </h1>
@@ -439,7 +439,7 @@ export default function LandingPage() {
       {/* Features bento */}
       <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 lg:py-24">
         <Reveal>
-          <p className="text-center text-sm font-bold text-indigo-600">Everything in one place</p>
+          <p className="text-center text-sm font-bold text-sky-600">Everything in one place</p>
           <h2 className="mx-auto mt-2 max-w-xl text-center text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
             A calm toolkit for your whole journey
           </h2>
@@ -467,7 +467,7 @@ export default function LandingPage() {
       <section id="how-it-works" className="scroll-mt-20 px-4 py-16 sm:px-6 lg:py-24">
         <div className="mx-auto max-w-6xl">
           <Reveal>
-            <p className="text-sm font-bold text-indigo-600">How it works</p>
+            <p className="text-sm font-bold text-sky-600">How it works</p>
             <h2 className="mt-2 max-w-xl text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
               From fuzzy ambition to daily motion
             </h2>
@@ -476,10 +476,10 @@ export default function LandingPage() {
             {STEPS.map((s, i) => (
               <Reveal key={s.n} delay={i * 100}>
                 <div className="relative h-full clay overflow-hidden p-6 transition duration-300 hover:-translate-y-1">
-                  <span className="pointer-events-none absolute -right-1 -top-4 select-none text-[86px] font-extrabold leading-none text-indigo-50">
+                  <span className="pointer-events-none absolute -right-1 -top-4 select-none text-[86px] font-extrabold leading-none text-sky-50">
                     {i + 1}
                   </span>
-                  <p className="font-mono text-xs font-bold tracking-widest text-indigo-500">{s.n}</p>
+                  <p className="font-mono text-xs font-bold tracking-widest text-sky-500">{s.n}</p>
                   <h3 className="mt-2 font-extrabold text-slate-800">{s.t}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{s.d}</p>
                 </div>
@@ -490,7 +490,7 @@ export default function LandingPage() {
             <div className="mt-10 text-center">
               <Link
                 href="/register"
-                className="group inline-flex items-center gap-1 text-sm font-bold text-indigo-600 hover:text-indigo-700"
+                className="group inline-flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700"
               >
                 Start with your first goal
                 <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -505,10 +505,10 @@ export default function LandingPage() {
         <Reveal>
           <div className="relative overflow-hidden clay px-6 py-14 text-center sm:px-12 lg:py-16">
             <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-              <div className="anim-drift absolute -left-16 -top-20 h-64 w-64 rounded-full bg-indigo-300/30 blur-3xl" />
-              <div className="anim-drift-late absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-fuchsia-300/25 blur-3xl" />
+              <div className="anim-drift absolute -left-16 -top-20 h-64 w-64 rounded-full bg-sky-300/30 blur-3xl" />
+              <div className="anim-drift-late absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-sky-300/25 blur-3xl" />
             </div>
-            <span className="clay-icon mx-auto h-14 w-14 bg-gradient-to-br from-indigo-400 to-violet-500">
+            <span className="clay-icon mx-auto h-14 w-14 bg-gradient-to-br from-sky-400 to-blue-500">
               <Target className="h-7 w-7 text-white" />
             </span>
             <h2 className="relative mx-auto mt-5 max-w-xl text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
@@ -538,7 +538,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="px-4 pb-8 sm:px-6">
-        <div className="mx-auto max-w-6xl border-t border-indigo-100/70 px-4 py-6 text-center">
+        <div className="mx-auto max-w-6xl border-t border-sky-100/70 px-4 py-6 text-center">
           <p className="text-xs font-medium text-slate-400">
             © {new Date().getFullYear()} NextStep. One step at a time.
           </p>

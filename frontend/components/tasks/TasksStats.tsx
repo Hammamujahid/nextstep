@@ -46,9 +46,9 @@ export default function TasksStats({ tasks }: { tasks: BoardTask[] }) {
           <TrendingUp className="h-3.5 w-3.5" /> {todayCount} scheduled today
         </>
       ),
-      footCls: "text-indigo-600",
+      footCls: "text-sky-600",
       icon: CalendarClock,
-      iconCls: "bg-indigo-100 text-indigo-600",
+      iconCls: "bg-sky-100 text-sky-600",
     },
     {
       label: "Completed",

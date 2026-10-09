@@ -869,7 +869,7 @@ export default function TasksView() {
                 ) : (
                   <table className="w-full min-w-[720px]">
                     <thead>
-                      <tr className="border-b border-indigo-100/70 bg-indigo-50/50 text-left text-xs text-slate-400">
+                      <tr className="border-b border-sky-100/70 bg-sky-50/50 text-left text-xs text-slate-400">
                         <th className="px-5 py-4 font-medium">Task</th>
                         <th className="px-4 py-4 font-medium">Priority</th>
                         <th className="px-4 py-4 font-medium">Status</th>

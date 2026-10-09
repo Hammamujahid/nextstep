@@ -20,14 +20,14 @@ export default function TasksHeader({
   const toggleBtn = (active: boolean) =>
     `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition ${
       active
-        ? "bg-indigo-100 font-semibold text-indigo-700 shadow-sm"
+        ? "bg-sky-100 font-semibold text-sky-700 shadow-sm"
         : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
     }`;
 
   return (
     <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-sky-600">
           Momentum Engine
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
@@ -66,7 +66,7 @@ export default function TasksHeader({
         {canEdit && (
           <button
             onClick={onNewTask}
-            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-600 hover:shadow-md"
+            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-600 hover:shadow-md"
           >
             <ListPlus className="h-4 w-4" />
             New Task

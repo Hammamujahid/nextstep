@@ -18,7 +18,7 @@ export default function AccessDenied({ resource }: { resource: string }) {
       </p>
       <Link
         href="/dashboard"
-        className="clay-btn mt-5 inline-block px-5 py-2.5 text-sm font-bold text-indigo-600"
+        className="clay-btn mt-5 inline-block px-5 py-2.5 text-sm font-bold text-sky-600"
       >
         Back to dashboard
       </Link>

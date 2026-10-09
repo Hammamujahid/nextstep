@@ -131,3 +131,15 @@ export async function updateProfileApi(input: {
   })) as MeProfile & { message?: string };
   return json;
 }
+
+export async function changePasswordApi(input: {
+  current_password: string;
+  new_password: string;
+}): Promise<{ message: string }> {
+  const json = (await apiFetch("/me/password", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  })) as { message: string };
+  return json;
+}

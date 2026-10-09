@@ -156,7 +156,7 @@ export default function WorkspaceSettingsModal({
               onChange={(e) => setName(e.target.value)}
               maxLength={100}
               disabled={!isAdmin}
-              className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 disabled:text-slate-500"
+              className="w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-50 disabled:text-slate-500"
             />
           </div>
           <div>
@@ -173,7 +173,7 @@ export default function WorkspaceSettingsModal({
               rows={3}
               maxLength={500}
               disabled={!isAdmin}
-              className="w-full resize-none clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 disabled:text-slate-500"
+              className="w-full resize-none clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-50 disabled:text-slate-500"
             />
           </div>
           <div className="flex gap-2">
@@ -188,7 +188,7 @@ export default function WorkspaceSettingsModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

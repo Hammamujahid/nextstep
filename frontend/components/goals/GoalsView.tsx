@@ -43,7 +43,7 @@ const SORTS: { key: GoalSort; label: string }[] = [
 const GOAL_ICONS = [
   { icon: Target, style: "bg-blue-50 text-blue-500" },
   { icon: BriefcaseBusiness, style: "bg-emerald-50 text-emerald-500" },
-  { icon: FolderKanban, style: "bg-purple-50 text-purple-500" },
+  { icon: FolderKanban, style: "bg-sky-50 text-sky-500" },
   { icon: TrendingUp, style: "bg-orange-50 text-orange-500" },
 ];
 
@@ -235,7 +235,7 @@ function GoalCard({
                     <div className="min-w-0 flex-1">
                       <p className={`truncate text-sm font-medium ${t.status === "completed" ? "text-slate-400 line-through" : "text-slate-900"}`}>{t.title}</p>
                       <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${t.priority === "high" ? "bg-red-100 text-red-600" : t.priority === "medium" ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>{t.priority}</span>
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${t.priority === "high" ? "bg-red-100 text-red-600" : t.priority === "medium" ? "bg-sky-100 text-sky-600" : "bg-slate-100 text-slate-500"}`}>{t.priority}</span>
                         <span>{t.status.replace("_", " ")}</span>
                         {t.due_date && (
                           <>
@@ -248,7 +248,7 @@ function GoalCard({
                         )}
                       </p>
                     </div>
-                    <span className={`h-2 w-2 shrink-0 rounded-full ${t.status === "completed" ? "bg-emerald-500" : t.status === "in_progress" ? "bg-indigo-500" : "bg-slate-300"}`} />
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${t.status === "completed" ? "bg-emerald-500" : t.status === "in_progress" ? "bg-sky-500" : "bg-slate-300"}`} />
                   </div>
                 ))}
               </div>
@@ -275,7 +275,7 @@ function GoalCard({
               <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
                 {projects.map((p) => (
                   <div key={p.id} className="flex gap-3 rounded-xl bg-white p-3 shadow-sm">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-600">{p.project_name.charAt(0)}</span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sm font-bold text-sky-600">{p.project_name.charAt(0)}</span>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-slate-900">{p.project_name}</p>
                       <p className="mt-0.5 text-xs capitalize text-slate-500">{p.status.replace("_", " ")}</p>
@@ -747,7 +747,7 @@ export default function GoalsView() {
                 </div>
               ))
             ) : visible.length === 0 ? (
-              <div className="clay border-2 border-dashed border-indigo-200 p-10 text-center">
+              <div className="clay border-2 border-dashed border-sky-200 p-10 text-center">
                 <ListChecks className="mx-auto h-8 w-8 text-slate-300" />
                 <p className="mt-2 text-sm text-slate-500">
                   {query ? `No goals match "${query}".` : "Belum ada goals. Buat goal pertama untuk mulai tracking."}

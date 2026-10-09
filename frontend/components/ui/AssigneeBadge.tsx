@@ -19,7 +19,7 @@ export default function AssigneeBadge({
       title={email ? `${name} (${email})` : name}
       className={`inline-flex min-w-0 max-w-36 items-center gap-1.5 ${className}`}
     >
-      <span className="clay-icon h-6 w-6 shrink-0 bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
+      <span className="clay-icon h-6 w-6 shrink-0 bg-gradient-to-br from-sky-400 to-blue-500 text-[10px] font-bold text-white">
         {initial}
       </span>
       <span className="truncate text-xs font-semibold text-slate-600">{name}</span>

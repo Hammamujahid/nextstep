@@ -140,6 +140,8 @@ func auditAction(full, method string) (string, string, string) {
 		return "application.update", "application", "applicationId"
 	case "/api/v1/me":
 		return "profile.update", "user", "self"
+	case "/api/v1/me/password":
+		return "password.change", "user", "self"
 	}
 	return method + " " + full, "", ""
 }

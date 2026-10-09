@@ -84,7 +84,7 @@ export default function RowActionMenu({
                 }}
                 className="clay-nav flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-bold text-slate-600"
               >
-                <Pencil className="h-3.5 w-3.5 text-indigo-500" />
+                <Pencil className="h-3.5 w-3.5 text-sky-500" />
                 Edit
               </button>
               <button

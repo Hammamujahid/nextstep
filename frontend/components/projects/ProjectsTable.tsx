@@ -9,7 +9,7 @@ export type ProjectStatus = "not_started" | "in_progress" | "completed" | "archi
 
 const STATUS_OPTIONS: { value: ProjectStatus; label: string; dot: string }[] = [
   { value: "not_started", label: "Not Started", dot: "bg-slate-300" },
-  { value: "in_progress", label: "In Progress", dot: "bg-indigo-500" },
+  { value: "in_progress", label: "In Progress", dot: "bg-sky-500" },
   { value: "completed", label: "Completed", dot: "bg-emerald-500" },
   { value: "archived", label: "Archived", dot: "bg-slate-400" },
 ];
@@ -108,7 +108,7 @@ function StatusDropdown({
                     if (opt.value === project.status) return;
                     onStatusChange(project.id, opt.value);
                   }}
-                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === project.status ? "bg-indigo-50 font-semibold text-indigo-700" : "text-slate-700"}`}
+                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === project.status ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
                 >
                   <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
                   {opt.label}
@@ -180,7 +180,7 @@ function ActionMenu({
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50"
               >
-                <Pencil className="h-3.5 w-3.5 text-indigo-500" />
+                <Pencil className="h-3.5 w-3.5 text-sky-500" />
                 Edit
               </button>
               <button
@@ -248,7 +248,7 @@ export default function ProjectsTable({ projects, onStatusChange, onEdit, onDele
         </thead>
         <tbody className="divide-y divide-slate-100">
           {projects.map((p) => (
-            <tr key={p.id} className="transition hover:bg-indigo-50/50">
+            <tr key={p.id} className="transition hover:bg-sky-50/50">
               <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">
                 {p.project_name}
               </td>
@@ -268,7 +268,7 @@ export default function ProjectsTable({ projects, onStatusChange, onEdit, onDele
                     {p.project_description || "-"}
                   </span>
                   {(p.project_description?.length ?? 0) > 60 && (
-                    <span className="text-[11px] font-semibold text-indigo-600">
+                    <span className="text-[11px] font-semibold text-sky-600">
                       {expandedId === p.id ? "tutup" : "selengkapnya"}
                     </span>
                   )}
@@ -282,7 +282,7 @@ export default function ProjectsTable({ projects, onStatusChange, onEdit, onDele
                   <span className="flex items-center gap-2">
                     <span className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100">
                       <span
-                        className="block h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-500"
+                        className="block h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500"
                         style={{ width: `${p.progress}%` }}
                       />
                     </span>

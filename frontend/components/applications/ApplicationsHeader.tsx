@@ -18,7 +18,7 @@ export default function ApplicationsHeader({
   return (
     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
       <div>
-        <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-indigo-600">
+        <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-sky-600">
           Career Studio
           <span aria-hidden="true" className="text-slate-300">
             •
@@ -41,7 +41,7 @@ export default function ApplicationsHeader({
           aria-pressed={filtersVisible}
           className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-medium shadow-sm transition ${
             filtersVisible
-              ? "bg-indigo-100 text-indigo-700"
+              ? "bg-sky-100 text-sky-700"
               : "bg-white text-slate-700 hover:bg-slate-100"
           } border border-slate-200`}
         >
@@ -51,7 +51,7 @@ export default function ApplicationsHeader({
         {canEdit && (
           <button
             onClick={onAdd}
-            className="btn-shine inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-600 hover:shadow-md"
+            className="btn-shine inline-flex h-10 items-center gap-2 rounded-xl bg-sky-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-600 hover:shadow-md"
           >
             <Plus className="h-[18px] w-[18px]" />
             Add Application

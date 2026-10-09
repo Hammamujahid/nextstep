@@ -87,6 +87,7 @@ func New(
 		protected.DELETE("/workspaces/:id/applications/:applicationId", middleware.RequireResourcePermission(permissionRepo, "job_application", true), dashboardHandler.DeleteApplication)
 		protected.GET("/me", userHandler.Me)
 		protected.PATCH("/me", userHandler.UpdateProfile)
+		protected.PATCH("/me/password", userHandler.ChangePassword)
 	}
 
 	return router

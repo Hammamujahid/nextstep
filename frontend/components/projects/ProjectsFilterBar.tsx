@@ -54,7 +54,7 @@ export default function ProjectsFilterBar({
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="Filter by name or description..."
             aria-label="Filter projects"
-            className="h-9 w-full rounded-lg bg-slate-100 pl-9 pr-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-100"
+            className="h-9 w-full rounded-lg bg-slate-100 pl-9 pr-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:bg-slate-50 focus:ring-2 focus:ring-sky-100"
           />
         </div>
       </div>

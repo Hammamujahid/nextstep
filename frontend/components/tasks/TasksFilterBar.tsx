@@ -17,7 +17,7 @@ type TasksFilterBarProps = {
 const PRIORITIES: { key: PriorityFilter; label: string; dot?: string }[] = [
   { key: "all", label: "All" },
   { key: "high", label: "High", dot: "bg-red-500" },
-  { key: "medium", label: "Medium", dot: "bg-indigo-500" },
+  { key: "medium", label: "Medium", dot: "bg-sky-500" },
   { key: "low", label: "Low", dot: "bg-slate-300" },
 ];
 
@@ -62,7 +62,7 @@ export default function TasksFilterBar({
             value={date}
             onChange={(e) => onDateChange(e.target.value as DateFilter)}
             aria-label="Filter by due date"
-            className="h-9 cursor-pointer appearance-none rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-8 text-[13px] font-medium text-slate-700 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+            className="h-9 cursor-pointer appearance-none rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-8 text-[13px] font-medium text-slate-700 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
           >
             {DATE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>

@@ -129,7 +129,7 @@ export default function NewTaskModal({
   }
 
   const labelCls = "mb-1.5 block text-[13px] font-semibold text-slate-700";
-  const inputCls = "h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
+  const inputCls = "h-10 w-full clay-sm px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
 
   return createPortal(
     <div
@@ -145,7 +145,7 @@ export default function NewTaskModal({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ListPlus className="h-5 w-5 text-indigo-500" />
+            <ListPlus className="h-5 w-5 text-sky-500" />
             <h3 className="text-lg font-bold tracking-tight text-slate-900">
               Add Next Step
             </h3>
@@ -290,7 +290,7 @@ export default function NewTaskModal({
           <button
             onClick={handleSave}
             disabled={!title.trim() || saving}
-            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             Save Action

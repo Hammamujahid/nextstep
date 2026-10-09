@@ -66,7 +66,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   if (status === "checking") {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-7 w-7 animate-spin text-indigo-500" />
+        <Loader2 className="h-7 w-7 animate-spin text-sky-500" />
       </div>
     );
   }

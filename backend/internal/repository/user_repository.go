@@ -246,6 +246,27 @@ func (r *UserRepository) UpdateProfile(
 	return &updated, nil
 }
 
+// UpdatePassword mengganti hash password user (dipakai ganti password mandiri).
+func (r *UserRepository) UpdatePassword(
+	ctx context.Context,
+	userID int,
+	hash string,
+) error {
+	res, err := r.db.Exec(
+		ctx,
+		`UPDATE users SET password_hash = $2, updated_at = NOW() WHERE id = $1`,
+		userID,
+		hash,
+	)
+	if err != nil {
+		return apperrors.ErrDatabase
+	}
+	if res.RowsAffected() == 0 {
+		return apperrors.ErrUserNotFound
+	}
+	return nil
+}
+
 // SetActiveWorkspace menyimpan workspace yang sedang dibuka user.
 func (r *UserRepository) SetActiveWorkspace(
 	ctx context.Context,

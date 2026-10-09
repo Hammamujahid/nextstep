@@ -197,7 +197,7 @@ export default function MembersPanel() {
     { title: "Total Members", value: stats.total, description: "People in workspace", icon: Users, iconStyle: "bg-blue-50 text-blue-500" },
     { title: "Active", value: stats.active, description: "Currently active", icon: CheckCircle2, iconStyle: "bg-emerald-50 text-emerald-500" },
     { title: "Pending", value: stats.pending, description: "Waiting for invitation", icon: Clock3, iconStyle: "bg-orange-50 text-orange-500" },
-    { title: "Admins", value: stats.admins, description: "Workspace administrators", icon: ShieldCheck, iconStyle: "bg-purple-50 text-purple-500" },
+    { title: "Admins", value: stats.admins, description: "Workspace administrators", icon: ShieldCheck, iconStyle: "bg-sky-50 text-sky-500" },
   ];
 
   return (
@@ -334,7 +334,7 @@ export default function MembersPanel() {
           ) : (
             <table className="w-full min-w-[1100px]">
               <thead>
-                <tr className="border-b border-indigo-100/70 bg-indigo-50/50 text-left text-xs text-slate-400">
+                <tr className="border-b border-sky-100/70 bg-sky-50/50 text-left text-xs text-slate-400">
                   <th className="px-5 py-4 font-medium">Member</th>
                   <th className="px-4 py-4 font-medium">Role</th>
                   <th className="px-4 py-4 font-medium">Tasks</th>
@@ -364,7 +364,7 @@ export default function MembersPanel() {
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
-                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${m.member_role === "admin" ? "bg-purple-50 text-purple-500" : "bg-slate-100 text-slate-500"}`}>
+                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${m.member_role === "admin" ? "bg-sky-50 text-sky-500" : "bg-slate-100 text-slate-500"}`}>
                             {m.member_role === "admin" ? "Admin" : "Member"}
                           </span>
                         </td>

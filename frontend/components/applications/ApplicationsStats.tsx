@@ -24,15 +24,15 @@ export default function ApplicationsStats({
       sub: "Across all stages",
       subCls: "text-slate-500",
       icon: Briefcase,
-      iconCls: "bg-slate-100 text-indigo-600",
+      iconCls: "bg-slate-100 text-sky-600",
     },
     {
       label: "Interviewing",
       value: String(interviewing),
       sub: "Active interview stages",
-      subCls: "text-indigo-600 font-medium",
+      subCls: "text-sky-600 font-medium",
       icon: Video,
-      iconCls: "bg-indigo-100 text-indigo-600",
+      iconCls: "bg-sky-100 text-sky-600",
     },
     {
       label: "Under Review",

@@ -29,12 +29,12 @@ import {
 export type { NavKey };
 
 export const NAV_ITEMS: { key: NavKey; label: string; icon: typeof Target; tint: string }[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, tint: "text-indigo-500" },
-  { key: "goals", label: "Goals", icon: Target, tint: "text-violet-500" },
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, tint: "text-sky-500" },
+  { key: "goals", label: "Goals", icon: Target, tint: "text-blue-500" },
   { key: "tasks", label: "Tasks", icon: ListChecks, tint: "text-emerald-500" },
-  { key: "projects", label: "Projects", icon: FolderKanban, tint: "text-indigo-500" },
+  { key: "projects", label: "Projects", icon: FolderKanban, tint: "text-sky-500" },
   { key: "applications", label: "Job Applications", icon: Briefcase, tint: "text-amber-500" },
-  { key: "members", label: "Members", icon: Users, tint: "text-pink-500" },
+  { key: "members", label: "Members", icon: Users, tint: "text-sky-500" },
 ];
 
 type SidebarProps = {
@@ -114,19 +114,19 @@ function SidebarBody({
         <button
           onClick={() => setDropOpen((v) => !v)}
           className={`clay-sm flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition ${
-            dropOpen ? "ring-2 ring-indigo-200" : ""
+            dropOpen ? "ring-2 ring-sky-200" : ""
           }`}
           aria-haspopup="listbox"
           aria-expanded={dropOpen}
         >
-          <span className="clay-icon h-9 w-9 shrink-0 bg-gradient-to-br from-indigo-400 to-violet-500 text-sm font-bold text-white">
+          <span className="clay-icon h-9 w-9 shrink-0 bg-gradient-to-br from-sky-400 to-blue-500 text-sm font-bold text-white">
             {activeWorkspace ? workspaceInitial(activeWorkspace.name) : "?"}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-extrabold text-slate-800">
               {activeWorkspace?.name ?? "Select workspace"}
             </span>
-            <span className="block text-[11px] font-semibold capitalize text-indigo-400">
+            <span className="block text-[11px] font-semibold capitalize text-sky-400">
               {activeWorkspace?.member_role ?? "No workspace"}
             </span>
           </span>
@@ -153,13 +153,13 @@ function SidebarBody({
                       setDropOpen(false);
                     }}
                     className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition ${
-                      active ? "bg-indigo-50" : "hover:bg-indigo-50/60"
+                      active ? "bg-sky-50" : "hover:bg-sky-50/60"
                     }`}
                   >
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
                         active
-                          ? "bg-gradient-to-br from-indigo-400 to-violet-500 text-white"
+                          ? "bg-gradient-to-br from-sky-400 to-blue-500 text-white"
                           : "bg-white/70 text-slate-500"
                       }`}
                     >
@@ -173,20 +173,20 @@ function SidebarBody({
                         {w.member_role}
                       </span>
                     </span>
-                    {active && <Check className="h-4 w-4 shrink-0 text-indigo-500" />}
+                    {active && <Check className="h-4 w-4 shrink-0 text-sky-500" />}
                   </button>
                 );
               })}
             </div>
-            <div className="mt-1 border-t border-indigo-100/70 pt-1">
+            <div className="mt-1 border-t border-sky-100/70 pt-1">
               <button
                 onClick={() => {
                   setDropOpen(false);
                   onCreateWorkspace();
                 }}
-                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-semibold text-sky-600 transition hover:bg-sky-50"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-dashed border-indigo-200 bg-indigo-50/70">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-dashed border-sky-200 bg-sky-50/70">
                   <Plus className="h-4 w-4" />
                 </span>
                 Create workspace
@@ -197,7 +197,7 @@ function SidebarBody({
                     setDropOpen(false);
                     onWorkspaceSettings();
                   }}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-semibold text-slate-500 transition hover:bg-indigo-50"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-semibold text-slate-500 transition hover:bg-sky-50"
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/70">
                     <Settings className="h-4 w-4" />
@@ -213,7 +213,7 @@ function SidebarBody({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto">
         <p className="mb-1.5 flex items-center gap-1.5 px-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-          <Sparkles className="h-3 w-3 text-indigo-400" />
+          <Sparkles className="h-3 w-3 text-sky-400" />
           Menu
         </p>
         <ul className="space-y-1">
@@ -249,7 +249,7 @@ function SidebarBody({
       {canInvite && (
         <button
           onClick={onInvite}
-          className="clay-btn flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-indigo-600"
+          className="clay-btn flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-sky-600"
         >
           <UserPlus className="h-4 w-4" />
           Invite teammate

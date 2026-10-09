@@ -456,14 +456,14 @@ export default function DashboardHome() {
       value: m ? String(m.goals.total) : "–",
       description: m ? `${m.goals.in_progress} in progress` : "loading…",
       icon: Target,
-      iconStyle: "bg-purple-50 text-purple-500",
+      iconStyle: "bg-sky-50 text-sky-500",
     },
     {
       title: "Projects",
       value: m ? String(m.projects.total) : "–",
       description: m ? `${m.projects.in_progress} in progress` : "loading…",
       icon: FolderKanban,
-      iconStyle: "bg-indigo-50 text-indigo-500",
+      iconStyle: "bg-sky-50 text-sky-500",
     },
     {
       title: "Job Applications",

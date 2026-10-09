@@ -18,3 +18,8 @@ type UpdateProfileRequest struct {
 	Username *string `json:"username" binding:"omitempty,min=3,max=50"`
 	Email    *string `json:"email" binding:"omitempty,email,max=100"`
 }
+
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password" binding:"required"`
+	NewPassword     string `json:"new_password" binding:"required,min=6,max=72"`
+}

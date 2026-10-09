@@ -2,22 +2,22 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { AlertCircle, CheckCircle2, Loader2, Pencil } from "lucide-react";
+import { AlertCircle, CheckCircle2, KeyRound, Loader2, Pencil, ShieldCheck } from "lucide-react";
 import { useDashboard } from "../dashboard/DashboardProvider";
 import { updateProfileApi } from "../../lib/auth";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 export default function SettingsPanel() {
   const { profile, refreshProfile } = useDashboard();
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState(profile.username);
-  const [email, setEmail] = useState(profile.email);
+  const [pwOpen, setPwOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   function startEdit() {
     setUsername(profile.username);
-    setEmail(profile.email);
     setError(null);
     setSuccess(null);
     setEditing(true);
@@ -35,27 +35,18 @@ export default function SettingsPanel() {
     setSuccess(null);
 
     const nextUsername = username.trim();
-    const nextEmail = email.trim();
     if (nextUsername.length < 3) {
       setError("Username must be at least 3 characters.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    const payload: { username?: string; email?: string } = {};
-    if (nextUsername !== profile.username) payload.username = nextUsername;
-    if (nextEmail !== profile.email) payload.email = nextEmail;
-    if (Object.keys(payload).length === 0) {
+    if (nextUsername === profile.username) {
       setEditing(false);
       return;
     }
 
     setSaving(true);
     try {
-      await updateProfileApi(payload);
+      await updateProfileApi({ username: nextUsername });
       await refreshProfile();
       setSuccess("Profile updated successfully.");
       setEditing(false);
@@ -68,143 +59,171 @@ export default function SettingsPanel() {
   }
 
   const inputCls =
-    "w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
+    "w-full clay-sm px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
+  const initial = (profile.username.trim().charAt(0) || "?").toUpperCase();
 
   return (
-    <div className="anim-fade-up clay p-6 sm:p-8">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Account</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Your NextStep profile details.
+    <div className="anim-fade-up flex w-full flex-col gap-5">
+      {/* kartu identitas */}
+      <section className="clay overflow-hidden p-0">
+        <div className="bg-gradient-to-r from-sky-400 via-sky-500 to-blue-500 px-6 pb-10 pt-6 sm:px-8">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-white/80">
+            Account
           </p>
+          <h2 className="mt-1 text-xl font-extrabold tracking-tight text-white">
+            Profile settings
+          </h2>
         </div>
-        {!editing && (
-          <button
-            onClick={startEdit}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Edit profile
-          </button>
-        )}
-      </div>
-
-      {error && (
-        <div className="anim-slide-down mt-4 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800">
-          <p className="flex items-start gap-2 font-medium">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            {error}
-          </p>
-        </div>
-      )}
-      {success && (
-        <div className="anim-slide-down mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
-          <p className="flex items-start gap-2 font-medium">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-            {success}
-          </p>
-        </div>
-      )}
-
-      <div className="mt-5 flex items-center gap-4">
-        {profile.photo ? (
-          <Image
-            src={profile.photo}
-            alt={profile.username || "Profile photo"}
-            width={64}
-            height={64}
-            className="h-16 w-16 rounded-full object-cover ring-2 ring-indigo-100"
-          />
-        ) : (
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-800 text-xl font-bold text-white">
-            {(profile.username.trim().charAt(0) || "?").toUpperCase()}
-          </span>
-        )}
-        <div className="min-w-0">
-          <p className="truncate text-base font-bold text-slate-900">
-            {profile.username || "-"}
-          </p>
-          <p className="truncate text-sm text-slate-500">
-            {profile.email || "-"}
-          </p>
-        </div>
-      </div>
-
-      {editing ? (
-        <form onSubmit={handleSave} className="mt-6 space-y-4 border-t border-slate-100 pt-5">
-          <div>
-            <label
-              htmlFor="settings-username"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-            >
-              Username
-            </label>
-            <input
-              id="settings-username"
-              type="text"
-              autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              maxLength={50}
-              placeholder="Your username"
-              className={inputCls}
-            />
+        <div className="px-6 pb-6 sm:px-8">
+          <div className="-mt-8 flex flex-wrap items-end justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {profile.photo ? (
+                <Image
+                  src={profile.photo}
+                  alt={profile.username || "Profile photo"}
+                  width={72}
+                  height={72}
+                  className="h-[72px] w-[72px] rounded-3xl border-4 border-white object-cover shadow-lg"
+                />
+              ) : (
+                <span className="flex h-[72px] w-[72px] items-center justify-center rounded-3xl border-4 border-white bg-gradient-to-br from-sky-400 to-blue-600 text-2xl font-extrabold text-white shadow-lg">
+                  {initial}
+                </span>
+              )}
+              <div className="min-w-0 pb-1">
+                <p className="truncate text-lg font-extrabold text-slate-900">
+                  {profile.username || "-"}
+                </p>
+                <p className="truncate text-sm text-slate-500">
+                  {profile.email || "-"}
+                </p>
+              </div>
+            </div>
+            {!editing && (
+              <button
+                onClick={startEdit}
+                className="clay-btn inline-flex shrink-0 items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-sky-700"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit profile
+              </button>
+            )}
           </div>
+
+          {error && (
+            <div className="anim-slide-down mt-5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800">
+              <p className="flex items-start gap-2 font-medium">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                {error}
+              </p>
+            </div>
+          )}
+          {success && (
+            <div className="anim-slide-down mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
+              <p className="flex items-start gap-2 font-medium">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                {success}
+              </p>
+            </div>
+          )}
+
+          {editing ? (
+            <form onSubmit={handleSave} className="mt-5 space-y-4">
+              <div>
+                <label
+                  htmlFor="settings-username"
+                  className="mb-1.5 block text-[13px] font-semibold text-slate-700"
+                >
+                  Username
+                </label>
+                <input
+                  id="settings-username"
+                  type="text"
+                  autoFocus
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  maxLength={50}
+                  placeholder="Your username"
+                  className={inputCls}
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  disabled={saving}
+                  className="clay-btn flex-1 px-4 py-2.5 text-sm font-bold text-slate-600 disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="btn-shine inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {saving ? "Saving..." : "Save changes"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="clay-inset px-4 py-3">
+                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Username
+                </dt>
+                <dd className="mt-0.5 truncate text-sm font-bold text-slate-800">
+                  {profile.username || "-"}
+                </dd>
+              </div>
+              <div className="clay-inset px-4 py-3">
+                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Email
+                </dt>
+                <dd className="mt-0.5 truncate text-sm font-bold text-slate-800">
+                  {profile.email || "-"}
+                </dd>
+              </div>
+            </dl>
+          )}
+        </div>
+      </section>
+
+      {/* kartu keamanan */}
+      <section className="clay flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+        <div className="flex items-center gap-3.5">
+          <span className="clay-icon h-11 w-11 shrink-0 bg-gradient-to-br from-sky-400 to-blue-600">
+            <ShieldCheck className="h-5 w-5 text-white" />
+          </span>
           <div>
-            <label
-              htmlFor="settings-email"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-            >
-              Email
-            </label>
-            <input
-              id="settings-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              maxLength={100}
-              placeholder="you@example.com"
-              className={inputCls}
-            />
-            <p className="mt-1.5 text-xs text-slate-400">
-              Used for login and workspace invitations.
+            <h3 className="text-sm font-extrabold text-slate-900">Password</h3>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Ganti password secara berkala untuk menjaga keamanan akun.
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={cancelEdit}
-              disabled={saving}
-              className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-60"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {saving ? "Saving..." : "Save changes"}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <dl className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Username</dt>
-            <dd className="font-medium text-slate-900">
-              {profile.username || "-"}
-            </dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Email</dt>
-            <dd className="truncate font-medium text-slate-900">
-              {profile.email || "-"}
-            </dd>
-          </div>
-        </dl>
+        </div>
+        <button
+          onClick={() => {
+            setError(null);
+            setSuccess(null);
+            setPwOpen(true);
+          }}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-sky-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-sky-600"
+        >
+          <KeyRound className="h-3.5 w-3.5" />
+          Change password
+        </button>
+      </section>
+
+      {pwOpen && (
+        <ChangePasswordModal
+          onClose={() => setPwOpen(false)}
+          onSaved={() => {
+            setPwOpen(false);
+            setError(null);
+            setSuccess("Password changed successfully.");
+          }}
+        />
       )}
     </div>
   );

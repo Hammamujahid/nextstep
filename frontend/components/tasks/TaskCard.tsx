@@ -20,13 +20,13 @@ const PRIORITY_LABEL: Record<BoardTask["priority"], string> = {
 
 const STATUS_OPTIONS: { value: BoardTask["status"]; label: string; dot: string }[] = [
   { value: "not_started", label: "Not Started", dot: "bg-slate-300" },
-  { value: "in_progress", label: "In Progress", dot: "bg-indigo-500" },
+  { value: "in_progress", label: "In Progress", dot: "bg-sky-500" },
   { value: "completed", label: "Completed", dot: "bg-emerald-500" },
 ];
 
 const PRIORITY_OPTIONS: { value: BoardTask["priority"]; label: string; dot: string }[] = [
   { value: "high", label: "High", dot: "bg-red-500" },
-  { value: "medium", label: "Med", dot: "bg-indigo-500" },
+  { value: "medium", label: "Med", dot: "bg-sky-500" },
   { value: "low", label: "Low", dot: "bg-slate-300" },
 ];
 
@@ -36,7 +36,7 @@ const DUE_PRESETS: { key: string; label: string }[] = [
 
 const DUE_TEXT: Record<BoardTask["dueTone"], string> = {
   danger: "text-red-600 font-semibold",
-  primary: "text-indigo-600 font-semibold",
+  primary: "text-sky-600 font-semibold",
   muted: "text-slate-500",
   success: "text-emerald-600 font-semibold",
 };
@@ -162,7 +162,7 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
                         if (opt.value === task.priority) return;
                         onPriorityChange(task.id, opt.value);
                       }}
-                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.priority ? "bg-indigo-50 font-semibold text-indigo-700" : "text-slate-700"}`}
+                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.priority ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
                     >
                       <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
                       {opt.label}
@@ -183,7 +183,7 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
       </div>
 
       <h3
-        className={`text-sm font-semibold leading-snug transition group-hover:text-indigo-600 ${
+        className={`text-sm font-semibold leading-snug transition group-hover:text-sky-600 ${
           done ? "text-slate-400 line-through" : "text-slate-900"
         }`}
       >
@@ -227,7 +227,7 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
                   if (opt.value === task.status) return;
                   onStatusChange(task.id, opt.value);
                 }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.status ? "bg-indigo-50 font-semibold text-indigo-700" : "text-slate-700"}`}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 ${opt.value === task.status ? "bg-sky-50 font-semibold text-sky-700" : "text-slate-700"}`}
               >
                 <span className={`h-2 w-2 rounded-full ${opt.dot}`} />
                 {opt.label}
@@ -241,7 +241,7 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
       {task.progress != null && !done && (
         <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-500"
+            className="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500"
             style={{ width: `${task.progress}%` }}
           />
         </div>
@@ -290,7 +290,7 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
                       type="date"
                       value={customDate}
                       onChange={(e) => setCustomDate(e.target.value)}
-                      className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
+                      className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
                     />
                   </div>
                   <div>
@@ -301,13 +301,13 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
                       type="time"
                       value={customTime}
                       onChange={(e) => setCustomTime(e.target.value)}
-                      className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
+                      className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
                     />
                   </div>
                   <button
                     onClick={applyCustomDue}
                     disabled={!customDate}
-                    className="w-full rounded-lg bg-indigo-500 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-lg bg-sky-500 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Set due date
                   </button>
@@ -349,12 +349,12 @@ export default function TaskCard({ task, onToggle, onStatusChange, onPriorityCha
                       if (e.key === "Enter") applyCustomEstimate();
                     }}
                     placeholder="e.g., 45m or 1.5h"
-                    className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
+                    className="h-8 w-full rounded-md border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-sky-400"
                   />
                   <button
                     onClick={applyCustomEstimate}
                     disabled={parseEstimateToMinutes(customEstimate) === null}
-                    className="w-full rounded-lg bg-indigo-500 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-lg bg-sky-500 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Set estimate
                   </button>

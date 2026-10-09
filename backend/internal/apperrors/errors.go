@@ -22,4 +22,6 @@ var (
 	ErrLastAdmin              = errors.New("cannot remove the last admin")
 	ErrCannotEditSelf         = errors.New("cannot change your own permissions")
 	ErrTargetIsAdmin          = errors.New("cannot change permissions of an admin")
+	ErrWrongCurrentPassword   = errors.New("current password is incorrect")
+	ErrNoPasswordSet          = errors.New("this account signs in with Google and has no password")
 )

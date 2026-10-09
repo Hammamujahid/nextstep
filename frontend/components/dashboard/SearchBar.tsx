@@ -190,7 +190,7 @@ export default function SearchBar({ workspaceId }: SearchBarProps) {
           ensureLoaded();
           setOpen(true);
         }}
-        className="h-10 w-full clay-inset pl-10 pr-12 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+        className="h-10 w-full clay-inset pl-10 pr-12 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
       />
       <kbd className="pointer-events-none absolute right-3 rounded bg-slate-200/70 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">
         ⌘K

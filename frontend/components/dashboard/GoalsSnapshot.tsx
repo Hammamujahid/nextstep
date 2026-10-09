@@ -29,7 +29,7 @@ export default function GoalsSnapshot({ tracks = [] }: GoalsSnapshotProps) {
   return (
     <section aria-label="Career goals snapshot">
       <div className="flex items-center gap-2">
-        <Target className="h-5 w-5 text-indigo-500" />
+        <Target className="h-5 w-5 text-sky-500" />
         <h2 className="text-lg font-bold tracking-tight text-slate-900">
           Goals Snapshot
         </h2>
@@ -52,11 +52,11 @@ export default function GoalsSnapshot({ tracks = [] }: GoalsSnapshotProps) {
             <div className="mt-3 flex items-center gap-3">
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-500"
+                  className="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500"
                   style={{ width: `${track.progress}%` }}
                 />
               </div>
-              <span className="text-xs font-bold text-indigo-600">
+              <span className="text-xs font-bold text-sky-600">
                 {track.progress}%
               </span>
             </div>

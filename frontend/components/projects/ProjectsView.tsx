@@ -62,11 +62,11 @@ const STATUS_STYLE: Record<ProjectStatus, string> = {
 // gradasi hiasan deterministik per project (visual saja, konsisten per id)
 const GRADIENTS = [
   "from-sky-400 to-blue-500",
-  "from-violet-400 to-purple-500",
+  "from-blue-400 to-sky-500",
   "from-emerald-400 to-teal-500",
   "from-cyan-400 to-sky-500",
   "from-orange-400 to-amber-500",
-  "from-pink-400 to-rose-500",
+  "from-sky-400 to-blue-500",
 ];
 
 function gradientOf(id: number): string {
@@ -477,7 +477,7 @@ export default function ProjectsView() {
       {/* CONTENT */}
       <section>
         {visible.length === 0 ? (
-          <div className="clay border-2 border-dashed border-indigo-200 bg-white p-16 text-center">
+          <div className="clay border-2 border-dashed border-sky-200 bg-white p-16 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-500">
               <FolderKanban size={26} />
             </div>
@@ -572,7 +572,7 @@ export default function ProjectsView() {
             {editable && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex min-h-[310px] flex-col items-center justify-center clay border-2 border-dashed border-indigo-200 bg-white text-slate-400 transition hover:border-blue-300 hover:bg-blue-50/30 hover:text-blue-500"
+                className="flex min-h-[310px] flex-col items-center justify-center clay border-2 border-dashed border-sky-200 bg-white text-slate-400 transition hover:border-blue-300 hover:bg-blue-50/30 hover:text-blue-500"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-current">
                   <Plus size={21} />
@@ -608,7 +608,7 @@ export default function ProjectsView() {
             <div className="overflow-x-auto">
                 <table className="w-full min-w-[940px]">
                 <thead>
-                  <tr className="border-b border-indigo-100/70 bg-indigo-50/50 text-left text-xs text-slate-400">
+                  <tr className="border-b border-sky-100/70 bg-sky-50/50 text-left text-xs text-slate-400">
                     <th className="px-5 py-4 font-medium">Project</th>
                     <th className="px-4 py-4 font-medium">Status</th>
                     <th className="px-4 py-4 font-medium">Progress</th>
